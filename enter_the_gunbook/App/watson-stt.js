@@ -29,7 +29,7 @@ export async function getResults(audio, ext, token) {
     const data = new FormData();
     if (typeof audio === 'string') {
         const file_path = audio;
-        data.append('file', { uri:`file://${file_path}`, name:`recording.${ext}`, type:`audio/${ext}` }, `recording.${ext}`);
+        data.append('file', { uri:`file://${file_path}`, name:`recording.${ext}`, type:`audio/${ext}` });
     } else {
         // assume blob
         const blob = audio;
