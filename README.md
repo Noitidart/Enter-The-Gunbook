@@ -9,3 +9,7 @@ While I play the "Enter the Gungeon" I am constantly typing on my device to find
 ### Powered by
 * [Enter the Gungeon Wiki](enterthegungeon.gamepedia.com/) for data on guns and items
 * [IBM Bluemix / Watson](https://www.ibm.com/developerworks/cloud/library/cl-bluemixfoundry/) for speech recognition
+
+## Get it!
+* iPhone & iPad - [Apple App Store]() - coming soon!
+* Android Phones & Tablets - [Google Play]() - coming soon!
