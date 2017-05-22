@@ -12,8 +12,12 @@ const styles = StyleSheet.create({
     },
     //
     logo: {
+        flex: 1,
+        width: '95%',
         resizeMode: 'contain',
-        backgroundColor: 'skyblue'
+    },
+    content: {
+        flex: 0
     }
 })
 
