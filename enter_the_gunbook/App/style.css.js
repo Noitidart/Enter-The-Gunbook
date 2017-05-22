@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     //
     logo: {
         flex: 1,
-        width: '95%',
+        width: '80%',
         resizeMode: 'contain',
     },
     content: {

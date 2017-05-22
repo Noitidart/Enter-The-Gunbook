@@ -18,7 +18,7 @@ class App extends Component {
     }
     componentDidMount() {
         let { logo_anim } = this.state;
-        Animated.timing(this.state.logo_anim, { toValue:1, duration:3000 }).start();
+        Animated.timing(this.state.logo_anim, { toValue:1, duration:2000 }).start();
     }
     render() {
         let { logo_anim } = this.state;
