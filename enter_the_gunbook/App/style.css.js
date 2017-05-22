@@ -29,6 +29,16 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1 // makes it take 100% width link291992
+    },
+    //
+    nopermission_text: {
+        textAlign: 'center',
+        fontSize: 17,
+        fontWeight: 'bold',
+        marginHorizontal: 30
+    },
+    initial_listen_view: {
+        alignItems: 'center'
     }
 })
 
