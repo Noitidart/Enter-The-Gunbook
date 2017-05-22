@@ -1,4 +1,4 @@
-# Enter The Gunbook
+![](https://raw.githubusercontent.com/Noitidart/Enter-The-Gunbook/master/readme-logo.png)
 
 This is a mobile app designed for Android and iOS. It uses speech recognition from IBM Bluemix API to find results from the official Gamepedia.
 
