@@ -4,6 +4,7 @@ const USERNAME = '';
 const PASSWORD = '';
 
 export async function getToken() {
+    throw new Error('DEBUG:');
     const response = await fetch('https://stream.watsonplatform.net/authorization/api/v1/token?url=https://stream.watsonplatform.net/speech-to-text/api', {
         headers: {
             'Authorization': `Basic ${base64_encode(`${USERNAME}:${PASSWORD}`)}`,
@@ -40,7 +41,7 @@ export async function getResults(audio, ext, token) {
         method: 'POST',
         headers: {
             // 'Content-Type': `audio/${ext}`,
-            'Content-Type': 'multipart/form-data',
+            // 'Content-Type': 'multipart/form-data',
             'X-Watson-Authorization-Token': token
         },
         body: data

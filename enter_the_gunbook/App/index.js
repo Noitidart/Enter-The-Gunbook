@@ -12,7 +12,7 @@ import background_image from './assets/background-0.jpg'
 import logo_image from './assets/logo.png'
 import styles from './style.css'
 
-const load_anim_DURATION = 2000;
+const LOAD_ANIM_DURATION = 2000;
 const load_anim_MOVEUP_POINT = .5;
 const load_anim_SUBCONTENT_SHOW_POINT = 0.7;
 
@@ -22,6 +22,7 @@ class App extends Component {
     state = {
         load_anim: new Animated.Value(0),
         subcontent_isshowing: false,
+        fab_canshow: false,
         haspermission: false // to use audio recording
     }
     constructor(props) {
@@ -32,8 +33,9 @@ class App extends Component {
 
         // loading animation
         const { load_anim } = this.state;
-        Animated.timing(this.state.load_anim, { toValue:1, duration:load_anim_DURATION }).start();
-        setTimeout(()=>this.setState( ()=>({ subcontent_isshowing:true })), load_anim_DURATION * load_anim_SUBCONTENT_SHOW_POINT);
+        Animated.timing(load_anim, { toValue:1, duration:LOAD_ANIM_DURATION }).start();
+        setTimeout(()=>this.setState( ()=>({ subcontent_isshowing:true })), LOAD_ANIM_DURATION * load_anim_SUBCONTENT_SHOW_POINT);
+        setTimeout(()=>this.setState( ()=>({ fab_canshow:true })), LOAD_ANIM_DURATION);
 
         // check audio permission
         let haspermission = await this.checkPermission();
@@ -91,7 +93,7 @@ class App extends Component {
                 this.watson_token = await STT.getToken();
                 console.log('watson_token:', this.watson_token);
             } catch(error) {
-                console.error(`STT::getToken - ${error}`);
+                // console.error(`STT::getToken - ${error}`); // comented out for DEBUG:
                 throw new Error(`STT::getToken - ${error}`);
             }
         }
@@ -135,7 +137,7 @@ class App extends Component {
         }
     }
     render() {
-        const { load_anim, subcontent_isshowing, haspermission } = this.state;
+        const { fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
 
         const logo_style = [
             styles.logo,
@@ -166,16 +168,118 @@ class App extends Component {
                 <Animated.View style={content_style}>
                     { subcontent_isshowing && <Animated.View style={subcontent_style}>
                         { !haspermission && <Text style={styles.nopermission_text}>Enter The Gunbook does not have permission to use your microphone</Text> }
-                        { haspermission &&
-                            <View style={styles.initial_listen_view}>
-                                <Button onPress={this.startListening}>Listening...</Button>
-                                <Text style={{marginTop:10, fontSize:13}}>(say a gun or item name to search)</Text>
-                            </View>
-                        }
+                        { haspermission && !fab_canshow && <Button>Listening...</Button> }
+                        { haspermission && !fab_canshow && <Text style={styles.initial_listen_text}>(say a gun or item name to search)</Text> }
                     </Animated.View> }
                 </Animated.View>
+                { haspermission && fab_canshow && <Fab startListening={this.startListening} />}
+                {/*{ haspermission && fab_canshow && <Fab2 startListening={this.startListening} />}*/}
             </Image>
         )
+    }
+}
+
+function AnimatedAsync(name, ...args) {
+    return new Promise(resolve => Animated[name](...args).start(resolve));
+}
+
+function objectSet(obj, key, value) {
+    // sets and return
+    obj[key] = value;
+    return obj;
+}
+
+class Fab extends Component {
+    state = {
+        iorder: ['logo', 'subcontent', 'text', 'background', 'content'],
+        ianim: ['background', 'logo', 'content', 'subcontent', 'text'].reduce( (acc, animid) => objectSet(acc, animid, new Animated.Value(0)), {}), // ianim stands for initial_anim
+        initialized: false
+    }
+    initializeNext = async () => {
+        const { ianim, iorder } = this.state;
+        // console.error('starting anim for:', iorder[0]);
+        await AnimatedAsync('timing', ianim[iorder[0]], { toValue:1, duration:200 });
+        this.setState(({iorder})=>{
+            let iorder_new = iorder.filter((el, ix) => ix !== 0);
+            if (iorder_new.length) {
+                return { iorder:iorder_new };
+            } else {
+                return { iorder:null }; // initialized:true
+            }
+        });
+    }
+    componentDidUpdate(propsold, stateold) {
+        const { initialized, iorder } = this.state;
+        const { iorder_old } = stateold;
+        if (!initialized) {
+            if (iorder && iorder !== iorder_old) {
+                // guranteed iorder is not null
+                this.initializeNext();
+            }
+        }
+    }
+    render() {
+        let { startListening } = this.props;
+        let { iorder, initialized, ianim } = this.state;
+
+        // point of initial styles is to perfectly over lap the non-pressable button that slid in with the view
+        let background_style = styles.background_fab;
+        let logo_style = styles.logo_fab;
+        let content_style = styles.content_fab;
+        let subcontent_style = styles.subcontent_fab;
+        let button_style = undefined;
+        let text_style = [styles.initial_listen_text, { opacity: ianim.logo.interpolate({ inputRange:[0,1], outputRange:[1,0] }) }];
+
+        if (!initialized) {
+            logo_style = [logo_style, { flex: ianim.logo.interpolate({ inputRange:[0,1], outputRange:[1,.001] }) }];
+
+            if (!iorder.includes('logo')) {
+                subcontent_style = [subcontent_style, {
+                    margin: ianim.subcontent.interpolate({ inputRange:[0,1], outputRange:[20,0] }),
+                    padding: ianim.subcontent.interpolate({ inputRange:[0,1], outputRange:[10,0] }),
+                    borderWidth: ianim.subcontent.interpolate({ inputRange:[0,1], outputRange:[1,0] })
+                }];
+            }
+            if (!iorder.includes('subcontent')) {
+                // content_style = [content_style, { position:'absolute', width:'100%' }, {
+                //     // flex: ianim.content.interpolate({ inputRange:[0,1], outputRange:[4,0] })
+                //     height: ianim.content.interpolate({ inputRange:[0,1], outputRange:['100%','15%'] })
+                // }];
+
+                // content_style = [content_style, { position:ianim.interpolate({ inputRange:[0,.5,1], outputRange:['relative','relative','absolute'] }) }];
+
+                // background_style = [background_style, {
+                //     flex: ianim.background.interpolate({ inputRange:[0,1], outputRange:[1,0] }),
+                //     width: ianim.background.interpolate({ inputRange:[0,1], outputRange:['100%','0%'] }),
+                // }]
+                text_style.push({
+                    fontSize: ianim.text.interpolate({ inputRange:[0,1], outputRange:[13,0] }),
+                    marginTop: ianim.text.interpolate({ inputRange:[0,1], outputRange:[10,0] })
+                });
+            }
+
+            if (!iorder.includes('text')) {
+                button_style = {
+                    position: 'absolute'
+                };
+            }
+        }
+
+        if (!iorder.includes('text')) {
+            return <Button style={button_style} onPress={this.initializeNext}>Listening...</Button>;
+        } else {
+            return (
+                <Animated.View style={background_style}>
+                    { iorder.includes('logo') && <Animated.Image source={logo_image} style={logo_style} /> }
+                    <Animated.View style={content_style}>
+                        <Animated.View style={subcontent_style}>
+                            <Button style={button_style} onPress={this.initializeNext}>Listening...</Button>
+                            <Animated.Text style={text_style}>(say a gun or item name to search)</Animated.Text>
+                        </Animated.View>
+                    </Animated.View>
+                </Animated.View>
+            )
+        }
     }
 }
 
