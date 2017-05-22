@@ -17,7 +17,18 @@ const styles = StyleSheet.create({
         resizeMode: 'contain',
     },
     content: {
-        flex: 0
+        flex: 0,
+        flexDirection: 'row' // for link291992
+    },
+    subcontent: {
+        borderWidth: 1,
+        borderRadius: 2,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        margin: 20,
+        padding: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1 // makes it take 100% width link291992
     }
 })
 
