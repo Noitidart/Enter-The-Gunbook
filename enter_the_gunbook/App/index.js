@@ -18,7 +18,6 @@ const load_anim_SUBCONTENT_SHOW_POINT = 0.7;
 
 class App extends Component {
     setStateBounded = null
-    watson_token = null
     state = {
         load_anim: new Animated.Value(0),
         subcontent_isshowing: false,
@@ -49,10 +48,26 @@ class App extends Component {
 
         if (!haspermissionold && haspermission) {
             // set up audio
-            this.AUDIO_PATH = AudioUtils.MusicDirectoryPath + '/enter-the-gunbook.aac';
-            AudioRecorder.prepareRecordingAtPath(this.AUDIO_PATH, { SampleRate:22050, Channels:1, AudioQuality:'Low', AudioEncoding:'aac' });
+            console.log('AudioUtils:', AudioUtils);
+
+            if (Platform.OS === 'ios') {
+                this.AUDIO_EXT = 'ulaw';
+                this.AUDIO_ENCODING = 'ulaw';
+                this.AUDIO_SAMPLE_RATE = 22050;
+                this.AUDIO_CONTENT_TYPE = 'audio/mulaw;rate=' + this.AUDIO_SAMPLE_RATE;
+            } else if (Platform.OS === 'android') {
+                this.AUDIO_EXT = 'ogg';
+                this.AUDIO_ENCODING = 'vorbis';
+                this.AUDIO_CONTENT_TYPE = 'audio/ogg;'
+                this.AUDIO_SAMPLE_RATE = 22050;
+            } else {
+                alert('your platform is not supported, only ios and android');
+            }
+
+            this.AUDIO_PATH = AudioUtils.DocumentDirectoryPath + '/enter-the-gunbook.' + this.AUDIO_EXT;
+            AudioRecorder.prepareRecordingAtPath(this.AUDIO_PATH, { SampleRate:this.AUDIO_SAMPLE_RATE, Channels:1, AudioQuality:'Low', AudioEncoding:this.AUDIO_ENCODING });
             AudioRecorder.onProgress = this.handleAudioProgress;
-            AudioRecorder.onFinish = this.handleAudioFinishIOS;
+            AudioRecorder.onFinished = this.handleAudioFinishIOS;
             this.startListening();
         }
     }
@@ -82,29 +97,21 @@ class App extends Component {
     }
     async handleAudioFinish(didsucceed, file_path) {
         console.log('handleAudioFinish', 'didsucceed:', didsucceed, 'file_path:', file_path);
-
         if (!didsucceed) {
+            alert('failed to record!!');
             console.error('failed to record!!');
             return;
         }
 
-        if (!this.watson_token) {
-            try {
-                this.watson_token = await STT.getToken();
-                console.log('watson_token:', this.watson_token);
-            } catch(error) {
-                // console.error(`STT::getToken - ${error}`); // comented out for DEBUG:
-                throw new Error(`STT::getToken - ${error}`);
-            }
-        }
-
         let textified;
         try {
-            textified = STT.getResults(file_path, 'aac', this.watson_token)
+            textified = await STT.getResults(file_path, this.AUDIO_EXT, this.AUDIO_CONTENT_TYPE)
         } catch(error) {
             console.error(`STT::getResults - ${error}`);
             throw new Error(`STT::getResults - ${error}`);
         }
+
+        console.log('textified:', textified);
     }
     startListening = async () => {
         console.log('starting recording');

@@ -4,7 +4,6 @@ const USERNAME = '';
 const PASSWORD = '';
 
 export async function getToken() {
-    throw new Error('DEBUG:');
     const response = await fetch('https://stream.watsonplatform.net/authorization/api/v1/token?url=https://stream.watsonplatform.net/speech-to-text/api', {
         headers: {
             'Authorization': `Basic ${base64_encode(`${USERNAME}:${PASSWORD}`)}`,
@@ -23,28 +22,39 @@ export async function getToken() {
     return token;
 }
 
-export async function getResults(audio, ext, token) {
+export async function getResults(audio, ext, content_type) {
     // audio - blob (web) or file path without file:// (react native)
     // ext - type of file like "ogg" (must lower case? i dont think so but thats all i see)
 
-    const data = new FormData();
-    if (typeof audio === 'string') {
-        const file_path = audio;
-        data.append('file', { uri:`file://${file_path}`, name:`recording.${ext}`, type:`audio/${ext}` });
-    } else {
-        // assume blob
-        const blob = audio;
-        data.append('file', blob, `recording.${ext}`);
+    console.log('typeof audio:', typeof audio);
+    const ismobile = typeof audio === 'string';
+
+    const blob = ismobile ? undefined : audio;
+    const file_path = ismobile ? audio : undefined;
+
+    let token;
+    if (!ismobile) {
+        console.log('getting token because not mobile!');
+        token = await getToken();
     }
+
+    const body = new FormData();
+    if (ismobile) {
+        let metadata = {
+            part_content_type: content_type
+        };
+        body.append('metadata', JSON.stringify(metadata));
+        body.append('upload', { uri:`file://${file_path}`, name:`recording.${ext}`, type:`audio/${ext}` });
+    } else {
+        body.append('file', blob);
+    }
+
+    const headers = !ismobile ? { 'Content-Type':`audio/${ext}`, 'X-Watson-Authorization-Token':token } : { 'Authorization':`Basic ${base64_encode(`${USERNAME}:${PASSWORD}`)}` };
 
     const response = await fetch('https://stream.watsonplatform.net/speech-to-text/api/v1/recognize?continuous=true', {
         method: 'POST',
-        headers: {
-            // 'Content-Type': `audio/${ext}`,
-            // 'Content-Type': 'multipart/form-data',
-            'X-Watson-Authorization-Token': token
-        },
-        body: data
+        headers,
+        body
     });
 
     console.log('watson-stt::getResults - response:', response);
