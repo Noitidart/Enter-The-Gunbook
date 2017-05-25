@@ -173,7 +173,6 @@ class App extends Component {
                     </Animated.View> }
                 </Animated.View>
                 { haspermission && fab_canshow && <Fab startListening={this.startListening} />}
-                {/*{ haspermission && fab_canshow && <Fab2 startListening={this.startListening} />}*/}
             </Image>
         )
     }
@@ -193,7 +192,7 @@ class Fab extends Component {
     state = {
         iorder: ['logo', 'subcontent', 'text', 'background', 'content'],
         ianim: ['background', 'logo', 'content', 'subcontent', 'text'].reduce( (acc, animid) => objectSet(acc, animid, new Animated.Value(0)), {}), // ianim stands for initial_anim
-        initialized: false
+        initialized: undefined // set to false for in progress
     }
     initializeNext = async () => {
         const { ianim, iorder } = this.state;
@@ -202,16 +201,16 @@ class Fab extends Component {
         this.setState(({iorder})=>{
             let iorder_new = iorder.filter((el, ix) => ix !== 0);
             if (iorder_new.length) {
-                return { iorder:iorder_new };
+                return { iorder:iorder_new, initialized:false };
             } else {
-                return { iorder:null }; // initialized:true
+                return { iorder:null, initialized:true };
             }
         });
     }
     componentDidUpdate(propsold, stateold) {
         const { initialized, iorder } = this.state;
         const { iorder_old } = stateold;
-        if (!initialized) {
+        if (initialized === false) {
             if (iorder && iorder !== iorder_old) {
                 // guranteed iorder is not null
                 this.initializeNext();
@@ -241,17 +240,6 @@ class Fab extends Component {
                 }];
             }
             if (!iorder.includes('subcontent')) {
-                // content_style = [content_style, { position:'absolute', width:'100%' }, {
-                //     // flex: ianim.content.interpolate({ inputRange:[0,1], outputRange:[4,0] })
-                //     height: ianim.content.interpolate({ inputRange:[0,1], outputRange:['100%','15%'] })
-                // }];
-
-                // content_style = [content_style, { position:ianim.interpolate({ inputRange:[0,.5,1], outputRange:['relative','relative','absolute'] }) }];
-
-                // background_style = [background_style, {
-                //     flex: ianim.background.interpolate({ inputRange:[0,1], outputRange:[1,0] }),
-                //     width: ianim.background.interpolate({ inputRange:[0,1], outputRange:['100%','0%'] }),
-                // }]
                 text_style.push({
                     fontSize: ianim.text.interpolate({ inputRange:[0,1], outputRange:[13,0] }),
                     marginTop: ianim.text.interpolate({ inputRange:[0,1], outputRange:[10,0] })
@@ -265,8 +253,8 @@ class Fab extends Component {
             }
         }
 
-        if (!iorder.includes('text')) {
-            return <Button style={button_style} onPress={this.initializeNext}>Listening...</Button>;
+        if (initialized) {
+            return <Button style={styles.fab}>Listening...</Button>;
         } else {
             return (
                 <Animated.View style={background_style}>

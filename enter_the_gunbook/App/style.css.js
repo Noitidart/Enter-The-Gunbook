@@ -69,6 +69,10 @@ const styles = StyleSheet.create({
         borderColor: 'transparent'
     },
     //
+    fab: {
+        position: 'absolute'
+    },
+    //
     nopermission_text: {
         textAlign: 'center',
         fontSize: 17,
