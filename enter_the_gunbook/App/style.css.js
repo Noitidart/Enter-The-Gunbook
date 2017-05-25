@@ -83,8 +83,9 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     initial_listen_text: {
+        backgroundColor: 'transparent', // on iOS Animated.Text has a white background - so override that to transparent
         marginTop: 10,
-        fontSize: 13,
+        fontSize: 11,
         color: '#FFFFFF' // because Animated.Text also uses this - so i match style stuff from ./Text/style.css.js
     }
 })

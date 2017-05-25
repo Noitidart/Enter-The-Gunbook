@@ -22,7 +22,8 @@ class App extends Component {
         load_anim: new Animated.Value(0),
         subcontent_isshowing: false,
         fab_canshow: false,
-        haspermission: false // to use audio recording
+        haspermission: false, // to use audio recording
+
     }
     constructor(props) {
         super(props);

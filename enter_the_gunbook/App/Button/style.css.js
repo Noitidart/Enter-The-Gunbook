@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     },
     text: {
         fontWeight: 'bold',
-        fontSize: 18
+        fontSize: 15
     }
 })
 
