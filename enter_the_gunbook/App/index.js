@@ -16,6 +16,14 @@ const LOAD_ANIM_DURATION = 2000;
 const load_anim_MOVEUP_POINT = .5;
 const load_anim_SUBCONTENT_SHOW_POINT = 0.7;
 
+const FAB_SHAPE = {
+    UNINIT: 'UNINIT',
+    LISTENING: 'LISTENING',
+    TEXTING: 'TEXTING',
+    SEARCHING: 'SEARCHING',
+    IDLE: 'IDLE'
+}
+
 class App extends Component {
     setStateBounded = null
     state = {
@@ -23,7 +31,8 @@ class App extends Component {
         subcontent_isshowing: false,
         fab_canshow: false,
         haspermission: false, // to use audio recording
-
+        fab_shape: FAB_SHAPE.UNINIT,
+        content: null
     }
     constructor(props) {
         super(props);
@@ -109,13 +118,19 @@ class App extends Component {
             textified = await STT.getResults(file_path, this.AUDIO_EXT, this.AUDIO_CONTENT_TYPE)
         } catch(error) {
             console.error(`STT::getResults - ${error}`);
+            this.setState(()=>({ content:'Failed to convert your speech to text', fab_shape:FAB_SHAPE.IDLE }))
             throw new Error(`STT::getResults - ${error}`);
         }
 
         console.log('textified:', textified);
+        this.setState(()=>({ fab_shape:FAB_SHAPE.SEARCHING }))
     }
     startListening = async () => {
         console.log('starting recording');
+        let { fab_shape } = this.state;
+
+        this.setState(()=>({fab_shape:FAB_SHAPE.LISTENING}))
+
         try {
             const file_path = await AudioRecorder.startRecording();
             console.log('file_path:', file_path);
@@ -131,6 +146,7 @@ class App extends Component {
     }
     stopListening = async () => {
         console.log('stopping recording');
+
         let file_path;
         try {
             file_path = await AudioRecorder.stopRecording();
@@ -140,12 +156,14 @@ class App extends Component {
         }
         console.log('stopped recording');
 
+        this.setState(()=>({fab_shape:FAB_SHAPE.TEXTING}))
+
         if (Platform.OS === 'android') {
             this.handleAudioFinish(true, file_path);
         }
     }
     render() {
-        const { fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
+        const { fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
 
         const logo_style = [
             styles.logo,
@@ -180,7 +198,7 @@ class App extends Component {
                         { haspermission && !fab_canshow && <Text style={styles.initial_listen_text}>(say a gun or item name to search)</Text> }
                     </Animated.View> }
                 </Animated.View>
-                { haspermission && fab_canshow && <Fab startListening={this.startListening} />}
+                { haspermission && fab_canshow && <Fab startListening={this.startListening} shape={fab_shape} />}
             </Image>
         )
     }
@@ -197,10 +215,13 @@ function objectSet(obj, key, value) {
 }
 
 class Fab extends Component {
+    /* props
+    shape - UNINIT, UNINIT_LISTENING, UNINIT_TEXTIFYING
+    */
     state = {
         iorder: ['logo', 'subcontent', 'text', 'background', 'content'],
         ianim: ['background', 'logo', 'content', 'subcontent', 'text'].reduce( (acc, animid) => objectSet(acc, animid, new Animated.Value(0)), {}), // ianim stands for initial_anim
-        initialized: undefined // set to false for in progress
+        initialized: false // set to false for in progress
     }
     initializeNext = async () => {
         const { ianim, iorder } = this.state;
@@ -217,16 +238,21 @@ class Fab extends Component {
     }
     componentDidUpdate(propsold, stateold) {
         const { initialized, iorder } = this.state;
-        const { iorder_old } = stateold;
-        if (initialized === false) {
-            if (iorder && iorder !== iorder_old) {
+        const { iorder:iorder_old } = stateold;
+        const { shape } = this.props;
+        const { shape:shape_old } = propsold;
+        console.log('shape:', shape, 'shape_old:', shape_old);
+        if (!initialized) {
+            if (shape_old !== FAB_SHAPE.TEXTING && shape === FAB_SHAPE.TEXTING) {
+                this.initializeNext();
+            } else if (iorder && iorder !== iorder_old) {
                 // guranteed iorder is not null
                 this.initializeNext();
             }
         }
     }
     render() {
-        let { startListening } = this.props;
+        let { startListening, shape } = this.props;
         let { iorder, initialized, ianim } = this.state;
 
         // point of initial styles is to perfectly over lap the non-pressable button that slid in with the view
@@ -261,15 +287,28 @@ class Fab extends Component {
             }
         }
 
+        const text = (function getTextForShape(shape, isinitialized) {
+            switch (shape) {
+                case FAB_SHAPE.UNINIT:
+                case FAB_SHAPE.LISTENING:
+                    return 'Listening...';
+                case FAB_SHAPE.TEXTING:
+                case FAB_SHAPE.SEARCHING:
+                    return 'Searching...';
+                case FAB_SHAPE.IDLE:
+                    return 'Search Again';
+            }
+        })(shape, initialized);
+
         if (initialized) {
-            return <Button style={styles.fab}>Listening...</Button>;
+            return <Button style={styles.fab}>{text}</Button>;
         } else {
             return (
                 <Animated.View style={background_style}>
                     { iorder.includes('logo') && <Animated.Image source={logo_image} style={logo_style} /> }
                     <Animated.View style={content_style}>
                         <Animated.View style={subcontent_style}>
-                            <Button style={button_style} onPress={this.initializeNext}>Listening...</Button>
+                            <Button style={button_style}>{text}</Button>
                             <Animated.Text style={text_style}>(say a gun or item name to search)</Animated.Text>
                         </Animated.View>
                     </Animated.View>
