@@ -9,7 +9,8 @@
   "dependencies": {
     "react": "16.0.0-alpha.6",
     "react-native": "0.44.0",
-    "react-native-audio": "^3.2.2"
+    "react-native-audio": "^3.2.2",
+    "react-native-html-parser": "0.0.4"
   },
   "devDependencies": {
     "babel-jest": "20.0.3",

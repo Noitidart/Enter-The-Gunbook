@@ -1,9 +1,10 @@
 import React, { Component } from 'react'
-import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, View } from 'react-native'
+import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, ScrollView, View } from 'react-native'
 import { AudioRecorder, AudioUtils } from 'react-native-audio'
 
-import { wait } from './utils'
+import { toTitleCase, wait, wordSimilarity } from './utils'
 import * as STT from './watson-stt'
+import * as Wiki from './wiki'
 
 import Button from './Button'
 import Text from './Text'
@@ -23,6 +24,21 @@ const FAB_SHAPE = {
     SEARCHING: 'SEARCHING',
     IDLE: 'IDLE'
 }
+
+/* shape of state.content
+{
+    reason:
+    data:
+}
+*/
+
+const REASONS = {
+    MATCHED: 'MATCHED', // data: {search_term, selected_ix, top10} top10 is array of similarities entries
+    ERROR_SERVER_SPEECH: 'ERROR_SERVER_SPEECH', // data: null
+    ERROR_NO_SPEAK: 'ERROR_NO_SPEAK' // data: null - voice could not be parsed
+};
+
+const entities = Wiki.getEntities();
 
 class App extends Component {
     setStateBounded = null
@@ -78,7 +94,7 @@ class App extends Component {
             AudioRecorder.prepareRecordingAtPath(this.AUDIO_PATH, { SampleRate:this.AUDIO_SAMPLE_RATE, Channels:1, AudioQuality:'Low', AudioEncoding:this.AUDIO_ENCODING });
             AudioRecorder.onProgress = this.handleAudioProgress;
             AudioRecorder.onFinished = this.handleAudioFinishIOS;
-            this.startListening();
+            this.startListening(5000);
         }
     }
     async checkPermission() {
@@ -118,18 +134,75 @@ class App extends Component {
             textified = await STT.getResults(file_path, this.AUDIO_EXT, this.AUDIO_CONTENT_TYPE)
         } catch(error) {
             console.error(`STT::getResults - ${error}`);
-            this.setState(()=>({ content:'Failed to convert your speech to text', fab_shape:FAB_SHAPE.IDLE }))
+            this.setState(()=>({ content:{reason:REASONS.ERROR_SERVER_SPEECH, data:error}, fab_shape:FAB_SHAPE.IDLE }))
             throw new Error(`STT::getResults - ${error}`);
         }
 
         console.log('textified:', textified);
+
+        let search_term;
+        {
+            let { results } = textified;
+            $RESULTS:
+            for (let result of results) {
+                let { alternatives, final } = result;
+                for (let alt of alternatives) {
+                    let { confidence, transcript } = alt;
+                    search_term = transcript.trim();
+                    break $RESULTS;
+                }
+            }
+        }
+
+        if (!search_term) {
+            this.setState(()=>({ content:{reason:REASONS.ERROR_NO_SPEAK, data:null}, fab_shape:FAB_SHAPE.IDLE }))
+            return;
+        }
+
         this.setState(()=>({ fab_shape:FAB_SHAPE.SEARCHING }))
+
+        if (!entities.guns || !entities.items) {
+            await Promise.all([
+                Wiki.refreshGuns(),
+                Wiki.refreshItems()
+            ]);
+        }
+
+        console.log('search_term:', search_term);
+        const similarities = []; // {similarity:wordSimilarity(search_term, entity.Name), dotpath:guns.1, entity:}
+        entities.guns.forEach((entity, ix) =>
+            similarities.push({
+                similarity: wordSimilarity(search_term, entity.Name),
+                dotpath:`guns.${ix}`,
+                entity
+            })
+        );
+        entities.items.forEach((entity, ix) =>
+            similarities.push({
+                similarity: wordSimilarity(search_term, entity.Name),
+                dotpath:`items.${ix}`,
+                entity
+            })
+        );
+        similarities.sort( ({similarity:similarity_a}, {similarity:similarity_b}) => similarity_b - similarity_a );
+
+        console.log('similarities:', similarities);
+
+        let content = {
+            reason: REASONS.MATCHED,
+            data: {
+                search_term,
+                selected_ix: 0,
+                top10: similarities.slice(0, 10)
+            }
+        };
+        this.setState(()=>({ content, fab_shape:FAB_SHAPE.IDLE }))
     }
-    startListening = async () => {
+    startListening = async (duration=3000) => {
         console.log('starting recording');
         let { fab_shape } = this.state;
 
-        this.setState(()=>({fab_shape:FAB_SHAPE.LISTENING}))
+        this.setState(()=>({content:null, fab_shape:FAB_SHAPE.LISTENING}))
 
         try {
             const file_path = await AudioRecorder.startRecording();
@@ -140,7 +213,7 @@ class App extends Component {
         }
         console.log('started recording');
 
-        await wait(5000);
+        await wait(duration);
 
         this.stopListening();
     }
@@ -163,7 +236,7 @@ class App extends Component {
         }
     }
     render() {
-        const { fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
+        const { content, fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
 
         const logo_style = [
             styles.logo,
@@ -188,6 +261,70 @@ class App extends Component {
             }
         ];
 
+
+        let content_el;
+        if (content) {
+            switch (content.reason) {
+                case REASONS.ERROR_NO_SPEAK: {
+                        content_el = (
+                            <Text style={styles.nopermission_text}>You did not say anything!</Text>
+                        );
+                    break;
+                }
+                case REASONS.ERROR_SERVER_SPEECH: {
+                        content_el = (
+                            <Text style={styles.nopermission_text}>Speech-to-Text server failed.</Text>
+                        );
+                    break;
+                }
+                case REASONS.MATCHED: {
+                        const { data:{ search_term, selected_ix, top10 } } = content;
+
+                        content_el = (
+                            <ScrollView style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled>
+                                <View style={styles.entity}>
+                                    <Text style={styles.nopermission_text}>{top10[selected_ix].entity.Name}</Text>
+                                    {Object.entries(top10[selected_ix].entity).map( ([attr_name, attr_value]) => {
+                                        switch (attr_name) {
+                                            case 'detail_url':
+                                            case 'Notes':
+                                            case 'Name':
+                                                return undefined;
+                                            case 'Icon':
+                                                return <Image key={attr_name} source={{uri:attr_value}} resizeMode="contain" style={styles.entity_icon} />;
+                                            default:
+                                                return (
+                                                    <Text key={attr_name} style={styles.nopermission_text}>
+                                                        <Text>{attr_name}</Text>
+                                                        <Text>{attr_value}</Text>
+                                                    </Text>
+                                                )
+                                        }
+                                    })}
+                                </View>
+                                <View style={styles.matches}>
+                                    <Text style={styles.nopermission_text}>Other Matches</Text>
+                                    <Text>Search Term: {search_term}</Text>
+                                    {top10.map((top, ix) => {
+                                        let { similarity, dotpath, entity } = top;
+                                        return (
+                                            <Text key={dotpath} style={styles.nopermission_text}>
+                                                <Text>{entity.Name}</Text>
+                                                <Text>{toTitleCase(dotpath.substr(0, dotpath.indexOf('.')-1))}</Text>
+                                                <Text>{(similarity*100).toFixed(1)}%</Text>
+                                            </Text>
+                                        )
+                                    })}
+                                </View>
+                            </ScrollView>
+                        );
+                    break;
+                }
+                // no-default
+            }
+        }
+
+
         return (
             <Image source={background_image} style={styles.background} >
                 <Animated.Image source={logo_image} style={logo_style} />
@@ -196,6 +333,7 @@ class App extends Component {
                         { !haspermission && <Text style={styles.nopermission_text}>Enter The Gunbook does not have permission to use your microphone</Text> }
                         { haspermission && !fab_canshow && <Button>Listening...</Button> }
                         { haspermission && !fab_canshow && <Text style={styles.initial_listen_text}>(say a gun or item name to search)</Text> }
+                        {content_el}
                     </Animated.View> }
                 </Animated.View>
                 { haspermission && fab_canshow && <Fab startListening={this.startListening} shape={fab_shape} />}
@@ -251,8 +389,16 @@ class Fab extends Component {
             }
         }
     }
+    // refButton = el => this.button = el
+    handlePress = e => {
+        console.log('e:', e);
+        const { startListening, shape } = this.props;
+        if (shape === FAB_SHAPE.IDLE) {
+            startListening();
+        }
+    }
     render() {
-        let { startListening, shape } = this.props;
+        let { shape } = this.props;
         let { iorder, initialized, ianim } = this.state;
 
         // point of initial styles is to perfectly over lap the non-pressable button that slid in with the view
@@ -301,7 +447,11 @@ class Fab extends Component {
         })(shape, initialized);
 
         if (initialized) {
-            return <Button style={styles.fab}>{text}</Button>;
+            let style = styles.fab;
+            if (shape === FAB_SHAPE.IDLE) {
+                style = [style, styles.fab_idle];
+            }
+            return <Button style={style} onPress={this.handlePress}>{text}</Button>;
         } else {
             return (
                 <Animated.View style={background_style}>

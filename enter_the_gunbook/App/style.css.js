@@ -72,10 +72,14 @@ const styles = StyleSheet.create({
     fab: {
         position: 'absolute'
     },
+    fab_idle: {
+        right: 10,
+        bottom: 10
+    },
     //
     nopermission_text: {
         textAlign: 'center',
-        fontSize: 17,
+        fontSize: 15,
         fontWeight: 'bold',
         marginHorizontal: 30
     },
@@ -87,6 +91,25 @@ const styles = StyleSheet.create({
         marginTop: 10,
         fontSize: 11,
         color: '#FFFFFF' // because Animated.Text also uses this - so i match style stuff from ./Text/style.css.js
+    },
+    //
+    matched: {
+        flexDirection: 'row'
+    },
+    matched_content_container: {
+        width: '200%'
+    },
+    entity: {
+        // backgroundColor: 'skyblue',
+        width: '50%'
+    },
+    matches: {
+        // backgroundColor: 'steelblue',
+        width: '50%'
+    },
+    //
+    entity_icon: {
+
     }
 })
 

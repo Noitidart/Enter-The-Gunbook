@@ -69,3 +69,98 @@ export function base64_encode (stringToEncode) { // eslint-disable-line camelcas
 
   return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3)
 }
+
+tableToJSON.defaultParser = (cell_html) => stripTags(`${cell_html}`).trim();
+export function tableToJSON(table, parsers) {
+    // parsers are "cell parsers" passed (cell_html, cells, defaultParser) - the return is what the cell value gets set to in object
+    // html is text html of a table <table ..... </table
+    // must have first tr with th's
+
+    const trs = table.match(/<tr\W[\s\S]*?<\/tr/gi);
+
+    const cols = []; // object keys
+    const rows = []; // array of cells with keys of cols [{...cols}]
+    for (const tr of trs) {
+        if (!cols.length) {
+            // first loop
+            const ths = tr.match(/<th\W[\s\S]*?<\/th/gi);
+            // console.log('ths.length:', ths.length, 'ths:', ths);
+            for (const th of ths) {
+                cols.push(stripTags(`${th}>`).trim());
+            }
+        } else {
+            const tds = tr.match(/<td\W[\s\S]*?<\/td/gi);
+            // console.log('tds:', tds);
+            // console.log('tds.length:', tds.length, 'cols.length:', cols.length);
+            const cells = {};
+            const col_ix = 0;
+            for (const td of tds) {
+                const col = cols[col_ix];
+                const cell_html = `${td}>`;
+                const parser = parsers[col] || tableToJSON.defaultParser
+                cells[col] = parser(cell_html, cells, tableToJSON.defaultParser);
+                col_ix++;
+            }
+            rows.push(cells);
+        }
+    }
+    console.log('cols:', cols);
+    console.log('rows:', rows);
+
+    return rows;
+}
+
+// https://stackoverflow.com/a/1499916/1828637
+export function stripTags(html) {
+    // html is text
+    return html.replace(/(<([^>]+)>)/ig, '');
+}
+
+// https://stackoverflow.com/a/36566052/1828637
+export function wordSimilarity(s1, s2) {
+  var longer = s1;
+  var shorter = s2;
+  if (s1.length < s2.length) {
+    longer = s2;
+    shorter = s1;
+  }
+  var longerLength = longer.length;
+  if (longerLength == 0) {
+    return 1.0;
+  }
+  return (longerLength - editDistance(longer, shorter)) / parseFloat(longerLength);
+}
+function editDistance(s1, s2) {
+  s1 = s1.toLowerCase();
+  s2 = s2.toLowerCase();
+
+  var costs = new Array();
+  for (var i = 0; i <= s1.length; i++) {
+    var lastValue = i;
+    for (var j = 0; j <= s2.length; j++) {
+      if (i == 0)
+        costs[j] = j;
+      else {
+        if (j > 0) {
+          var newValue = costs[j - 1];
+          if (s1.charAt(i - 1) != s2.charAt(j - 1))
+            newValue = Math.min(Math.min(newValue, lastValue),
+              costs[j]) + 1;
+          costs[j - 1] = lastValue;
+          lastValue = newValue;
+        }
+      }
+    }
+    if (i > 0)
+      costs[s2.length] = lastValue;
+  }
+  return costs[s2.length];
+}
+
+// http://stackoverflow.com/q/196972/1828637
+// consider not proper casing small words - http://php.net/manual/en/function.ucwords.php#84920 - ['of','a','the','and','an','or','nor','but','is','if','then', 'else','when', 'at','from','by','on','off','for','in','out', 'over','to','into','with'];
+export function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function(txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
