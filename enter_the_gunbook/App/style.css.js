@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     subcontent: {
         borderWidth: 1,
         borderRadius: 2,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         margin: 20,
         padding: 10,
         justifyContent: 'center',
@@ -109,7 +109,52 @@ const styles = StyleSheet.create({
     },
     //
     entity_icon: {
-
+        flex: 1,
+        maxHeight: 50,
+        marginVertical: 10
+    },
+    //
+    link: {
+        color: '#FFCC33',
+        fontWeight: '600',
+        flex: 1
+    },
+    link_active: {
+        color: '#FFFFFF',
+        fontWeight: '800',
+        flex: 1
+    },
+    attr_name: {
+        textAlign: 'right',
+        flex: 1
+    },
+    attr_spacer: {
+        width: 10
+    },
+    attr_value: {
+        flex: 1
+    },
+    row: {
+        marginVertical: 3,
+        flexDirection: 'row',
+        justifyContent: 'center'
+    },
+    text_said: {
+        fontStyle: 'italic',
+        fontSize: 14,
+        textAlign: 'center'
+    },
+    row_said: {
+        marginTop: 3,
+        marginBottom: 5
+    },
+    text_similarity: {
+        flex: 1,
+        textAlign: 'right'
+    },
+    text_item_type: {
+        flex: 1,
+        textAlign: 'center'
     }
 })
 

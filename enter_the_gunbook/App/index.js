@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { Component, PureComponent } from 'react'
 import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, ScrollView, View } from 'react-native'
 import { AudioRecorder, AudioUtils } from 'react-native-audio'
 
@@ -39,6 +39,24 @@ const REASONS = {
 };
 
 const entities = Wiki.getEntities();
+
+class OtherLink extends PureComponent {
+    // scrollInner
+    // setState
+    // ix
+    // children - string
+    handlePress = () => {
+        const { scrollInner, setState, ix } = this.props;
+        scrollInner(0);
+        setState( ({ content, content:{data} }) => ({ content:{ ...content, data:{ ...data, selected_ix:ix } } }));
+    }
+    render() {
+        const { children } = this.props;
+        return (
+            <Text onPress={this.handlePress} style={styles.link}>{children}</Text>
+        )
+    }
+}
 
 class App extends Component {
     setStateBounded = null
@@ -235,6 +253,13 @@ class App extends Component {
             this.handleAudioFinish(true, file_path);
         }
     }
+    scrollInner = (x, y=0) => {
+        // scrolls the current scroll view
+        if (!this.pager_inner) return;
+        this.pager_inner.scrollTo({x, y:0, animated:true });
+    }
+    refPagerInner = el => this.pager_inner = el
+    refPageOuter = el => this.pager_outer = el
     render() {
         const { content, fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
 
@@ -281,7 +306,7 @@ class App extends Component {
                         const { data:{ search_term, selected_ix, top10 } } = content;
 
                         content_el = (
-                            <ScrollView style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled>
+                            <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled>
                                 <View style={styles.entity}>
                                     <Text style={styles.nopermission_text}>{top10[selected_ix].entity.Name}</Text>
                                     {Object.entries(top10[selected_ix].entity).map( ([attr_name, attr_value]) => {
@@ -291,28 +316,37 @@ class App extends Component {
                                             case 'Name':
                                                 return undefined;
                                             case 'Icon':
-                                                return <Image key={attr_name} source={{uri:attr_value}} resizeMode="contain" style={styles.entity_icon} />;
+                                                return <Image key={attr_name} source={{ uri:attr_value }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
+                                                {/*return (
+                                                    <View key={attr_name} style={styles.entity_icon_wrap}>
+                                                        <Image source={{ uri:attr_value }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" getSize={getEntityIconSize} />
+                                                    </View>
+                                                );*/}
                                             default:
                                                 return (
-                                                    <Text key={attr_name} style={styles.nopermission_text}>
-                                                        <Text>{attr_name}</Text>
-                                                        <Text>{attr_value}</Text>
-                                                    </Text>
+                                                    <View style={styles.row} key={attr_name}>
+                                                        <Text style={styles.attr_name}>{attr_name}</Text>
+                                                        <View style={styles.attr_spacer} />
+                                                        <Text style={styles.attr_value}>{attr_value}</Text>
+                                                    </View>
                                                 )
                                         }
                                     })}
                                 </View>
                                 <View style={styles.matches}>
                                     <Text style={styles.nopermission_text}>Other Matches</Text>
-                                    <Text>Search Term: {search_term}</Text>
+                                    <View style={styles.row_said}>
+                                        <Text style={styles.text_said}>"{search_term}"</Text>
+                                    </View>
                                     {top10.map((top, ix) => {
                                         let { similarity, dotpath, entity } = top;
                                         return (
-                                            <Text key={dotpath} style={styles.nopermission_text}>
-                                                <Text>{entity.Name}</Text>
-                                                <Text>{toTitleCase(dotpath.substr(0, dotpath.indexOf('.')-1))}</Text>
-                                                <Text>{(similarity*100).toFixed(1)}%</Text>
-                                            </Text>
+                                            <View key={dotpath} style={styles.row}>
+                                                { selected_ix !== ix && <OtherLink ix={ix} setState={this.setStateBounded} scrollInner={this.scrollInner}>{entity.Name}</OtherLink>}
+                                                { selected_ix === ix && <Text style={styles.link_active}>{entity.Name}</Text>}
+                                                <Text style={styles.text_item_type}>{toTitleCase(dotpath.substr(0, dotpath.indexOf('.')-1))}</Text>
+                                                <Text style={styles.text_similarity}>{Math.round(similarity*100)}%</Text>
+                                            </View>
                                         )
                                     })}
                                 </View>
@@ -466,6 +500,10 @@ class Fab extends Component {
             )
         }
     }
+}
+
+function getEntityIconSize(...args) {
+    console.log('in getEntityIconSize, args:', args);
 }
 
 AppRegistry.registerComponent('enter_the_gunbook', () => App);
