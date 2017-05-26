@@ -231,12 +231,12 @@ class App extends Component {
         }
         console.log('started recording');
 
-        await wait(duration);
-
-        this.stopListening();
+        this.stop_timeout = setTimeout(this.stopListening, duration);
     }
+    stop_timeout: null
     stopListening = async () => {
         console.log('stopping recording');
+        clearTimeout(this.stop_timeout);
 
         let file_path;
         try {
@@ -370,7 +370,7 @@ class App extends Component {
                         {content_el}
                     </Animated.View> }
                 </Animated.View>
-                { haspermission && fab_canshow && <Fab startListening={this.startListening} shape={fab_shape} />}
+                { haspermission && fab_canshow && <Fab startListening={this.startListening} stopListening={this.stopListening} shape={fab_shape} />}
             </Image>
         )
     }
@@ -426,9 +426,11 @@ class Fab extends Component {
     // refButton = el => this.button = el
     handlePress = e => {
         console.log('e:', e);
-        const { startListening, shape } = this.props;
+        const { startListening, stopListening, shape } = this.props;
         if (shape === FAB_SHAPE.IDLE) {
             startListening();
+        } else if (shape === FAB_SHAPE.LISTENING) {
+            stopListening();
         }
     }
     render() {
