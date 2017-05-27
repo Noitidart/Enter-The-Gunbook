@@ -72,6 +72,7 @@ export function getValueFromHtml(cell_html, attr_name) {
         const quality = cell_html.substr(quality_stix, 1);
         return quality;
     } else {
-        return stripTags(cell_html).trim();
+        const str = stripTags(cell_html).trim();
+        return str.length ? str : null;
     }
 }
