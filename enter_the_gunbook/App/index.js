@@ -387,8 +387,8 @@ class App extends Component {
                         content_el = (
                             <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled scrollEventThrottle={16} onScroll={this.handleScrollInner} onLayout={this.setPagerInnerWidth}>
                                 <ScrollView style={styles.entity}>
-                                    <PageLink label="Matches >" page={0} right scrollTo={this.scrollInner} isnext page_width={pagerinner_width} />
                                     <Text style={styles.nopermission_text}>{entity.Name}</Text>
+                                    <PageLink label="Matches >" page={0} right scrollTo={this.scrollInner} isnext page_width={pagerinner_width} />
                                     <Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
                                     {Object.entries(entity).sort( ([attr_name_a], [attr_name_b]) => compareIntThenLex(attr_name_a, attr_name_b) ).map( ([attr_name, attr_value]) => {
                                         if (attr_value === null) return undefined; // like detail_notes
@@ -422,8 +422,8 @@ class App extends Component {
                                     }
                                 </ScrollView>
                                 <View style={styles.matches}>
-                                    <PageLink label="< Back" page={1} scrollTo={this.scrollInner} page_width={pagerinner_width} />
                                     <Text style={styles.nopermission_text}>Other Matches</Text>
+                                    <PageLink label="< Back" page={1} scrollTo={this.scrollInner} page_width={pagerinner_width} />
                                     <View style={styles.row_said}>
                                         <Text style={styles.text_said}>"{search_term}"</Text>
                                     </View>
