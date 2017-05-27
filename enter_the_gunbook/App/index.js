@@ -59,7 +59,6 @@ class OtherLink extends PureComponent {
 }
 
 const xOffset = new Animated.Value(0);
-let PAGER_INNER_WIDTH = 0;
 
 class App extends Component {
     setStateBounded = null
@@ -69,7 +68,8 @@ class App extends Component {
         fab_canshow: false,
         haspermission: false, // to use audio recording
         fab_shape: FAB_SHAPE.UNINIT,
-        content: null
+        content: null,
+        pagerinner_width: 0
     }
     constructor(props) {
         super(props);
@@ -274,9 +274,9 @@ class App extends Component {
     )
     refPagerInner = el => this.pager_inner = el
     refPageOuter = el => this.pager_outer = el
-    getPAGER_INNER_WIDTH = ({nativeEvent:{layout:{ width }}}) => {
-        PAGER_INNER_WIDTH = width;
-        console.log('WIDTH SET TO:', PAGER_INNER_WIDTH);
+    setPagerInnerWidth = ({nativeEvent:{layout:{ width }}}) => {
+        this.setState(()=>({pagerinner_width:width}))
+        console.log('WIDTH SET TO:', width);
     }
     async fetchDetails(selected) {
         console.log('STARTING FETCH DETAILS');
@@ -336,7 +336,7 @@ class App extends Component {
         }
     }
     render() {
-        const { content, fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
+        const { pagerinner_width, content, fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
 
         const logo_style = [
             styles.logo,
@@ -385,9 +385,9 @@ class App extends Component {
                         const has_details = Object.keys(entity).includes('detail_notes');
                         if (!has_details) setTimeout(()=>this.fetchDetails(selected), 0);
                         content_el = (
-                            <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled scrollEventThrottle={16} onScroll={this.handleScrollInner} onLayout={this.getPAGER_INNER_WIDTH}>
+                            <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled scrollEventThrottle={16} onScroll={this.handleScrollInner} onLayout={this.setPagerInnerWidth}>
                                 <ScrollView style={styles.entity}>
-                                    <PageLink label="Matches >" page={0} right scrollTo={this.scrollInner} isnext />
+                                    <PageLink label="Matches >" page={0} right scrollTo={this.scrollInner} isnext page_width={pagerinner_width} />
                                     <Text style={styles.nopermission_text}>{entity.Name}</Text>
                                     <Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
                                     {Object.entries(entity).sort( ([attr_name_a], [attr_name_b]) => compareIntThenLex(attr_name_a, attr_name_b) ).map( ([attr_name, attr_value]) => {
@@ -422,7 +422,7 @@ class App extends Component {
                                     }
                                 </ScrollView>
                                 <View style={styles.matches}>
-                                    <PageLink label="< Back" page={1} scrollTo={this.scrollInner} />
+                                    <PageLink label="< Back" page={1} scrollTo={this.scrollInner} page_width={pagerinner_width} />
                                     <Text style={styles.nopermission_text}>Other Matches</Text>
                                     <View style={styles.row_said}>
                                         <Text style={styles.text_said}>"{search_term}"</Text>
@@ -714,24 +714,25 @@ class PageLink extends Component {
     right - truthy - bool - position on left
     isnext - truthy - bool - if pressing this should go to next page, by default assumes it should go to previous page
     scrollTo - function for the ScrollViews scrollTo
+    page_width - width of the ScrollView - not the container - as container is full width of all the children - so just page_width which is what each paging moves
     */
     handlePress = () => {
-        const { isnext, page, scrollTo } = this.props;
+        const { isnext, page, scrollTo, page_width } = this.props;
         const goto_page = isnext ? page + 1 : page - 1;
-        const goto_x = goto_page * PAGER_INNER_WIDTH;
+        const goto_x = goto_page * page_width;
 
         scrollTo(goto_x);
     }
     render() {
-        const { label, page, right } = this.props;
+        const { label, page, right, page_width } = this.props;
 
-        const pagex_st = page * PAGER_INNER_WIDTH;
-        const pagex_en = pagex_st + PAGER_INNER_WIDTH;
-        const pagex_pre = pagex_st - PAGER_INNER_WIDTH;
-        const pagex_pre_changed = pagex_st - (PAGER_INNER_WIDTH / 2); // point of no return - so if x is >= this, and user releases at this point, it will come to this page i
-        const pagex_en_changed = pagex_st + (PAGER_INNER_WIDTH / 2); // point of no return
+        const pagex_st = page * page_width;
+        const pagex_en = pagex_st + page_width;
+        const pagex_pre = pagex_st - page_width;
+        const pagex_pre_changed = pagex_st - (page_width / 2); // point of no return - so if x is >= this, and user releases at this point, it will come to this page i
+        const pagex_en_changed = pagex_st + (page_width / 2); // point of no return
         let opacity;
-        if (PAGER_INNER_WIDTH === 0) {
+        if (page_width === 0) {
             // only show opacity 1 on the page 0 item. so this assuems starting page is page 0
             if (page === 0) opacity = 1;
             else opacity = 0;
