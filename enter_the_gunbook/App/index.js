@@ -2,7 +2,7 @@ import React, { Component, PureComponent } from 'react'
 import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, ScrollView, View } from 'react-native'
 import { AudioRecorder, AudioUtils } from 'react-native-audio'
 
-import { toTitleCase, wait, wordSimilarity } from './utils'
+import { escapeRegex, compareIntThenLex, stripTags, toTitleCase, wait, wordSimilarity } from './utils'
 import * as STT from './watson-stt'
 import * as Wiki from './wiki'
 
@@ -260,6 +260,63 @@ class App extends Component {
     }
     refPagerInner = el => this.pager_inner = el
     refPageOuter = el => this.pager_outer = el
+    async fetchDetails(selected) {
+        console.log('STARTING FETCH DETAILS');
+
+        const { entity } = selected;
+        console.log('entity:', entity, 'entity.details_url:', entity.details_url);
+        if ('details' in entity) return; // already fetched details for this, it might be null if it had no details
+
+        const res = await fetch(entity.details_url);
+        const html = await res.text();
+        // console.log('details_html:', html);
+
+        const stats_stix = html.indexOf('<b>Statistics');
+        const stats_enix = html.indexOf('<th', stats_stix);
+        const stats_html = html.substr(stats_stix, stats_enix - stats_stix);
+        const stats = {};
+        const stats_rows = stats_html.match(/<tr[\s\S]*?<\/tr/g);
+        // console.log('stats_html:', stats_html);
+        for (const row of stats_rows) {
+            const stats_cells = row.match(/<td[\s\S]*?<\/td[\s\S]*?>/g); // need the neding tag so needed the `[\s\S]*?>` so stripTags removes it
+            // console.log('stats_cells:', stats_cells, 'row:', row);
+            const name = stripTags(stats_cells[0]).trim().replace(':', '');
+            if (name.startsWith('Introduc')) continue; // skipe "Introduced in"
+            const value = Wiki.getValueFromHtml(stats_cells[1]);
+            stats[name] = value;
+        }
+        console.log('stats:', stats);
+        // console.log('stats_html:', stats_html);
+
+        // check if it has Notes - which are <li>...</li>
+        let detail_notes = null;
+        {
+            const notes_stix = html.indexOf('id="Notes"');
+            if (notes_stix > -1) {
+                const notes_enix = html.indexOf('</ul', notes_stix);
+                const notes_html = html.substr(notes_stix, notes_enix - notes_stix);
+                // console.log('notes_html:', notes_html)
+                const note_htmls = notes_html.match(/<li[\s\S]*?<\/li[\s\S]*?>/g); // need the neding tag so needed the `[\s\S]*?>` so stripTags removes it
+                // console.log('notes_match:', notes_match);
+                detail_notes = note_htmls.map(note_html => stripTags(note_html).trim());
+            }
+        }
+        console.log('detail_notes:', detail_notes);
+
+        Object.assign(entity, { ...stats, detail_notes })
+
+        // is it currently in content? if it is then update it
+        const { content:{reason, data:{top10}={} }={},  } = this.state;
+        if (reason === REASONS.MATCHED) {
+            for (let top of top10) {
+                if (top === selected) {
+                    // because updated it by reference, just trigger setState again
+                    this.setState(({content, content:{data}}) => ({content:{...content, data:{...data}}}))
+                    break;
+                }
+            }
+        }
+    }
     render() {
         const { content, fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
 
@@ -305,23 +362,26 @@ class App extends Component {
                 case REASONS.MATCHED: {
                         const { data:{ search_term, selected_ix, top10 } } = content;
 
+                        const selected = top10[selected_ix];
+                        const { entity } = selected;
+                        const has_details = Object.keys(entity).includes('detail_notes');
+                        if (!has_details) setTimeout(()=>this.fetchDetails(selected), 0);
                         content_el = (
                             <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled>
                                 <View style={styles.entity}>
-                                    <Text style={styles.nopermission_text}>{top10[selected_ix].entity.Name}</Text>
-                                    {Object.entries(top10[selected_ix].entity).map( ([attr_name, attr_value]) => {
+                                    <Text style={styles.nopermission_text}>{entity.Name}</Text>
+                                    <Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
+                                    {Object.entries(entity).sort( ([attr_name_a], [attr_name_b]) => compareIntThenLex(attr_name_a, attr_name_b) ).map( ([attr_name, attr_value]) => {
+                                        if (attr_value === null) return undefined; // like detail_notes
                                         switch (attr_name) {
-                                            case 'detail_url':
-                                            case 'Notes':
+                                            case 'details_url':
                                             case 'Name':
-                                                return undefined;
+                                            case 'alt_names':
+                                            case 'Quote':
                                             case 'Icon':
-                                                return <Image key={attr_name} source={{ uri:attr_value }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
-                                                {/*return (
-                                                    <View key={attr_name} style={styles.entity_icon_wrap}>
-                                                        <Image source={{ uri:attr_value }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" getSize={getEntityIconSize} />
-                                                    </View>
-                                                );*/}
+                                            case 'Notes':
+                                            case 'detail_notes':
+                                                return undefined;
                                             default:
                                                 return (
                                                     <View style={styles.row} key={attr_name}>
@@ -329,9 +389,18 @@ class App extends Component {
                                                         <View style={styles.attr_spacer} />
                                                         <Text style={styles.attr_value}>{attr_value}</Text>
                                                     </View>
-                                                )
+                                                );
                                         }
                                     })}
+                                    { entity.Notes && <Note setState={this.setStateBounded}>{entity.Notes}</Note> }
+                                    { !has_details &&
+                                        <View style={styles.row} key="details">
+                                            <Text style={styles.attr_notes}>Searching Wiki for more details...</Text>
+                                        </View>
+                                    }
+                                    { has_details && entity.detail_notes &&
+                                        entity.detail_notes.map( (detail_note, ix) => <Note setState={this.setStateBounded} key={'detail_note_' + ix}>{detail_note}</Note> )
+                                    }
                                 </View>
                                 <View style={styles.matches}>
                                     <Text style={styles.nopermission_text}>Other Matches</Text>
@@ -494,7 +563,7 @@ class Fab extends Component {
                     { iorder.includes('logo') && <Animated.Image source={logo_image} style={logo_style} /> }
                     <Animated.View style={content_style}>
                         <Animated.View style={subcontent_style}>
-                            <Button style={button_style}>{text}</Button>
+                            <Button style={button_style} onPress={this.handlePress}>{text}</Button>
                             <Animated.Text style={text_style}>(say a gun or item name to search)</Animated.Text>
                         </Animated.View>
                     </Animated.View>
@@ -504,8 +573,116 @@ class Fab extends Component {
     }
 }
 
-function getEntityIconSize(...args) {
-    console.log('in getEntityIconSize, args:', args);
+function showEntity(entity, setState) {
+    setState( ({ content, content:{ reason, data }={} }) => {
+        if (reason === REASONS.MATCHED) {
+            const { top10 } = data;
+
+            const entity_ix = top10.findIndex(({entity:a_entity}) => a_entity === entity);
+            if (entity_ix > -1) {
+                return {
+                    content: {
+                        ...content,
+                        data: {
+                            ...data,
+                            selected_ix: entity_ix
+                        }
+                    }
+                };
+            } else {
+                const dotpath = entities.guns.includes(entity) ? 'guns.' + entities.guns.findIndex(a_entity => a_entity === entity) : 'items.' + entities.items.findIndex(a_entity => a_entity === entity)
+                const top10_entry_new = { similarity:0, entity, dotpath }
+
+                const top10_new = [...top10, top10_entry_new];
+                const data_new = { ...data, top10:top10_new }
+                const content_new = { reason, data:data_new };
+
+                return { content:content_new };
+            }
+        } else {
+            // not yet supported
+        }
+    })
+}
+
+class Note extends PureComponent {
+    // children must be a string
+    // replace any text within with a link if its name is found in entities
+    render() {
+        let { children:fulltext, setState } = this.props;
+        const names = []; // names found in text, we will split by this arr
+        const names_patt_strs = [];
+        for (const {Name:name} of entities.guns) names.push(name) && names_patt_strs.push(escapeRegex(name));
+        for (const {Name:name} of entities.items) names.push(name) && names_patt_strs.push(escapeRegex(name))
+
+        const names_patt = new RegExp('(?:' + names_patt_strs.join('|') + ')', 'g');
+
+        // console.log('names_patt_strs:', names_patt_strs.join('|'));
+
+        // pre text_els stuff
+        const ixlens = [0];
+        let match;
+        while (match = names_patt.exec(fulltext)) {
+            const len = match[0].length;
+            const ix = names_patt.lastIndex - len;
+            const last_len = ix - ixlens[ixlens.length-1];
+            const next_ix = names_patt.lastIndex;
+            ixlens.push(last_len, ix, len, next_ix);
+        }
+
+        const text_els = ixlens.length > 1 ? substrs(fulltext, ...ixlens) : fulltext;
+        if (ixlens.length > 1) {
+            console.log('fulltext:', fulltext, 'text_els:', text_els);
+            for (let i=0; i<text_els.length; i++) {
+                const text = text_els[i];
+                if (names.includes(text)) {
+                    text_els[i] = <ItemLink key={i.toString()} setState={setState} entity={findEntityByName(text)} />
+                }
+            }
+        }
+
+        return (
+            <View style={styles.row}>
+                <Text style={styles.attr_note}>
+                    {text_els}
+                </Text>
+            </View>
+        )
+    }
+}
+
+function findEntityByName(name) {
+    for (const entity of entities.guns) {
+        if (entity.Name === name) return entity;
+    }
+    for (const entity of entities.items) {
+        if (entity.Name === name) return entity;
+    }
+}
+
+class ItemLink extends PureComponent {
+    // props
+    // entity
+    // setState
+    onPress = () => {
+        let { entity, setState } = this.props;
+        showEntity(entity, setState);
+    }
+    render() {
+        let { entity } = this.props;
+        return <Text onPress={this.onPress} style={styles.link_noflex}>{entity.Name}</Text>;
+    }
+}
+
+function substrs(str, ...ixlens) {
+    // substrs('Fooba Qux', 0, 5, 6, 3) // ix1, len1, ix2, len2 // returns: Array [ "Fooba", "Qux" ]
+    const strs = [];
+    for (let i=0; i<ixlens.length; i=i+2) {
+        const ix = ixlens[i];
+        const len = ixlens[i+1];
+        strs.push(str.substr(ix, len));
+    }
+    return strs;
 }
 
 AppRegistry.registerComponent('enter_the_gunbook', () => App);

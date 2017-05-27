@@ -114,6 +114,11 @@ const styles = StyleSheet.create({
         marginVertical: 10
     },
     //
+    link_noflex: {
+        color: '#FFCC33',
+        fontWeight: '600',
+        flex: 1
+    },
     link: {
         color: '#FFCC33',
         fontWeight: '600',
@@ -126,13 +131,20 @@ const styles = StyleSheet.create({
     },
     attr_name: {
         textAlign: 'right',
-        flex: 1
+        flex: 1,
+        fontSize: 12
     },
     attr_spacer: {
         width: 10
     },
     attr_value: {
-        flex: 1
+        flex: 1,
+        fontSize: 12
+    },
+    attr_note: {
+        flex: 1,
+        textAlign: 'center',
+        fontSize: 12
     },
     row: {
         marginVertical: 3,

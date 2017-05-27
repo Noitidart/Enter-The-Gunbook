@@ -1,3 +1,35 @@
+export function compareIntThenLex(a, b) {
+  // sort ascending by integer, and then lexically
+  // ['1', '10', '2'] ->
+  // ['1', '2', '10']
+
+  let inta = parseInt(a, 10);
+  let intb = parseInt(b, 10);
+  let isaint = !isNaN(inta);
+  let isbint = !isNaN(intb);
+  if (isaint && isbint) {
+    return inta - intb; // sort asc
+  } else if (isaint && !isbint) {
+    return -1; // sort a to lower index then b
+  } else if (!isaint && isbint) {
+    return 1; // sort b to lower index then a
+  } else {
+    // neither are int's
+    return a.localeCompare(b);
+  }
+}
+
+export function escapeRegex(text) {
+    let specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+    let sRE = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
+	  return text.replace(sRE, '\\$1');
+	// if (!arguments.callee.sRE) {
+	// 	var specials = ['/', '.', '*', '+', '?', '|', '(', ')', '[', ']', '{', '}', '\\'];
+	// 	arguments.callee.sRE = new RegExp('(\\' + specials.join('|\\') + ')', 'g');
+	// }
+	// return text.replace(arguments.callee.sRE, '\\$1');
+}
+
 export async function wait(ms) {
     await new Promise(resolve => setTimeout(()=>resolve(), ms));
 }
@@ -70,9 +102,10 @@ export function base64_encode (stringToEncode) { // eslint-disable-line camelcas
   return (r ? enc.slice(0, r - 3) : enc) + '==='.slice(r || 3)
 }
 
-tableToJSON.defaultParser = (cell_html) => stripTags(`${cell_html}`).trim();
+tableToJSON.defaultParser = cell_html => stripTags(`${cell_html}`).trim();
 export function tableToJSON(table, parsers) {
     // parsers are "cell parsers" passed (cell_html, cells, defaultParser) - the return is what the cell value gets set to in object
+    // can have key in parsers as "default" to override default parser
     // html is text html of a table <table ..... </table
     // must have first tr with th's
 
@@ -97,8 +130,8 @@ export function tableToJSON(table, parsers) {
             for (const td of tds) {
                 const col = cols[col_ix];
                 const cell_html = `${td}>`;
-                const parser = parsers[col] || tableToJSON.defaultParser
-                cells[col] = parser(cell_html, cells, tableToJSON.defaultParser);
+                const parser = parsers[col] || parsers.default || tableToJSON.defaultParser
+                cells[col] = parser(cell_html, cells, parsers.default || tableToJSON.defaultParser);
                 col_ix++;
             }
             rows.push(cells);
