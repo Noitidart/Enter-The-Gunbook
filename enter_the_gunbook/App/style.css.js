@@ -122,12 +122,14 @@ const styles = StyleSheet.create({
     link: {
         color: '#FFCC33',
         fontWeight: '600',
-        flex: 1
+        flex: 1,
+        fontSize: 12
     },
     link_active: {
         color: '#FFFFFF',
         fontWeight: '800',
-        flex: 1
+        flex: 1,
+        fontSize: 12
     },
     attr_name: {
         textAlign: 'right',
@@ -162,11 +164,13 @@ const styles = StyleSheet.create({
     },
     text_similarity: {
         flex: 1,
-        textAlign: 'right'
+        textAlign: 'right',
+        fontSize: 12
     },
     text_item_type: {
         flex: 1,
-        textAlign: 'center'
+        textAlign: 'center',
+        fontSize: 12
     }
 })
 

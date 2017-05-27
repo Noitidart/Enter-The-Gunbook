@@ -368,7 +368,7 @@ class App extends Component {
                         if (!has_details) setTimeout(()=>this.fetchDetails(selected), 0);
                         content_el = (
                             <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled>
-                                <View style={styles.entity}>
+                                <ScrollView style={styles.entity}>
                                     <Text style={styles.nopermission_text}>{entity.Name}</Text>
                                     <Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
                                     {Object.entries(entity).sort( ([attr_name_a], [attr_name_b]) => compareIntThenLex(attr_name_a, attr_name_b) ).map( ([attr_name, attr_value]) => {
@@ -401,7 +401,7 @@ class App extends Component {
                                     { has_details && entity.detail_notes &&
                                         entity.detail_notes.map( (detail_note, ix) => <Note setState={this.setStateBounded} key={'detail_note_' + ix}>{detail_note}</Note> )
                                     }
-                                </View>
+                                </ScrollView>
                                 <View style={styles.matches}>
                                     <Text style={styles.nopermission_text}>Other Matches</Text>
                                     <View style={styles.row_said}>
