@@ -171,6 +171,17 @@ const styles = StyleSheet.create({
         flex: 1,
         textAlign: 'center',
         fontSize: 12
+    },
+    //
+    pagelink_view: {
+        position: 'absolute',
+        top: 3,
+        right: 0
+    },
+    pagelink_view_left: {
+        position: 'absolute',
+        top: 3,
+        left: 0
     }
 })
 

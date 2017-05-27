@@ -1,5 +1,5 @@
 import React, { Component, PureComponent } from 'react'
-import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, ScrollView, View } from 'react-native'
+import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, ScrollView, TouchableHighlight, View } from 'react-native'
 import { AudioRecorder, AudioUtils } from 'react-native-audio'
 
 import { escapeRegex, compareIntThenLex, stripTags, toTitleCase, wait, wordSimilarity } from './utils'
@@ -57,6 +57,9 @@ class OtherLink extends PureComponent {
         )
     }
 }
+
+const xOffset = new Animated.Value(0);
+let PAGER_INNER_WIDTH = 0;
 
 class App extends Component {
     setStateBounded = null
@@ -258,8 +261,23 @@ class App extends Component {
         if (!this.pager_inner) return;
         this.pager_inner.scrollTo({x, y:0, animated:true });
     }
+    handleScrollInner = Animated.event(
+        [
+            {
+                nativeEvent: {
+                    contentOffset: {
+                        x: xOffset
+                    }
+                }
+            }
+        ]
+    )
     refPagerInner = el => this.pager_inner = el
     refPageOuter = el => this.pager_outer = el
+    getPAGER_INNER_WIDTH = ({nativeEvent:{layout:{ width }}}) => {
+        PAGER_INNER_WIDTH = width;
+        console.log('WIDTH SET TO:', PAGER_INNER_WIDTH);
+    }
     async fetchDetails(selected) {
         console.log('STARTING FETCH DETAILS');
 
@@ -367,8 +385,9 @@ class App extends Component {
                         const has_details = Object.keys(entity).includes('detail_notes');
                         if (!has_details) setTimeout(()=>this.fetchDetails(selected), 0);
                         content_el = (
-                            <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled>
+                            <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled scrollEventThrottle={16} onScroll={this.handleScrollInner} onLayout={this.getPAGER_INNER_WIDTH}>
                                 <ScrollView style={styles.entity}>
+                                    <PageLink label="Matches >" page={0} right scrollTo={this.scrollInner} isnext />
                                     <Text style={styles.nopermission_text}>{entity.Name}</Text>
                                     <Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
                                     {Object.entries(entity).sort( ([attr_name_a], [attr_name_b]) => compareIntThenLex(attr_name_a, attr_name_b) ).map( ([attr_name, attr_value]) => {
@@ -403,6 +422,7 @@ class App extends Component {
                                     }
                                 </ScrollView>
                                 <View style={styles.matches}>
+                                    <PageLink label="< Back" page={1} scrollTo={this.scrollInner} />
                                     <Text style={styles.nopermission_text}>Other Matches</Text>
                                     <View style={styles.row_said}>
                                         <Text style={styles.text_said}>"{search_term}"</Text>
@@ -677,7 +697,7 @@ class ItemLink extends PureComponent {
 }
 
 function substrs(str, ...ixlens) {
-    // substrs('Fooba Qux', 0, 5, 6, 3) // ix1, len1, ix2, len2 // returns: Array [ "Fooba", "Qux" ]
+    // substrs('Fooba Qux', 0, 5, 6, 3) // ix1, len1, ix2, len2 // returns: Array [ "Fooba", "Qux" ] // can ommit the final 3, it works as normal substr and goes till end if "len" is undefined
     const strs = [];
     for (let i=0; i<ixlens.length; i=i+2) {
         const ix = ixlens[i];
@@ -685,6 +705,51 @@ function substrs(str, ...ixlens) {
         strs.push(str.substr(ix, len));
     }
     return strs;
+}
+
+class PageLink extends Component {
+    /* props
+    label - string
+    page - num - the page number this element is on
+    right - truthy - bool - position on left
+    isnext - truthy - bool - if pressing this should go to next page, by default assumes it should go to previous page
+    scrollTo - function for the ScrollViews scrollTo
+    */
+    handlePress = () => {
+        const { isnext, page, scrollTo } = this.props;
+        const goto_page = isnext ? page + 1 : page - 1;
+        const goto_x = goto_page * PAGER_INNER_WIDTH;
+
+        scrollTo(goto_x);
+    }
+    render() {
+        const { label, page, right } = this.props;
+
+        const pagex_st = page * PAGER_INNER_WIDTH;
+        const pagex_en = pagex_st + PAGER_INNER_WIDTH;
+        const pagex_pre = pagex_st - PAGER_INNER_WIDTH;
+        const pagex_pre_changed = pagex_st - (PAGER_INNER_WIDTH / 2); // point of no return - so if x is >= this, and user releases at this point, it will come to this page i
+        const pagex_en_changed = pagex_st + (PAGER_INNER_WIDTH / 2); // point of no return
+        let opacity;
+        if (PAGER_INNER_WIDTH === 0) {
+            // only show opacity 1 on the page 0 item. so this assuems starting page is page 0
+            if (page === 0) opacity = 1;
+            else opacity = 0;
+        } else {
+            opacity = xOffset.interpolate({inputRange:[pagex_pre, pagex_pre_changed, pagex_pre_changed+1, pagex_st, pagex_en_changed-1, pagex_en_changed, pagex_en], outputRange:[0, 0, 0.1, 1, 0.1, 0, 0]})
+        }
+        const style_animated = { opacity };
+
+        return (
+            <Animated.View style={[right ? styles.pagelink_view : styles.pagelink_view_left, style_animated]}>
+                <TouchableHighlight onPress={this.handlePress}>
+                    <View>
+                        <Text>{label}</Text>
+                    </View>
+                </TouchableHighlight>
+            </Animated.View>
+        )
+    }
 }
 
 AppRegistry.registerComponent('enter_the_gunbook', () => App);
