@@ -611,9 +611,11 @@ class Note extends PureComponent {
     render() {
         let { children:fulltext, setState } = this.props;
         const names = []; // names found in text, we will split by this arr
-        const names_patt_strs = [];
-        for (const {Name:name} of entities.guns) names.push(name) && names_patt_strs.push(escapeRegex(name));
-        for (const {Name:name} of entities.items) names.push(name) && names_patt_strs.push(escapeRegex(name))
+        for (const {Name:name} of entities.guns) names.push(name);
+        for (const {Name:name} of entities.items) names.push(name);
+
+        names.sort((name_a, name_b) => name_b.length - name_a.length); // sort it longest first, so it doesnt replace like "Bullet Bore" with link to just "Bullet"
+        const names_patt_strs = names.map(name => escapeRegex(name) );
 
         const names_patt = new RegExp('(?:' + names_patt_strs.join('|') + ')', 'g');
 
