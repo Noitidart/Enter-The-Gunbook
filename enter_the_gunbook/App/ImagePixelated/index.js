@@ -54,13 +54,12 @@ const html = `
                     var can = document.createElement('canvas');
                     can.width = width;
                     can.height = height;
-                    document.body.appendChild(can);
                     var ctx = can.getContext('2d');
                     ctx.drawImage(img, 0, 0);
 
-
                     // postMessage('can.toDataURL: ', Object.keys(can).toString());
-                    var dataurl = can.toDataURL();
+                    // var dataurl = can.toDataURL();
+                    var dataurl = '';
 
                     var info = '~!~' + width + ' ' + height + '$' + dataurl;
                     postMessage(info);
@@ -71,7 +70,9 @@ const html = `
                     postMessage('Image failed to load.');
                 }
 
-                whenRNPostMessageReady(resizePixelated);
+                window.addEventListener('load', function() {
+                    whenRNPostMessageReady(resizePixelated);
+                }, false);
             </script>
         </head>
         <body></body>
@@ -120,29 +121,34 @@ class ImagePixelated extends Component {
             this.setState(()=>({status:STATUS.FAIL, reason:data}));
         }
     }
+    getHtml() {
+        const { height, width, url } = this.props;
+        let html_propified = html.replace('%%%URL%%%', url);
+
+        if (isNaN(height) || height === undefined || height === null) html_propified = html_propified.replace('%%%HEIGHT%%%', 'undefined');
+        else html_propified = html_propified.replace('%%%HEIGHT%%%', height);
+
+        if (isNaN(width) || width === undefined || width === null) html_propified = html_propified.replace('%%%WIDTH%%%', 'undefined');
+        else html_propified = html_propified.replace('%%%WIDTH%%%', width);
+
+        return html_propified;
+    }
     render() {
         const { status } = this.state;
         switch (status) {
             case STATUS.INIT: {
-                const { height, width, url } = this.props;
-                let html_propified = html.replace('%%%URL%%%', url);
-
-                if (isNaN(height) || height === undefined || height === null) html_propified = html_propified.replace('%%%HEIGHT%%%', 'undefined');
-                else html_propified = html_propified.replace('%%%HEIGHT%%%', height);
-
-                if (isNaN(width) || width === undefined || width === null) html_propified = html_propified.replace('%%%WIDTH%%%', 'undefined');
-                else html_propified = html_propified.replace('%%%WIDTH%%%', width);
-
-
-                return <WebView source={{ html:html_propified }} style={{height:200, width:200, position:'absolute', top:0, left:0, backgroundColor:'steelblue'}} onMessage={this.handleMessage} />;
+                const { height, width } = this.state;
+                return <WebView source={{ html:this.getHtml() }} style={{height, width, backgroundColor:'transparent'}} onMessage={this.handleMessage} />;
             }
             case STATUS.FAIL: {
                 const { reason } = this.state;
                 return <View><Text>{reason}</Text></View>;
             }
             case STATUS.SUCCESS: {
-                const { dataurl, height, width } = this.state;
-                return <Image source={{ uri:dataurl, height, width }}  />
+                // const { dataurl, height, width } = this.state;
+                // return <Image source={{ uri:dataurl, height, width }}  />
+                const { height, width } = this.state;
+                return <WebView source={{ html:this.getHtml() }} style={{height, width, backgroundColor:'transparent'}} onMessage={this.handleMessage} />;
             }
             // no-default
         }

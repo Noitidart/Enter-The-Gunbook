@@ -396,7 +396,10 @@ class App extends Component {
                                 <ScrollView style={styles.entity}>
                                     <Text style={styles.nopermission_text}>{entity.Name}</Text>
                                     <PageLink label="Matches >" page={0} right scrollTo={this.scrollInner} isnext page_width={pagerinner_width} />
-                                    <Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
+                                    {/*<Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />*/}
+                                    <View key="Icon" style={styles.entity_icon_wrap}>
+                                        <ImagePixelated key="Icon" height="50" url={entity.Icon} />
+                                    </View>
                                     {Object.entries(entity).sort( ([attr_name_a], [attr_name_b]) => compareIntThenLex(attr_name_a, attr_name_b) ).map( ([attr_name, attr_value]) => {
                                         if (attr_value === null) return undefined; // like detail_notes
                                         switch (attr_name) {
@@ -467,7 +470,6 @@ class App extends Component {
                     </Animated.View> }
                 </Animated.View>
                 { haspermission && fab_canshow && <Fab startListening={this.startListening} stopListening={this.stopListening} shape={fab_shape} />}
-                <ImagePixelated height="50" url="https://hydra-media.cursecdn.com/enterthegungeon.gamepedia.com/f/fb/Mass_Shotgun.png?version=4572d38d3ecd24626dd407fb2aec59d9" />
             </Image>
         )
     }
@@ -755,7 +757,7 @@ class PageLink extends Component {
             <Animated.View style={[right ? styles.pagelink_view : styles.pagelink_view_left, style_animated]}>
                 <TouchableHighlight onPress={this.handlePress}>
                     <View>
-                        <Text>{label}</Text>
+                        <Text style={styles.pagelink_text}>{label}</Text>
                     </View>
                 </TouchableHighlight>
             </Animated.View>

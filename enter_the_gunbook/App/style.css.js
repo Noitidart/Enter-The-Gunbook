@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     subcontent: {
         borderWidth: 1,
         borderRadius: 2,
-        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
         margin: 20,
         padding: 10,
         justifyContent: 'center',
@@ -108,10 +108,15 @@ const styles = StyleSheet.create({
         width: '50%'
     },
     //
-    entity_icon: {
-        flex: 1,
-        maxHeight: 50,
-        marginVertical: 10
+    // entity_icon: {
+    //     flex: 1,
+    //     maxHeight: 50,
+    //     marginVertical: 10
+    // },
+    entity_icon_wrap: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: 20
     },
     //
     link_noflex: {
@@ -182,6 +187,9 @@ const styles = StyleSheet.create({
         position: 'absolute',
         top: 3,
         left: 0
+    },
+    pagelink_text: {
+        fontSize: 11
     }
 })
 
