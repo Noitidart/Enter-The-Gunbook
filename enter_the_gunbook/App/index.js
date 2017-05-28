@@ -397,7 +397,7 @@ class App extends Component {
                                     <Text style={styles.nopermission_text}>{entity.Name}</Text>
                                     <PageLink label="Matches >" page={0} right scrollTo={this.scrollInner} isnext page_width={pagerinner_width} />
                                     {/*<Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />*/}
-                                    <View key="Icon" style={styles.entity_icon_wrap}>
+                                    <View key={'Icon-'+entity.Icon} style={styles.entity_icon_wrap}>
                                         <ImagePixelated key="Icon" height="50" url={entity.Icon} />
                                     </View>
                                     {Object.entries(entity).sort( ([attr_name_a], [attr_name_b]) => compareIntThenLex(attr_name_a, attr_name_b) ).map( ([attr_name, attr_value]) => {
