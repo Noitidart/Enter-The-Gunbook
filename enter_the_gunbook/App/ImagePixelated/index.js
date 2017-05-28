@@ -148,7 +148,7 @@ class ImagePixelated extends Component {
                 // const { dataurl, height, width } = this.state;
                 // return <Image source={{ uri:dataurl, height, width }}  />
                 const { height, width } = this.state;
-                return <WebView source={{ html:this.getHtml() }} style={{height, width, backgroundColor:'transparent'}} onMessage={this.handleMessage} />;
+                return <WebView source={{ html:this.getHtml() }} style={{height, width, backgroundColor:'transparent'}} />;
             }
             // no-default
         }
