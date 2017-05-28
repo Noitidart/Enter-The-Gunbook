@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     subcontent: {
         borderWidth: 1,
         borderRadius: 2,
-        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
         margin: 20,
         padding: 10,
         justifyContent: 'center',

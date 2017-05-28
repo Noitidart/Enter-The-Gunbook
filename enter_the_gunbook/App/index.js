@@ -7,6 +7,7 @@ import * as STT from './watson-stt'
 import * as Wiki from './wiki'
 
 import Button from './Button'
+import ImagePixelated from './ImagePixelated'
 import Text from './Text'
 
 import background_image from './assets/background-0.jpg'
@@ -154,9 +155,15 @@ class App extends Component {
         try {
             textified = await STT.getResults(file_path, this.AUDIO_EXT, this.AUDIO_CONTENT_TYPE)
         } catch(error) {
-            console.error(`STT::getResults - ${error}`);
-            this.setState(()=>({ content:{reason:REASONS.ERROR_SERVER_SPEECH, data:error}, fab_shape:FAB_SHAPE.IDLE }))
-            throw new Error(`STT::getResults - ${error}`);
+            // console.error('error:', error);
+            // if (error.includes('No speech detected for 30s.')) {
+            //     // /Users/noitidart/Pictures/Screenshot -  28, 2017 12.13 AM.png
+            //     this.setState(()=>({ content:{reason:REASONS.ERROR_NO_SPEAK, data:null}, fab_shape:FAB_SHAPE.IDLE }))
+            // } else {
+                console.error(`STT::getResults - ${error}`);
+                this.setState(()=>({ content:{reason:REASONS.ERROR_SERVER_SPEECH, data:error}, fab_shape:FAB_SHAPE.IDLE }))
+                throw new Error(`STT::getResults - ${error}`);
+            // }
         }
 
         console.log('textified:', textified);
@@ -460,10 +467,13 @@ class App extends Component {
                     </Animated.View> }
                 </Animated.View>
                 { haspermission && fab_canshow && <Fab startListening={this.startListening} stopListening={this.stopListening} shape={fab_shape} />}
+                <ImagePixelated height="50" url="https://hydra-media.cursecdn.com/enterthegungeon.gamepedia.com/f/fb/Mass_Shotgun.png?version=4572d38d3ecd24626dd407fb2aec59d9" />
             </Image>
         )
     }
 }
+
+
 
 function AnimatedAsync(name, ...args) {
     return new Promise(resolve => Animated[name](...args).start(resolve));
