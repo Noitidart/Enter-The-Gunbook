@@ -2,7 +2,7 @@ import React, { Component, PureComponent } from 'react'
 import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, ScrollView, TouchableHighlight, View } from 'react-native'
 import { AudioRecorder, AudioUtils } from 'react-native-audio'
 
-import { escapeRegex, compareIntThenLex, stripTags, toTitleCase, wait, wordSimilarity } from './utils'
+import { tableToJSON, escapeRegex, compareIntThenLex, stripTags, toTitleCase, wait, wordSimilarity } from './utils'
 import * as STT from './watson-stt'
 import * as Wiki from './wiki'
 
@@ -40,6 +40,20 @@ const REASONS = {
 };
 
 const entities = Wiki.getEntities();
+
+const ALTS = [];
+(async function() {
+    const res = await fetch('https://github.com/Noitidart/Enter-The-Gunbook/wiki/Alternate-Phrases');
+    const html = await res.text();
+
+    const table_stix = html.indexOf('<table', html.indexOf('voice recognition'));
+    const table_enix = html.indexOf('</table', table_stix);
+    const table = html.substr(table_stix, table_enix - table_stix);
+
+    const alts = tableToJSON(table);
+    console.log('alts:', alts);
+    ALTS.push(...alts);
+})();
 
 class OtherLink extends PureComponent {
     // scrollInner
@@ -198,13 +212,19 @@ class App extends Component {
 
         console.log('search_term:', search_term);
         const similarities = []; // {similarity:wordSimilarity(search_term, entity.Name), dotpath:guns.1, entity:}
-        entities.guns.forEach((entity, ix) =>
+        entities.guns.forEach((entity, ix) => {
+            const names = [entity.Name];
+
+            const alts = ALTS.find(alt => alt.Name.toLowerCase() === entity.Name.toLowerCase());
+            if (alts) names.push(...alts.Alternatives.split(', '));
+            const names_sim = names.map(name => wordSimilarity(search_term, name));
+
             similarities.push({
-                similarity: wordSimilarity(search_term, entity.Name),
+                similarity: Math.max(...names_sim),
                 dotpath:`guns.${ix}`,
                 entity
-            })
-        );
+            });
+        });
         entities.items.forEach((entity, ix) =>
             similarities.push({
                 similarity: wordSimilarity(search_term, entity.Name),
