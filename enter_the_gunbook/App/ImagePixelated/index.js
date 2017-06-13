@@ -101,7 +101,7 @@ class ImagePixelated extends Component {
     handleMessage = e => {
         const {nativeEvent:{ data }} = e;
 
-        console.log('got message:', data);
+
 
         if (data.startsWith('~!~')) {
             const width_stix = 3;

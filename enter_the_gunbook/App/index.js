@@ -51,7 +51,7 @@ const ALTS = [];
     const table = html.substr(table_stix, table_enix - table_stix);
 
     const alts = tableToJSON(table);
-    console.log('alts:', alts);
+
     ALTS.push(...alts);
 })();
 
@@ -110,7 +110,7 @@ class App extends Component {
 
         if (!haspermissionold && haspermission) {
             // set up audio
-            console.log('AudioUtils:', AudioUtils);
+
 
             if (Platform.OS === 'ios') {
                 this.AUDIO_EXT = 'ulaw';
@@ -142,26 +142,26 @@ class App extends Component {
         try {
             result = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.RECORD_AUDIO, { title:'Microphone Permission', message:'Enter the Gunbook needs access to your microphone so you can search with voice.' });
         } catch(error) {
-            console.error('failed getting permission, result:', result);
+
         }
-        // console.log('permission result:', result);
+
         return (result === true || result === PermissionsAndroid.RESULTS.GRANTED);
     }
     handleAudioProgress = data => {
-        console.log('data.currentTime:', data.currentTime, 'data:', data);
+
     }
     handleAudioFinishIOS = data => {
         // Android callback comes in the form of a promise instead.
         if (Platform.OS === 'ios') {
-            console.log('ok recording finished ios, data:', data);
+
             this.handleAudioFinish(data.status === 'OK', data.audioFileURL);
         }
     }
     async handleAudioFinish(didsucceed, file_path) {
-        console.log('handleAudioFinish', 'didsucceed:', didsucceed, 'file_path:', file_path);
+
         if (!didsucceed) {
             alert('failed to record!!');
-            console.error('failed to record!!');
+
             return;
         }
 
@@ -169,18 +169,18 @@ class App extends Component {
         try {
             textified = await STT.getResults(file_path, this.AUDIO_EXT, this.AUDIO_CONTENT_TYPE)
         } catch(error) {
-            // console.error('error:', error);
+
             // if (error.includes('No speech detected for 30s.')) {
             //     // /Users/noitidart/Pictures/Screenshot -  28, 2017 12.13 AM.png
             //     this.setState(()=>({ content:{reason:REASONS.ERROR_NO_SPEAK, data:null}, fab_shape:FAB_SHAPE.IDLE }))
             // } else {
-                console.error(`STT::getResults - ${error}`);
+
                 this.setState(()=>({ content:{reason:REASONS.ERROR_SERVER_SPEECH, data:error}, fab_shape:FAB_SHAPE.IDLE }))
                 throw new Error(`STT::getResults - ${error}`);
             // }
         }
 
-        console.log('textified:', textified);
+
 
         let search_term;
         {
@@ -210,7 +210,7 @@ class App extends Component {
             ]);
         }
 
-        console.log('search_term:', search_term);
+
         const similarities = []; // {similarity:wordSimilarity(search_term, entity.Name), dotpath:guns.1, entity:}
         entities.guns.forEach((entity, ix) => {
             const names = [entity.Name];
@@ -234,7 +234,7 @@ class App extends Component {
         );
         similarities.sort( ({similarity:similarity_a}, {similarity:similarity_b}) => similarity_b - similarity_a );
 
-        console.log('similarities:', similarities);
+
 
         let content = {
             reason: REASONS.MATCHED,
@@ -247,35 +247,35 @@ class App extends Component {
         this.setState(()=>({ content, fab_shape:FAB_SHAPE.IDLE }))
     }
     startListening = async (duration=3000) => {
-        console.log('starting recording');
+
         let { fab_shape } = this.state;
 
         this.setState(()=>({content:null, fab_shape:FAB_SHAPE.LISTENING}))
 
         try {
             const file_path = await AudioRecorder.startRecording();
-            console.log('file_path:', file_path);
+
         } catch (error) {
-            console.error('failed to start recording, error:', error);
+
             return;
         }
-        console.log('started recording');
+
 
         this.stop_timeout = setTimeout(this.stopListening, duration);
     }
     stop_timeout: null
     stopListening = async () => {
-        console.log('stopping recording');
+
         clearTimeout(this.stop_timeout);
 
         let file_path;
         try {
             file_path = await AudioRecorder.stopRecording();
         } catch(error) {
-            console.error('failed to stop recording, error:', error);
+
             return;
         }
-        console.log('stopped recording');
+
 
         this.setState(()=>({fab_shape:FAB_SHAPE.TEXTING}))
 
@@ -303,35 +303,35 @@ class App extends Component {
     refPageOuter = el => this.pager_outer = el
     setPagerInnerWidth = ({nativeEvent:{layout:{ width }}}) => {
         this.setState(()=>({pagerinner_width:width}))
-        console.log('WIDTH SET TO:', width);
+
     }
     async fetchDetails(selected) {
-        console.log('STARTING FETCH DETAILS');
+
 
         const { entity } = selected;
-        console.log('entity:', entity, 'entity.details_url:', entity.details_url);
+
         if ('details' in entity) return; // already fetched details for this, it might be null if it had no details
 
         const res = await fetch(entity.details_url);
         const html = await res.text();
-        // console.log('details_html:', html);
+
 
         const stats_stix = html.indexOf('<b>Statistics');
         const stats_enix = html.indexOf('<th', stats_stix);
         const stats_html = html.substr(stats_stix, stats_enix - stats_stix);
         const stats = {};
         const stats_rows = stats_html.match(/<tr[\s\S]*?<\/tr/g);
-        // console.log('stats_html:', stats_html);
+
         for (const row of stats_rows) {
             const stats_cells = row.match(/<td[\s\S]*?<\/td[\s\S]*?>/g); // need the neding tag so needed the `[\s\S]*?>` so stripTags removes it
-            // console.log('stats_cells:', stats_cells, 'row:', row);
+
             const name = stripTags(stats_cells[0]).trim().replace(':', '');
             if (name.startsWith('Introduc')) continue; // skipe "Introduced in"
             const value = Wiki.getValueFromHtml(stats_cells[1]);
             stats[name] = value;
         }
-        console.log('stats:', stats);
-        // console.log('stats_html:', stats_html);
+
+
 
         // check if it has Notes - which are <li>...</li>
         let detail_notes = null;
@@ -340,13 +340,13 @@ class App extends Component {
             if (notes_stix > -1) {
                 const notes_enix = html.indexOf('</ul', notes_stix);
                 const notes_html = html.substr(notes_stix, notes_enix - notes_stix);
-                // console.log('notes_html:', notes_html)
+
                 const note_htmls = notes_html.match(/<li[\s\S]*?<\/li[\s\S]*?>/g); // need the neding tag so needed the `[\s\S]*?>` so stripTags removes it
-                // console.log('notes_match:', notes_match);
+
                 detail_notes = note_htmls.map(note_html => stripTags(note_html).trim());
             }
         }
-        console.log('detail_notes:', detail_notes);
+
 
         Object.assign(entity, { ...stats, detail_notes })
 
@@ -518,7 +518,7 @@ class Fab extends Component {
     }
     initializeNext = async () => {
         const { ianim, iorder } = this.state;
-        // console.error('starting anim for:', iorder[0]);
+
         await AnimatedAsync('timing', ianim[iorder[0]], { toValue:1, duration:200 });
         this.setState(({iorder})=>{
             let iorder_new = iorder.filter((el, ix) => ix !== 0);
@@ -534,7 +534,7 @@ class Fab extends Component {
         const { iorder:iorder_old } = stateold;
         const { shape } = this.props;
         const { shape:shape_old } = propsold;
-        console.log('shape:', shape, 'shape_old:', shape_old);
+
         if (!initialized) {
             if (shape_old !== FAB_SHAPE.TEXTING && shape === FAB_SHAPE.TEXTING) {
                 this.initializeNext();
@@ -546,7 +546,7 @@ class Fab extends Component {
     }
     // refButton = el => this.button = el
     handlePress = e => {
-        console.log('e:', e);
+
         const { startListening, stopListening, shape } = this.props;
         if (shape === FAB_SHAPE.IDLE) {
             startListening();
@@ -671,7 +671,7 @@ class Note extends PureComponent {
 
         const names_patt = new RegExp('(?:' + names_patt_strs.join('|') + ')', 'g');
 
-        // console.log('names_patt_strs:', names_patt_strs.join('|'));
+
 
         // pre text_els stuff
         const ixlens = [0];
@@ -686,7 +686,7 @@ class Note extends PureComponent {
 
         const text_els = ixlens.length > 1 ? substrs(fulltext, ...ixlens) : fulltext;
         if (ixlens.length > 1) {
-            console.log('fulltext:', fulltext, 'text_els:', text_els);
+
             for (let i=0; i<text_els.length; i++) {
                 const text = text_els[i];
                 if (names.includes(text)) {

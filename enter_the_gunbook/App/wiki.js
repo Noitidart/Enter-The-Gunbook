@@ -31,10 +31,10 @@ function gamepediaExtractTable(html) {
     // gets the main table of the page
     // returns html text of the table, so <table.....</table>
     // const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-    // console.log('doc', doc);
+
     // const table = doc.querySelect('.wikitable');
     // console.l
-    // console.log('table.textContent:', table.textContent);
+
 
     const table_stix = html.lastIndexOf('<table', html.indexOf('wikitable'));
     const table_enix = html.indexOf('</table', table_stix);

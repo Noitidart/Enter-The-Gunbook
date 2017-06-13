@@ -117,14 +117,14 @@ export function tableToJSON(table, parsers={}) {
         if (!cols.length) {
             // first loop
             const ths = tr.match(/<th\W[\s\S]*?<\/th/gi);
-            // console.log('ths.length:', ths.length, 'ths:', ths);
+
             for (const th of ths) {
                 cols.push(stripTags(`${th}>`).trim());
             }
         } else {
             const tds = tr.match(/<td\W[\s\S]*?<\/td/gi);
-            // console.log('tds:', tds);
-            // console.log('tds.length:', tds.length, 'cols.length:', cols.length);
+
+
             const cells = {};
             const col_ix = 0;
             for (const td of tds) {
@@ -137,8 +137,8 @@ export function tableToJSON(table, parsers={}) {
             rows.push(cells);
         }
     }
-    console.log('cols:', cols);
-    console.log('rows:', rows);
+
+
 
     return rows;
 }

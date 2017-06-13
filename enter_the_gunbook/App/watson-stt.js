@@ -10,7 +10,7 @@ export async function getToken() {
             'Content-Type':'application/json'
         }
     });
-    console.log('watson-stt::getToken - response:', response);
+
 
     if (response.status !== 200) {
         const error = await response.text();
@@ -26,7 +26,7 @@ export async function getResults(audio, ext, content_type) {
     // audio - blob (web) or file path without file:// (react native)
     // ext - type of file like "ogg" (must lower case? i dont think so but thats all i see)
 
-    console.log('typeof audio:', typeof audio);
+
     const ismobile = typeof audio === 'string';
 
     const blob = ismobile ? undefined : audio;
@@ -34,7 +34,7 @@ export async function getResults(audio, ext, content_type) {
 
     let token;
     if (!ismobile) {
-        console.log('getting token because not mobile!');
+
         token = await getToken();
     }
 
@@ -57,7 +57,7 @@ export async function getResults(audio, ext, content_type) {
         body
     });
 
-    console.log('watson-stt::getResults - response:', response);
+
 
     if (response.status !== 200) {
         const error = await response.text();
