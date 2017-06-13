@@ -1,12 +1,13 @@
 import React, { Component, PureComponent } from 'react'
-import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, ScrollView, View } from 'react-native'
+import { Animated, AppRegistry, Image, PermissionsAndroid, Platform, ScrollView, TouchableHighlight, View } from 'react-native'
 import { AudioRecorder, AudioUtils } from 'react-native-audio'
 
-import { escapeRegex, compareIntThenLex, stripTags, toTitleCase, wait, wordSimilarity } from './utils'
+import { tableToJSON, escapeRegex, compareIntThenLex, stripTags, toTitleCase, wait, wordSimilarity } from './utils'
 import * as STT from './watson-stt'
 import * as Wiki from './wiki'
 
 import Button from './Button'
+import ImagePixelated from './ImagePixelated'
 import Text from './Text'
 
 import background_image from './assets/background-0.jpg'
@@ -40,6 +41,20 @@ const REASONS = {
 
 const entities = Wiki.getEntities();
 
+const ALTS = [];
+(async function() {
+    const res = await fetch('https://github.com/Noitidart/Enter-The-Gunbook/wiki/Alternate-Phrases');
+    const html = await res.text();
+
+    const table_stix = html.indexOf('<table', html.indexOf('voice recognition'));
+    const table_enix = html.indexOf('</table', table_stix);
+    const table = html.substr(table_stix, table_enix - table_stix);
+
+    const alts = tableToJSON(table);
+    console.log('alts:', alts);
+    ALTS.push(...alts);
+})();
+
 class OtherLink extends PureComponent {
     // scrollInner
     // setState
@@ -58,6 +73,8 @@ class OtherLink extends PureComponent {
     }
 }
 
+const xOffset = new Animated.Value(0);
+
 class App extends Component {
     setStateBounded = null
     state = {
@@ -66,7 +83,8 @@ class App extends Component {
         fab_canshow: false,
         haspermission: false, // to use audio recording
         fab_shape: FAB_SHAPE.UNINIT,
-        content: null
+        content: null,
+        pagerinner_width: 0
     }
     constructor(props) {
         super(props);
@@ -151,9 +169,15 @@ class App extends Component {
         try {
             textified = await STT.getResults(file_path, this.AUDIO_EXT, this.AUDIO_CONTENT_TYPE)
         } catch(error) {
-            console.error(`STT::getResults - ${error}`);
-            this.setState(()=>({ content:{reason:REASONS.ERROR_SERVER_SPEECH, data:error}, fab_shape:FAB_SHAPE.IDLE }))
-            throw new Error(`STT::getResults - ${error}`);
+            // console.error('error:', error);
+            // if (error.includes('No speech detected for 30s.')) {
+            //     // /Users/noitidart/Pictures/Screenshot -  28, 2017 12.13 AM.png
+            //     this.setState(()=>({ content:{reason:REASONS.ERROR_NO_SPEAK, data:null}, fab_shape:FAB_SHAPE.IDLE }))
+            // } else {
+                console.error(`STT::getResults - ${error}`);
+                this.setState(()=>({ content:{reason:REASONS.ERROR_SERVER_SPEECH, data:error}, fab_shape:FAB_SHAPE.IDLE }))
+                throw new Error(`STT::getResults - ${error}`);
+            // }
         }
 
         console.log('textified:', textified);
@@ -188,13 +212,19 @@ class App extends Component {
 
         console.log('search_term:', search_term);
         const similarities = []; // {similarity:wordSimilarity(search_term, entity.Name), dotpath:guns.1, entity:}
-        entities.guns.forEach((entity, ix) =>
+        entities.guns.forEach((entity, ix) => {
+            const names = [entity.Name];
+
+            const alts = ALTS.find(alt => alt.Name.toLowerCase() === entity.Name.toLowerCase());
+            if (alts) names.push(...alts.Alternatives.split(', '));
+            const names_sim = names.map(name => wordSimilarity(search_term, name));
+
             similarities.push({
-                similarity: wordSimilarity(search_term, entity.Name),
+                similarity: Math.max(...names_sim),
                 dotpath:`guns.${ix}`,
                 entity
-            })
-        );
+            });
+        });
         entities.items.forEach((entity, ix) =>
             similarities.push({
                 similarity: wordSimilarity(search_term, entity.Name),
@@ -258,8 +288,23 @@ class App extends Component {
         if (!this.pager_inner) return;
         this.pager_inner.scrollTo({x, y:0, animated:true });
     }
+    handleScrollInner = Animated.event(
+        [
+            {
+                nativeEvent: {
+                    contentOffset: {
+                        x: xOffset
+                    }
+                }
+            }
+        ]
+    )
     refPagerInner = el => this.pager_inner = el
     refPageOuter = el => this.pager_outer = el
+    setPagerInnerWidth = ({nativeEvent:{layout:{ width }}}) => {
+        this.setState(()=>({pagerinner_width:width}))
+        console.log('WIDTH SET TO:', width);
+    }
     async fetchDetails(selected) {
         console.log('STARTING FETCH DETAILS');
 
@@ -318,7 +363,7 @@ class App extends Component {
         }
     }
     render() {
-        const { content, fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
+        const { pagerinner_width, content, fab_shape, fab_canshow, haspermission, load_anim, subcontent_isshowing } = this.state;
 
         const logo_style = [
             styles.logo,
@@ -367,10 +412,14 @@ class App extends Component {
                         const has_details = Object.keys(entity).includes('detail_notes');
                         if (!has_details) setTimeout(()=>this.fetchDetails(selected), 0);
                         content_el = (
-                            <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled>
+                            <ScrollView ref={this.refPagerInner} style={styles.matched} contentContainerStyle={styles.matched_content_container} horizontal pagingEnabled scrollEventThrottle={16} onScroll={this.handleScrollInner} onLayout={this.setPagerInnerWidth}>
                                 <ScrollView style={styles.entity}>
                                     <Text style={styles.nopermission_text}>{entity.Name}</Text>
-                                    <Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />
+                                    <PageLink label="Matches >" page={0} right scrollTo={this.scrollInner} isnext page_width={pagerinner_width} />
+                                    {/*<Image key="Icon" source={{ uri:entity.Icon }} resizeMode="contain" style={styles.entity_icon} resizeMethod="scale" />*/}
+                                    <View key={'Icon-'+entity.Icon} style={styles.entity_icon_wrap}>
+                                        <ImagePixelated key="Icon" height="50" url={entity.Icon} />
+                                    </View>
                                     {Object.entries(entity).sort( ([attr_name_a], [attr_name_b]) => compareIntThenLex(attr_name_a, attr_name_b) ).map( ([attr_name, attr_value]) => {
                                         if (attr_value === null) return undefined; // like detail_notes
                                         switch (attr_name) {
@@ -404,6 +453,7 @@ class App extends Component {
                                 </ScrollView>
                                 <View style={styles.matches}>
                                     <Text style={styles.nopermission_text}>Other Matches</Text>
+                                    <PageLink label="< Back" page={1} scrollTo={this.scrollInner} page_width={pagerinner_width} />
                                     <View style={styles.row_said}>
                                         <Text style={styles.text_said}>"{search_term}"</Text>
                                     </View>
@@ -444,6 +494,8 @@ class App extends Component {
         )
     }
 }
+
+
 
 function AnimatedAsync(name, ...args) {
     return new Promise(resolve => Animated[name](...args).start(resolve));
@@ -677,7 +729,7 @@ class ItemLink extends PureComponent {
 }
 
 function substrs(str, ...ixlens) {
-    // substrs('Fooba Qux', 0, 5, 6, 3) // ix1, len1, ix2, len2 // returns: Array [ "Fooba", "Qux" ]
+    // substrs('Fooba Qux', 0, 5, 6, 3) // ix1, len1, ix2, len2 // returns: Array [ "Fooba", "Qux" ] // can ommit the final 3, it works as normal substr and goes till end if "len" is undefined
     const strs = [];
     for (let i=0; i<ixlens.length; i=i+2) {
         const ix = ixlens[i];
@@ -685,6 +737,52 @@ function substrs(str, ...ixlens) {
         strs.push(str.substr(ix, len));
     }
     return strs;
+}
+
+class PageLink extends Component {
+    /* props
+    label - string
+    page - num - the page number this element is on
+    right - truthy - bool - position on left
+    isnext - truthy - bool - if pressing this should go to next page, by default assumes it should go to previous page
+    scrollTo - function for the ScrollViews scrollTo
+    page_width - width of the ScrollView - not the container - as container is full width of all the children - so just page_width which is what each paging moves
+    */
+    handlePress = () => {
+        const { isnext, page, scrollTo, page_width } = this.props;
+        const goto_page = isnext ? page + 1 : page - 1;
+        const goto_x = goto_page * page_width;
+
+        scrollTo(goto_x);
+    }
+    render() {
+        const { label, page, right, page_width } = this.props;
+
+        const pagex_st = page * page_width;
+        const pagex_en = pagex_st + page_width;
+        const pagex_pre = pagex_st - page_width;
+        const pagex_pre_changed = pagex_st - (page_width / 2); // point of no return - so if x is >= this, and user releases at this point, it will come to this page i
+        const pagex_en_changed = pagex_st + (page_width / 2); // point of no return
+        let opacity;
+        if (page_width === 0) {
+            // only show opacity 1 on the page 0 item. so this assuems starting page is page 0
+            if (page === 0) opacity = 1;
+            else opacity = 0;
+        } else {
+            opacity = xOffset.interpolate({inputRange:[pagex_pre, pagex_pre_changed, pagex_pre_changed+1, pagex_st, pagex_en_changed-1, pagex_en_changed, pagex_en], outputRange:[0, 0, 0.1, 1, 0.1, 0, 0]})
+        }
+        const style_animated = { opacity };
+
+        return (
+            <Animated.View style={[right ? styles.pagelink_view : styles.pagelink_view_left, style_animated]}>
+                <TouchableHighlight onPress={this.handlePress}>
+                    <View>
+                        <Text style={styles.pagelink_text}>{label}</Text>
+                    </View>
+                </TouchableHighlight>
+            </Animated.View>
+        )
+    }
 }
 
 AppRegistry.registerComponent('enter_the_gunbook', () => App);

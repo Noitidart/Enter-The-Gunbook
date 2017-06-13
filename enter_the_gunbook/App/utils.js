@@ -103,7 +103,7 @@ export function base64_encode (stringToEncode) { // eslint-disable-line camelcas
 }
 
 tableToJSON.defaultParser = cell_html => stripTags(`${cell_html}`).trim();
-export function tableToJSON(table, parsers) {
+export function tableToJSON(table, parsers={}) {
     // parsers are "cell parsers" passed (cell_html, cells, defaultParser) - the return is what the cell value gets set to in object
     // can have key in parsers as "default" to override default parser
     // html is text html of a table <table ..... </table

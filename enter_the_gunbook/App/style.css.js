@@ -108,10 +108,15 @@ const styles = StyleSheet.create({
         width: '50%'
     },
     //
-    entity_icon: {
-        flex: 1,
-        maxHeight: 50,
-        marginVertical: 10
+    // entity_icon: {
+    //     flex: 1,
+    //     maxHeight: 50,
+    //     marginVertical: 10
+    // },
+    entity_icon_wrap: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: 20
     },
     //
     link_noflex: {
@@ -170,6 +175,20 @@ const styles = StyleSheet.create({
     text_item_type: {
         flex: 1,
         textAlign: 'center',
+        fontSize: 12
+    },
+    //
+    pagelink_view: {
+        position: 'absolute',
+        top: 0,
+        right: 0
+    },
+    pagelink_view_left: {
+        position: 'absolute',
+        top: 0,
+        left: 0
+    },
+    pagelink_text: {
         fontSize: 12
     }
 })
