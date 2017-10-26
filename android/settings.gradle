@@ -1,0 +1,3 @@
+rootProject.name = 'enter_the_gunbook'
+
+include ':app'
