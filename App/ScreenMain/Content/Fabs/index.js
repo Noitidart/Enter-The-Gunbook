@@ -1,6 +1,10 @@
 import React, { PureComponent } from 'react'
-import { TouchableOpacity, View } from 'react-native'
+import { TouchableOpacity, View, Platform } from 'react-native'
+import { connect } from 'react-redux'
 
+import { addCard, focusOrAddCard, CARDS } from '../../../flow-control/cards'
+
+import SortFab from './SortFab'
 import Icon from '../../../Icon'
 
 import styles from './styles'
@@ -8,25 +12,21 @@ import styles from './styles'
 const ACTIVE_OPACITY = 0.7;
 
 type Props = {
-
+    dispatch: Dispatch
 }
 
-class Fabs extends PureComponent<Props> {
+class FabsDumb extends PureComponent<Props> {
     render() {
         return (
             <View style={styles.wrap}>
-                <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.settings}>
+                <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.settings} onPress={this.focusOrAddAccount}>
                     <View style={styles.backingSmall}>
                         <Icon name="attach_money" style={styles.labelSmall} />
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.sort}>
-                    <View style={styles.backingSmall}>
-                        <Icon name="sort" style={styles.labelSmall} />
-                    </View>
-                </TouchableOpacity>
+                <SortFab activeOpacity={ACTIVE_OPACITY} />
                 <View style={styles.row}>
-                    <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.searchNew}>
+                    <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.searchNew} onPress={this.addEntity}>
                         <View style={styles.backingSmall}>
                             <Icon name="search" style={styles.labelSmall} />
                             <View style={styles.labelSubWrap}>
@@ -43,6 +43,13 @@ class Fabs extends PureComponent<Props> {
             </View>
         )
     }
+
+    focusOrAddAccount = () => this.props.dispatch(focusOrAddCard({ kind:CARDS.ACCOUNT }))
+    addEntity = () => this.props.dispatch(addCard({ kind:CARDS.ENTITY }))
 }
+
+const FabsConnected = connect();
+
+const Fabs = FabsConnected(FabsDumb)
 
 export default Fabs

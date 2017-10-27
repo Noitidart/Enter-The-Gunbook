@@ -13,7 +13,8 @@ class CardAccount extends PureComponent<Props> {
     render() {
         return (
             <View style={styles.container}>
-                <Icon name="settings" style={styles.welcome} /><Text style={styles.welcome}>Settings</Text>
+                <Icon name="settings" style={styles.welcome} />
+                <Text style={styles.welcome}>Settings</Text>
             </View>
         )
     }

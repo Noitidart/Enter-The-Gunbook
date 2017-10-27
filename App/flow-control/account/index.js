@@ -12,13 +12,11 @@ import { waitRehydrate } from '../utils'
 
 export type Shape = {
     searchMode: 'voice' | 'text',
-    sortBy: null | string, // null means unsorted, string for key of which to sort by. key must be one of Gun or Item, if not found then its ignored
     syncedEntitysAt: number // Date
 };
 
 const INITIAL = {
     searchMode: 'voice',
-    sortBy: 'unsorted',
     syncedEntitysAt: 0
 }
 export const sagas = [];

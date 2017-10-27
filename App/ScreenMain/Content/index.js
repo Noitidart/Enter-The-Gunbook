@@ -40,6 +40,15 @@ const renderCard = (card, width) => {
 }
 
 class ContentDumb extends PureComponent<Props> {
+    componentDidUpdate(propsOld) {
+        const { cards } = this.props;
+        const { cards:cardsOld } = propsOld;
+
+        if (cards !== cardsOld) {
+            // figure out if a card was removed or added
+
+        }
+    }
     render() {
         const { screen, cards } = this.props;
 
@@ -53,6 +62,10 @@ class ContentDumb extends PureComponent<Props> {
                 <Fabs />
             </View>
         )
+    }
+
+    handleLayoutScroller = ({ nativeEvent }) => {
+        console.log('nativeEvent:', nativeEvent);
     }
 }
 
