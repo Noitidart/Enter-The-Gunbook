@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react'
 import { Image, ScrollView, Text, View } from 'react-native'
 
 import Counter from '../../Counter'
+import Fabs from './Fabs'
 import Icon from '../../Icon'
 
 import styles, { CARD_MARGIN } from './styles'
@@ -39,6 +40,7 @@ class Content extends PureComponent<Props> {
                         <Icon name="speaker" style={styles.text} />
                     </View>
                 </ScrollView>
+                <Fabs />
             </View>
         )
     }

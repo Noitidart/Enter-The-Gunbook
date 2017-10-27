@@ -42,13 +42,13 @@ class LoadingDumb extends PureComponent<Props> {
     async orchestrate() {
         const { setPreLoaded, setLoadingStatus, setLoaded, dispatch } = this.props;
 
-        await wait(5000);
+        // await wait(5000); // DEBUG:
 
         await this.monitor(props => props.isBackgroundLoaded && props.isLogoLoaded);
 
         setPreLoaded();
         setLoadingStatus('Initializing...');
-        await wait(1000); // DEBUG:
+        // await wait(1000); // DEBUG:
 
         await this.monitor(props => props.isRehydrated);
 
