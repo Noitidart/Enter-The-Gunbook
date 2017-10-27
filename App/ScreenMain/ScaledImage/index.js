@@ -7,22 +7,25 @@ type Props = {
     sourceHeight: number, // pixels
     width?: number, // percent 0.01-1 // desired percent of screen width
     height?: number, // percent 0.01-1 // desired percent of screen height
-    source: string
+    source: string,
+    imageProps: {}
 }
 
 class ScaledImage extends PureComponent<Props> {
     render() {
-        const { screen, width, height, sourceWidth, sourceHeight, source } = this.props;
+        const { style:styleProp, screen, width, height, sourceWidth, sourceHeight, source, ...imageProps } = this.props;
 
         const factor = width ? (screen.width * width) / sourceWidth
                              : (screen.height * height) / sourceHeight;
 
-        const style = {
+        const styleSize = {
             width: sourceWidth * factor,
             height: sourceHeight * factor
         };
 
-        return <Image source={source} style={style} />
+        const style = styleProp ? [ styleProp, styleSize ] : styleSize;
+
+        return <Image source={source} style={style} {...imageProps} />
     }
 }
 

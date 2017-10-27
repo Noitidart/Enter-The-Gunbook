@@ -1,46 +1,55 @@
 // @flow
 import React, { Component } from 'react'
-import { Image, Text, View, Dimensions } from 'react-native'
+import { Image, View, Dimensions, Text } from 'react-native'
 
+import Content from './Content'
+import Loading from './Loading'
 import ScaledImage from './ScaledImage'
-import Counter from '../Counter'
+import TextFader from '../TextFader'
 
 import styles from './styles'
-import BACKGROUND from './background.jpg'
 import LOGO from './logo.png'
+import BACKGROUND from './background.jpg'
 
 type Props = {
     setAppOpaque: () => void
 }
 
 type State = {
-    screen: { width:number, height:number }
+    screen: { width:number, height:number },
+    isPortrait: boolean,
+    backgroundLoaded: boolean,
+    logoLoaded: boolean,
+    isPreLoaded: boolean,
+    isLoaded: boolean
 }
 
 class ScreenMain extends Component<Props, State> {
     state = {
-        ...ScreenMain.getScreenState()
+        ...ScreenMain.getScreenState(),
+        isBackgroundLoaded: false,
+        isLogoLoaded: false,
+        isLoaded: false,
+        isPreLoaded: false,
+        loadingStatus: 'Initializing...'
     }
 
+
     render() {
-        const { screen, isPortrait } = this.state;
-        console.log('isPortrait:', isPortrait);
+        const { screen, isPortrait, isLoaded, isPreLoaded, loadingStatus } = this.state;
 
         return (
             <View style={styles.screen} onLayout={this.handleLayoutScreen}>
-                <Image source={BACKGROUND} style={styles.background} />
+                <Image source={BACKGROUND} style={[styles.background, { opacity:(isPreLoaded ? 1 : 0) }]} onLoad={this.handleLoadBackground} />
                 <View style={styles.marginStatus} />
-                <ScaledImage source={LOGO} screen={screen} sourceWidth={873} sourceHeight={281} width={isPortrait ? 0.8 : undefined} height={isPortrait ? undefined : 0.2} />
-                <Text style={styles.welcome}>
-                    Welcome to React Native!
-                </Text>
-                <Text style={styles.instructions}>
-                    To get started, edit App.js
-                </Text>
-                <Text style={styles.instructions}>
-                    Double tap R on your keyboard to reload,\nShake or press menu button for dev menu
-                </Text>
-                <Counter />
+                <ScaledImage style={{ opacity:(isPreLoaded ? 1 : 0) }} source={LOGO} screen={screen} sourceWidth={873} sourceHeight={281} width={isPortrait ? 0.8 : undefined} height={isPortrait ? undefined : 0.2} onLoad={this.handleLoadLogo} />
+                { !isLoaded && <Loading setLoadingStatus={this.setLoadingStatus} setLoaded={this.setLoaded} setPreLoaded={this.setPreLoaded} isBackgroundLoaded={this.state.isBackgroundLoaded} isLogoLoaded={this.state.isLogoLoaded} isPreLoaded={isPreLoaded} /> }
+                { isPreLoaded && !isLoaded &&
+                    <View style={styles.statusWrap}>
+                        <Text style={styles.statusLabel}>{loadingStatus}</Text>
+                    </View>
+                }
+                { isLoaded && <Content /> }
             </View>
         )
     }
@@ -54,6 +63,12 @@ class ScreenMain extends Component<Props, State> {
     }
 
     handleLayoutScreen = () => this.setState(() => ScreenMain.getScreenState())
+
+    handleLoadLogo = () => this.setState(() => ({ isLogoLoaded:true }))
+    handleLoadBackground = () => this.setState(() => ({ isBackgroundLoaded:true }))
+    setLoaded = () => this.setState(() => ({ isLoaded:true }))
+    setPreLoaded = () => this.setState(() => ({ isPreLoaded:true }))
+    setLoadingStatus = loadingStatus => this.setState(() => ({ loadingStatus }))
 }
 
 export default ScreenMain

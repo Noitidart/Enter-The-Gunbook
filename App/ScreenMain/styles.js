@@ -5,9 +5,8 @@ import { StyleSheet, StatusBar } from 'react-native'
 const styles = StyleSheet.create({
     screen: {
         flex: 1,
-        // justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#F5FCFF'
+        backgroundColor: '#191231'
     },
     background: {
         position: 'absolute',
@@ -19,15 +18,13 @@ const styles = StyleSheet.create({
     marginStatus: {
         height: StatusBar.currentHeight + 10
     },
-    welcome: {
-        fontSize: 20,
-        textAlign: 'center',
-        margin: 10
+    statusWrap: {
+        marginTop: 20
     },
-    instructions: {
-        textAlign: 'center',
-        color: '#333333',
-        marginBottom: 5
+    statusLabel: {
+        color: '#FFFFFF',
+        fontSize: 22,
+        fontWeight: 'bold'
     }
 })
 
