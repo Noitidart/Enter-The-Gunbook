@@ -4,10 +4,10 @@ import React, { PureComponent } from 'react'
 import { Button, Text, View } from 'react-native'
 import { connect } from 'react-redux'
 
-import { up, dn, upAsync } from '../flow-control/counter'
+import { up, dn, upAsync } from '../../../../flow-control/counter'
 
-import type { Shape as CounterShape } from '../flow-control/counter'
-import type { Shape as AppShape } from '../flow-control'
+import type { Shape as CounterShape } from '../../../../flow-control/counter'
+import type { Shape as AppShape } from '../../../../flow-control'
 
 type Props = {
     counter: CounterShape,

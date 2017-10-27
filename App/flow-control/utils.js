@@ -21,6 +21,14 @@ export function* getId(reducer: string) {
     return ++NEXT_ID[reducer];
 }
 
+const NEXT_ID_SYNC = {}
+export function getIdSync(reducer: string) {
+    if (!(reducer in NEXT_ID_SYNC)) {
+        NEXT_ID_SYNC[reducer] = 0;
+    }
+    return NEXT_ID_SYNC[reducer]++;
+}
+
 export const waitRehydrate = function* waitRehydrate() {
     // wait for redux-persit rehydration
 
