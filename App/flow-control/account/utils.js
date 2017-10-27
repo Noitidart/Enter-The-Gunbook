@@ -2,6 +2,14 @@
 
 import { stripTags } from 'cmn/lib/all'
 
+// https://stackoverflow.com/a/2970667/1828637
+function toCamelCase(str) {
+    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
+        if (+match === 0) return ''; // or if (/\s+/.test(match)) for white spaces
+        return index == 0 ? match.toLowerCase() : match.toUpperCase();
+    });
+}
+
 tableToJSON.defaultParser = cell_html => stripTags(`${cell_html}`).trim();
 export function tableToJSON(table, parsers={}) {
     // parsers are "cell parsers" passed (cell_html, cells, defaultParser) - the return is what the cell value gets set to in object

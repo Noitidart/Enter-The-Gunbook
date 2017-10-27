@@ -11,7 +11,7 @@ export const GUNGEON_PEDIA_PARSERS = {
     //     else return match[1];
     // },
     Name: (cell_html, cells, defaultParser) => {
-        cells.details_url = 'https://enterthegungeon.gamepedia.com' + cell_html.match(/href="([^"]+)/)[1];
+        cells.moreUrl = 'https://enterthegungeon.gamepedia.com' + cell_html.match(/href="([^"]+)/)[1];
         return defaultParser(cell_html)
     }
 }
@@ -42,7 +42,7 @@ export function getValueFromHtml(cell_html, attr_name) {
         const quality_enix = cell_html.indexOf('_Quality_Item.png');
         const quality_stix = quality_enix - 1;
         const quality = cell_html.substr(quality_stix, 1);
-        return quality;
+        return ['A', 'B', 'C', 'D', 'S'].includes(quality) ? quality : null;
     } else {
         const str = stripTags(cell_html).trim();
         return str.length ? str : null;

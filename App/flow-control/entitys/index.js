@@ -8,7 +8,7 @@ import { deleteUndefined } from '../utils'
 
 import type { EntityKind, Entity } from './types'
 
-const ENTITYS: {[key: EntityKind]: EntityKind} = {
+const ENTITYS = {
     ITEM: 'ITEM',
     GUN: 'GUN'
 }

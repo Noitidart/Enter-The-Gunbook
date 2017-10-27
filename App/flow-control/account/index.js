@@ -2,7 +2,10 @@
 
 import { delay } from 'redux-saga'
 import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
+import { normalize, schema } from 'normalizr'
+import { pickDotpath } from 'cmn/lib/all'
 
+import { ENTITYS, overwriteEntitys } from '../entitys'
 import { gamepediaExtractTable, GUNGEON_PEDIA_PARSERS } from './wiki'
 import { tableToJSON } from './utils'
 import { waitRehydrate } from '../utils'
@@ -83,7 +86,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
             }
         }
 
-        let alts;
+        let alts = {};
         {
             const res = yield call(fetch, 'https://github.com/Noitidart/Enter-The-Gunbook/wiki/Alternate-Phrases');
             const html = yield call([res, res.text]);
@@ -92,18 +95,47 @@ const syncEntitysSaga = function* syncEntitysSaga() {
             const table_enix = html.indexOf('</table', table_stix);
             const table = html.substr(table_stix, table_enix - table_stix);
 
-            alts = tableToJSON(table);
-
-            console.log('alts:', alts);
+            const data = tableToJSON(table);
+            for (const { Name:name, Alternatives:altsStr } of data) {
+                alts[name] = altsStr.split(',');
+            }
+            console.log('alts data:', data, 'alts:', alts);
         }
 
-        let guns;
+        const entitys = {};
+
+        // guns
         {
             const res = yield call(fetch, 'https://enterthegungeon.gamepedia.com/Guns');
             const html = yield call([res, res.text]);
             const table = gamepediaExtractTable(html);
-            guns = tableToJSON(table, GUNGEON_PEDIA_PARSERS);
-            console.log('guns:', guns);
+            const data = tableToJSON(table, GUNGEON_PEDIA_PARSERS);
+
+            const GunSchema = new schema.Entity('guns', undefined, {
+                idAttribute: 'Name',
+                processStrategy: value => ({
+                    ammoCapacity: parseInt(value['Ammo Capacity']),
+                    damage: parseInt(value.Damage),
+                    fireRate: parseFloat(value['Fire Rate']) || null,
+                    force: parseInt(value.Force) || null,
+                    magazineSize: parseInt(value['Magazine Size']),
+                    range: parseInt(value.Range),
+                    reloadTime: parseFloat(value['Reload Time']) || null,
+                    shotSpeed: parseInt(value['Shot Speed']) || null,
+                    spread: parseInt(value.Spread) || null,
+                    ...pickDotpath(value,
+                        'Icon as icon',
+                        'Notes as notes',
+                        'Quality as quality',
+                        'Quote as quote',
+                        'Type as type'
+                    )
+                })
+            });
+
+            entitys[ENTITYS.GUN] = normalize(data, [ GunSchema ]).entities.guns;
+
+            console.log('guns data:', data);
         }
 
         let items;
@@ -111,9 +143,36 @@ const syncEntitysSaga = function* syncEntitysSaga() {
             const res = yield call(fetch, 'https://enterthegungeon.gamepedia.com/Items');
             const html = yield call([res, res.text]);
             const table = gamepediaExtractTable(html);
-            items = tableToJSON(table, GUNGEON_PEDIA_PARSERS);
-            console.log('items:', items);
+            const data = tableToJSON(table, GUNGEON_PEDIA_PARSERS);
+
+            const ItemSchema = new schema.Entity('items', undefined, {
+                idAttribute: 'Name',
+                processStrategy: value => pickDotpath(value,
+                    'Effect as effect',
+                    'Icon as icon',
+                    'Quality as quality',
+                    'Quote as quote',
+                    'Type as type'
+                )
+            });
+
+            entitys[ENTITYS.ITEM] = normalize(data, [ ItemSchema ]).entities.items;
+
+            console.log('items data:', data);
+
+
         }
+
+        for (const aEntitys of Object.values(entitys)) {
+            for (const [id, entity] of Object.entries(aEntitys)) {
+                if (id in alts) {
+                    entity.alts = alts[id];
+                }
+            }
+        }
+        console.log('entitys:', entitys);
+
+        yield put(overwriteEntitys(entitys));
 
         yield put(update({ syncedEntitysAt:Date.now() }))
     }

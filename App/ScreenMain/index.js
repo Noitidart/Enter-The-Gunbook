@@ -5,7 +5,6 @@ import { Image, View, Dimensions, Text } from 'react-native'
 import Content from './Content'
 import Loading from './Loading'
 import ScaledImage from './ScaledImage'
-import TextFader from '../TextFader'
 
 import styles from './styles'
 import LOGO from './logo.png'
