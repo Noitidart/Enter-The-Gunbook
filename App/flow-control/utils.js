@@ -1,6 +1,7 @@
 // @flow
 
-import { select } from 'redux-saga/effects'
+import { take, select } from 'redux-saga/effects'
+import { REHYDRATE } from 'redux-persist/lib/constants'
 
 export function deleteUndefined<T: {}>(obj: T): T {
     // mutates obj
@@ -18,4 +19,15 @@ export function* getId(reducer: string) {
         NEXT_ID[reducer] = ids.length ? Math.max(...ids) : -1;
     }
     return ++NEXT_ID[reducer];
+}
+
+export const waitRehydrate = function* waitRehydrate() {
+    // wait for redux-persit rehydration
+
+    let {_persist:{ rehydrated }} = yield select();
+
+    while (!rehydrated) {
+        yield take(REHYDRATE);
+        ({_persist:{ rehydrated }} = yield select());
+    }
 }

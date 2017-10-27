@@ -21,7 +21,8 @@ type OwnProps = {
 type Props = {
     ...OwnProps,
     // redux
-    isRehydrated: boolean
+    isRehydrated: boolean,
+    isEntitysSynced: boolean
 }
 
 class LoadingDumb extends PureComponent<Props> {
@@ -39,21 +40,24 @@ class LoadingDumb extends PureComponent<Props> {
     }
 
     async orchestrate() {
-        const { setPreLoaded, setLoadingStatus, setLoaded } = this.props;
+        const { setPreLoaded, setLoadingStatus, setLoaded, dispatch } = this.props;
 
         await wait(5000);
 
         await this.monitor(props => props.isBackgroundLoaded && props.isLogoLoaded);
 
         setPreLoaded();
-        setLoadingStatus('Rehydrating...');
+        setLoadingStatus('Initializing...');
         await wait(1000); // DEBUG:
 
         await this.monitor(props => props.isRehydrated);
 
-        await wait(1000); // DEBUG:
+        if (!this.props.isEntitysSynced) {
+            setLoadingStatus('Downloading Wiki...');
+            await this.monitor(props => props.isEntitysSynced);
+        }
+
         setLoadingStatus('');
-        await wait(1000); // DEBUG:
         setLoaded();
     }
 }
@@ -61,9 +65,10 @@ class LoadingDumb extends PureComponent<Props> {
 const LoadingMonitor = withMonitor;
 
 const LoadingConnected = connect(
-    function({_persist:{ rehydrated }}: AppShape) {
+    function({_persist:{ rehydrated },account:{ syncedEntitysAt } }: AppShape) {
         return {
-            isRehydrated: rehydrated
+            isRehydrated: rehydrated,
+            isEntitysSynced: syncedEntitysAt > 0
         }
     }
 )

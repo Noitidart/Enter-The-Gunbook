@@ -6,20 +6,29 @@ import storage from 'redux-persist/es/storage'
 import createSagaMiddleware from 'redux-saga'
 import { fork, all } from 'redux-saga/effects'
 
+import account, { sagas as accountSagas } from './account'
+import api from './api'
 import counter, { sagas as counterSagas } from './counter'
+import entitys from './entitys'
 
+import type { Shape as AccountShape } from './account'
+import type { Shape as ApiShape } from './api'
 import type { Shape as CounterShape } from './counter'
+import type { Shape as EntitysShape } from './entitys'
 
 export type Shape = {
     _persist: { version:number, rehydrated:boolean },
-    counter: CounterShape
+    account: AccountShape,
+    api: ApiShape,
+    counter: CounterShape,
+    entitys: EntitysShape
 }
 
 console.log('process.env.NODE_ENV:', process.env.NODE_ENV, process.env.NODE_ENV !== 'production');
 const persistConfig = {
     key: 'primary',
     debug: process.env.NODE_ENV !== 'production',
-    whitelist: ['counter'],
+    whitelist: ['account', 'counter', 'entitys'],
     storage
 }
 
@@ -27,8 +36,8 @@ const sagaMiddleware = createSagaMiddleware();
 let enhancers = applyMiddleware(sagaMiddleware);
 if (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) enhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(enhancers);
 
-const reducers = persistReducer(persistConfig, combineReducers({ counter }));
-const sagas = [ ...counterSagas ];
+const reducers = persistReducer(persistConfig, combineReducers({ account, api, counter, entitys }));
+const sagas = [ ...accountSagas, ...counterSagas ];
 
 const store = createStore(reducers, enhancers);
 
