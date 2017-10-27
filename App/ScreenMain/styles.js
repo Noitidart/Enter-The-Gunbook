@@ -1,24 +1,23 @@
 // @flow
 
-import { StyleSheet } from 'react-native'
+import { StyleSheet, StatusBar } from 'react-native'
 
-const APP_BACKGROUND = '#F6F8FB';
-
-const app = {
-    flex: 1
-}
 const styles = StyleSheet.create({
-    app,
-    appOpaque: {
-        ...app,
-        backgroundColor: APP_BACKGROUND // to hide splash in background - not working when keyboard view pushes it away though
-    },
-
-    container: {
+    screen: {
         flex: 1,
         // justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#F5FCFF'
+    },
+    background: {
+        position: 'absolute',
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover'
+    },
+    marginStatus: {
+        height: StatusBar.currentHeight + 10
     },
     welcome: {
         fontSize: 20,
@@ -32,5 +31,4 @@ const styles = StyleSheet.create({
     }
 })
 
-export { APP_BACKGROUND }
 export default styles
