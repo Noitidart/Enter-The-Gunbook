@@ -49,7 +49,7 @@ class ScreenMain extends Component<Props, State> {
                         <Text style={styles.statusLabel}>{loadingStatus}</Text>
                     </View>
                 }
-                { isLoaded && <Content /> }
+                { isLoaded && <Content screen={screen} /> }
             </View>
         )
     }

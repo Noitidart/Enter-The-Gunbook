@@ -39,7 +39,7 @@ class LoadingDumb extends PureComponent<Props> {
     }
 
     async orchestrate() {
-        const { setPreLoaded, setLoadingStatus } = this.props;
+        const { setPreLoaded, setLoadingStatus, setLoaded } = this.props;
 
         await wait(5000);
 
@@ -53,6 +53,8 @@ class LoadingDumb extends PureComponent<Props> {
 
         await wait(1000); // DEBUG:
         setLoadingStatus('');
+        await wait(1000); // DEBUG:
+        setLoaded();
     }
 }
 
