@@ -30,7 +30,7 @@ const A = ([actionType]: string[]) => 'COUNTER_' + actionType; // Action type pr
 //
 const ADD = A`ADD`;
 type AddAction = { type:typeof ADD };
-const addCard = (data): AddAction => ({ type:ADD, data, id:getIdSync('cards') });
+const addCard = (data): AddAction => ({ type:ADD, data:{ ...data, id:getIdSync('cards') } });
 
 //
 const REMOVE = A`REMOVE`;

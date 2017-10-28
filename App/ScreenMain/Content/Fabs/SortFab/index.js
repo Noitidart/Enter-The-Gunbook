@@ -6,8 +6,7 @@ import Icon from '../../../../Icon'
 import styles from '../styles'
 
 type Props = {
-    activeOpacity: number,
-    onPress?: () => void
+    activeOpacity: number
 }
 
 const OPTIONS = [
@@ -18,10 +17,6 @@ const OPTIONS = [
 ]
 
 class SortFab extends PureComponent<Props> {
-    static defaultProps = {
-        activeOpacity: 0.2
-    }
-
     render() {
         const { activeOpacity } = this.props;
 

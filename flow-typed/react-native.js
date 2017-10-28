@@ -19,3 +19,14 @@ type AnimatedCallback = ({ finished:boolean }) => void
 
 type LayoutEvent = { nativeEvent:{ layout:{ width:number, height:number } } };
 type ImageLoadEvent = { nativeEvent:{ source:{ width:number, height:number } } };
+type ScrollEvent = {
+    nativeEvent: { // tested on android 6.0/23 for onScroll and onMomentScrollEnd on <ScrollView>
+        contentInset: { bottom:number, left:number, right:number, top:number },
+        contentOffset: { x:number, y:number },
+        contentSize: { height:number, width:number },
+        layoutMeasurement: { height:number, width:number },
+        responderIgnoreScroll: boolean,
+        target: number,
+        velocity: { x:number, y:number }
+    }
+}
