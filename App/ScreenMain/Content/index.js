@@ -21,6 +21,7 @@ type OwnProps = {
 type Props = {
     ...OwnProps,
     // redux
+    dispatch: Dispatch,
     cards: CardsShape
 }
 
@@ -53,7 +54,7 @@ class ContentDumb extends PureComponent<Props> {
         }
     }
     render() {
-        const { screen, cards } = this.props;
+        const { screen, cards, dispatch } = this.props;
 
         const cardWidth = this.props.screen.width - CARD_MARGIN - CARD_MARGIN;
 
@@ -62,47 +63,23 @@ class ContentDumb extends PureComponent<Props> {
                 <ScrollView overScrollMode="never" style={styles.scroller} contentContainerStyle={styles.contentContainer} horizontal pagingEnabled ref={this.refScroller} onScroll={this.handleScroll} scrollEventThrottle={16} onLayout={this.handleLayout} onMomentumScrollEnd={this.handleScrollEnd}>
                     { cards.map( card => renderCard(card, cardWidth) ) }
                 </ScrollView>
-                <Fabs getScroller={this.getScroller} cards={cards} scrollToCard={this.scrollToCard} />
+                <Fabs dispatch={dispatch} findCardIndex={this.findCardIndex} scrollToCard={this.scrollToCard} getCurrentCardIndex={this.getCurrentCardIndex} />
             </View>
         )
     }
 
     refScroller = el => this.scroller = el
-    getScroller = () => this.scroller
 
-    handleScroll = ({nativeEvent:{contentOffset:{ x:scrollX },layoutMeasurement:{ width:cardWidthWithMargins }}}: ScrollEvent) => {
-        /* android
-        {
-            contentInset: { bottom:number, left:number, right:number, top:number },
-            contentOffset: { x:number, y:number },
-            contentSize: { height:number, width:number },
-            layoutMeasurement: { height:number, width:number },
-            responderIgnoreScroll: boolean,
-            target: number,
-            velocity: { x:number, y:number }
-        }
-        */
-        // this.currentCardIndex = Math.round(scrollX / cardWidthWithMargins);
-        // console.log('scrolled, currentCardIndex is now:', this.currentCardIndex);
-    }
-    handleScrollEnd = ({nativeEvent:{contentOffset:{ x:scrollX },layoutMeasurement:{ width:cardWidthWithMargins }}}: ScrollEvent) => {
-        // onMomentumScrollEnd is triggering even when overScrollMode is "never" and it doesnt move, which is perfect, because i want to know when HUMAN scroll end, as onScroll gets triggered on onLayout
-        this.currentCardIndex = Math.round(scrollX / cardWidthWithMargins);
-        console.log('scrolled, currentCardIndex is now:', this.currentCardIndex);
-    }
-    // width is same as card_width
-    handleLayout = ({nativeEvent:{layout:{ width }}}: LayoutEvent) => {
-        console.log('scroller layouted:', width); // same as this.props.screen.width
-        // this.currentScrollerWidth = width;
-        this.scrollToCard(this.currentCardIndex);
-    }
+    handleScrollEnd = ({nativeEvent:{contentOffset:{ x:scrollX },layoutMeasurement:{ width:cardWidthWithMargins }}}: ScrollEvent) => this.currentCardIndex = Math.round(scrollX / cardWidthWithMargins);
+    handleLayout = () => this.scrollToCard(this.currentCardIndex);
     scrollToCard = (index: number) => {
         if (index <= this.props.cards.length) {
             this.currentCardIndex = index; // need this as am setting this.currentCardIndex onMomentumScrollEnd now instead of onScroll
             this.scroller.scrollTo({ x:this.props.screen.width*index })
         }
     }
-    getCurrentCardIndex = () => currentCardIndex
+    getCurrentCardIndex = () => this.currentCardIndex
+    findCardIndex = predicate => this.props.cards.findIndex(predicate)
 }
 
 const ContentConnected = connect(

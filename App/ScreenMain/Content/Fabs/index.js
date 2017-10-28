@@ -11,16 +11,16 @@ import styles from './styles'
 
 const ACTIVE_OPACITY = 0.7;
 
-import type { Shape as CardsShape } from '../../../flow-control/cards'
+import type { Shape as CardsShape, Card } from '../../../flow-control/cards'
 
 type Props = {
     dispatch: Dispatch,
-    getScroller: () => null | *, // returns ref or null
     scrollToCard: number => void,
-    cards: CardsShape
+    getCurrentCardIndex: () => number,
+    findCardIndex: (Card=>boolean) => number
 }
 
-class FabsDumb extends PureComponent<Props> {
+class Fabs extends PureComponent<Props> {
     render() {
         return (
             <View style={styles.wrap}>
@@ -39,7 +39,7 @@ class FabsDumb extends PureComponent<Props> {
                             </View>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.search}>
+                    <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.search} onPress={this.addCounterCard}>
                         <View style={styles.backingBig}>
                             <Icon name="search" style={styles.labelBig} />
                         </View>
@@ -50,21 +50,18 @@ class FabsDumb extends PureComponent<Props> {
     }
 
     addAccountCard = () => {
-        const { cards, dispatch, getScroller, scrollToCard } = this.props;
-        const ixAccountCard = cards.findIndex(card => card.kind === CARDS.ACCOUNT)
-        if (ixAccountCard > -1) scrollToCard(ixAccountCard);
+        const { findCardIndex, dispatch, getScroller, scrollToCard } = this.props;
+        const ixCard = findCardIndex(card => card.kind === CARDS.ACCOUNT)
+        if (ixCard > -1) scrollToCard(ixCard);
         else dispatch(addCard({ kind:CARDS.ACCOUNT }));
     }
     addEntityCard = () => {
-        const { cards, dispatch, getScroller, scrollToCard } = this.props;
-        const ixEmptyEntityCard = cards.findIndex(card => card.kind === CARDS.ENTITY && card.entityId === undefined)
-        if (ixEmptyEntityCard > -1) scrollToCard(ixEmptyEntityCard);
-        else dispatch(addCard({ kind:CARDS.ENTITY }));
+        const { findCardIndex, getCurrentCardIndex, dispatch, getScroller, scrollToCard } = this.props;
+        const ixCard = findCardIndex(card => card.kind === CARDS.ENTITY && card.entityId === undefined)
+        if (ixCard > -1) scrollToCard(ixCard);
+        else dispatch(addCard({ kind:CARDS.ENTITY }, getCurrentCardIndex()+1));
     }
+    addCounterCard = () => this.props.dispatch(addCard({ kind:CARDS.COUNTER }, this.props.getCurrentCardIndex()+1));
 }
-
-const FabsConnected = connect();
-
-const Fabs = FabsConnected(FabsDumb)
 
 export default Fabs
