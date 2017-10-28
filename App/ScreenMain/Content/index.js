@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import { Image, ScrollView, Text, View } from 'react-native'
 import { connect } from 'react-redux'
 
-import { CARDS } from '../../flow-control/cards'
+import { CARDS, removeCard, updateCard } from '../../flow-control/cards'
 
 import CardAccount from './CardAccount'
 import CardCounter from './CardCounter'
@@ -57,8 +57,7 @@ class ContentDumb extends PureComponent<Props> {
                 const idsOld = cardsOld.map(card => card.id);
                 const ids = cards.map(card => card.id);
                 const addedIndex = ids.findIndex(id => !idsOld.includes(id));
-                console.log('addedIndex:', addedIndex);
-                setTimeout(()=>this.scrollToCard(addedIndex), 0);
+                setTimeout(()=>this.scrollToCard(addedIndex), 0); // if i dont setTimeout it doesnt scroll
             } else if (isRemove) {
                 const idsOld = cardsOld.map(card => card.id);
                 const ids = cards.map(card => card.id);
@@ -77,7 +76,7 @@ class ContentDumb extends PureComponent<Props> {
                 <ScrollView style={styles.scroller} contentContainerStyle={styles.contentContainer} horizontal pagingEnabled ref={this.refScroller} onScroll={this.handleScroll} scrollEventThrottle={16} onLayout={this.handleLayout} onMomentumScrollEnd={this.handleScrollEnd}>
                     { cards.map( card => renderCard(card, cardWidth) ) }
                 </ScrollView>
-                <Fabs dispatch={dispatch} findCardIndex={this.findCardIndex} scrollToCard={this.scrollToCard} getCurrentCardIndex={this.getCurrentCardIndex} />
+                <Fabs dispatch={dispatch} findCardIndex={this.findCardIndex} scrollToCard={this.scrollToCard} getCurrentCardIndex={this.getCurrentCardIndex} removeCurrentCard={this.removeCurrentCard} />
             </View>
         )
     }
@@ -96,6 +95,18 @@ class ContentDumb extends PureComponent<Props> {
     }
     getCurrentCardIndex = () => this.currentCardIndex
     findCardIndex = predicate => this.props.cards.findIndex(predicate)
+    removeCurrentCard = () => {
+        const { dispatch, cards } = this.props;
+        const card = cards[this.currentCardIndex];
+        console.log('current card:', card);
+        if (cards.length === 1) {
+            if (card.kind !== CARDS.ENTITY || card.entityId !== undefined) {
+                dispatch(updateCard(card.id, { kind:CARDS.ENTITY, entityId:undefined }));
+            } // else do nothing as i always want one card in the stack. and the least card it shoudl be is a no-entity entity card
+        } else {
+            dispatch(removeCard(card.id));
+        }
+    }
 }
 
 const ContentConnected = connect(

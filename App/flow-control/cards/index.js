@@ -82,7 +82,7 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
                 return stateNew;
             }
         }
-        case REMOVE: return state.filter(entry => entry.id === action.id);
+        case REMOVE: return state.filter(entry => entry.id !== action.id);
         case UPDATE: {
             const { id, data } = action;
             return state.map( entry => entry.id !== id ? entry : deleteUndefined({ ...entry, ...data }) );

@@ -56,6 +56,7 @@ class Fabs extends PureComponent<Props> {
         else dispatch(addCard({ kind:CARDS.ACCOUNT }));
     }
     addEntityCard = () => {
+        return this.props.removeCurrentCard(); // DEBUG:
         const { findCardIndex, getCurrentCardIndex, dispatch, getScroller, scrollToCard } = this.props;
         const ixCard = findCardIndex(card => card.kind === CARDS.ENTITY && card.entityId === undefined)
         if (ixCard > -1) scrollToCard(ixCard);
