@@ -50,7 +50,21 @@ class ContentDumb extends PureComponent<Props> {
 
         if (cards !== cardsOld) {
             // figure out if a card was removed or added
-
+            const isAdd = cards.length > cardsOld.length;
+            const isRemove = cards.length < cardsOld.length;
+            console.log('isAdd:', isAdd, 'isRemove:', isRemove);
+            if (isAdd) {
+                const idsOld = cardsOld.map(card => card.id);
+                const ids = cards.map(card => card.id);
+                const addedIndex = ids.findIndex(id => !idsOld.includes(id));
+                console.log('addedIndex:', addedIndex);
+                setTimeout(()=>this.scrollToCard(addedIndex), 0);
+            } else if (isRemove) {
+                const idsOld = cardsOld.map(card => card.id);
+                const ids = cards.map(card => card.id);
+                const removedIndex = idsOld.findIndex(idOld => !ids.includes(idOld));
+                this.scrollToCard(removedIndex === 0 ? 0 : removedIndex - 1);
+            } // else it was sorted probably, go to first card
         }
     }
     render() {
@@ -60,7 +74,7 @@ class ContentDumb extends PureComponent<Props> {
 
         return (
             <View style={styles.content}>
-                <ScrollView overScrollMode="never" style={styles.scroller} contentContainerStyle={styles.contentContainer} horizontal pagingEnabled ref={this.refScroller} onScroll={this.handleScroll} scrollEventThrottle={16} onLayout={this.handleLayout} onMomentumScrollEnd={this.handleScrollEnd}>
+                <ScrollView style={styles.scroller} contentContainerStyle={styles.contentContainer} horizontal pagingEnabled ref={this.refScroller} onScroll={this.handleScroll} scrollEventThrottle={16} onLayout={this.handleLayout} onMomentumScrollEnd={this.handleScrollEnd}>
                     { cards.map( card => renderCard(card, cardWidth) ) }
                 </ScrollView>
                 <Fabs dispatch={dispatch} findCardIndex={this.findCardIndex} scrollToCard={this.scrollToCard} getCurrentCardIndex={this.getCurrentCardIndex} />
@@ -73,7 +87,9 @@ class ContentDumb extends PureComponent<Props> {
     handleScrollEnd = ({nativeEvent:{contentOffset:{ x:scrollX },layoutMeasurement:{ width:cardWidthWithMargins }}}: ScrollEvent) => this.currentCardIndex = Math.round(scrollX / cardWidthWithMargins);
     handleLayout = () => this.scrollToCard(this.currentCardIndex);
     scrollToCard = (index: number) => {
-        if (index <= this.props.cards.length) {
+        console.log('in scorllToCard, index:', index, 'cards.length:', this.props.cards.length);
+        if (index > -1 && index < this.props.cards.length) {
+            console.log('ok scrolling, x:', this.props.screen.width*index);
             this.currentCardIndex = index; // need this as am setting this.currentCardIndex onMomentumScrollEnd now instead of onScroll
             this.scroller.scrollTo({ x:this.props.screen.width*index })
         }
