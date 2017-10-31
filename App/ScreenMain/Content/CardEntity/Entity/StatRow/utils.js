@@ -1,6 +1,8 @@
 // @flow
 
-export function getIconForStat(name: string) {
+import type { Name as IconName } from '../../../../../Icon'
+
+export function getIconForStat(name: string): IconName | null {
     switch (name) {
         case 'ammoCapacity': return 'battery_full';
         case 'damage': return 'whatshot';
@@ -12,11 +14,12 @@ export function getIconForStat(name: string) {
         case 'shotSpeed': return 'slow_motion_video';
         case 'spread': return 'wifi_tethering'; // looks
         case 'notes': return 'receipt';
-        default: return 'help';
+        case 'effect': return 'bubble_chart'; // blur_on, flare, flash_on
+        default: return null; // return 'help';
     }
 }
 
-export function getLabelForStat(name: string) {
+export function getLabelForStat(name: string): string | null {
     switch (name) {
         case 'ammoCapacity': return 'Ammo Capacity';
         case 'damage': return 'Damage';
@@ -28,7 +31,7 @@ export function getLabelForStat(name: string) {
         case 'shotSpeed': return 'Shot Speed';
         case 'spread': return 'Spread';
         case 'notes': return 'Notes';
-        default: return '???';
+        default: return null; // return '???';
     }
 }
 

@@ -14,12 +14,12 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         alignItems: 'center',
-        borderTopWidth: 1,
-        borderBottomWidth: 1,
-        borderTopColor: OFF_BLACK,
-        borderBottomColor: OFF_BLACK,
+        // borderTopWidth: 1,
+        // borderBottomWidth: 1,
+        // borderTopColor: OFF_BLACK,
+        // borderBottomColor: OFF_BLACK,
         paddingHorizontal: 10,
-        paddingVertical: 15
+        paddingVertical: 6
     },
     columns: {
         flexDirection: 'row',
@@ -58,6 +58,10 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: 'bold',
         fontSize: 16
+    },
+    para: {
+        color: '#FFFFFF',
+        fontSize: 15
     }
 
 })

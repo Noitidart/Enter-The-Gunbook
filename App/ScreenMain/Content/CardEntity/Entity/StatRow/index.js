@@ -29,10 +29,23 @@ class StatRowDumb extends PureComponent<Props> {
     render() {
         const { entitys, entityId, name, value } = this.props;
 
+        const shouldShow = value !== null && !!getIconForStat(name);
+        if (!shouldShow) return null;
+
         const isValueNumeric = value !== null && value !== undefined && (value === 'Infinity' || typeof value !== 'string');
 
         if (!isValueNumeric) {
-            return null;
+            return (
+                <View style={styles.row}>
+                    <View style={styles.columns}>
+                        <Icon name={getIconForStat(name)} style={styles.icon} />
+                        <View style={styles.dataCol}>
+                            <Text style={styles.name}>{getLabelForStat(name)}</Text>
+                            <Text style={styles.para}>{value}</Text>
+                        </View>
+                    </View>
+                </View>
+            )
         } else {
             const values = sortedWithoutOutliers(Object.values(entitys).map(entity => entity[name]).filter(value => ![null, undefined, 'Infinity'].includes(value)));
             const valuesMax = Math.max(...values).toFixed(2);

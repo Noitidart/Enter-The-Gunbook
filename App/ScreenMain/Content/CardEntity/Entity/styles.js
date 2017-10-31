@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         position: 'absolute',
-        left: 20,
+        left: 10,
         top: 20,
         backgroundColor: 'rgba(0, 0, 0, 0.3)',
         justifyContent: 'center',
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
         paddingTop: 5,
         paddingBottom: 10,
         flexDirection: 'row',
-        marginLeft: 130 // indent to avoid image
+        marginLeft: 120 // indent to avoid image
     },
     descRow: {
         flexDirection: 'row',
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
         width: 10,
         height: 14,
         marginTop: 1,
-        marginHorizontal: 6
+        marginHorizontal: 1
     },
     name: {
         fontSize: 24,
