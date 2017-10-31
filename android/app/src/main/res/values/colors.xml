@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="gungeonpurple">#191231</color>
+    <color name="gungeonpink">#DE3D70</color>
+    <color name="rnmaterialblue">#5677FC</color>
 </resources>

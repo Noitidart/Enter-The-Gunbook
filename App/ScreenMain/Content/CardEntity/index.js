@@ -1,22 +1,28 @@
 import React, { PureComponent } from 'react'
-import { Text, View } from 'react-native'
+import { Text, View, TextInput } from 'react-native'
+
+import Search from './Search'
 
 import styles from './styles'
 
-type Props = {
+import type { Card } from '../../../flow-control/cards'
 
+type Props = {
+    ...Card
 }
 
-class CardCounter extends PureComponent<Props> {
+class CardEntity extends PureComponent<Props> {
     render() {
+        const { entityId } = this.props;
+        console.log('card props:', this.props);
+
         return (
             <View style={styles.container}>
-                <Text style={styles.welcome}>
-                    ENTITY PAGE
-                </Text>
+                { !entityId && <Search /> }
+                { entityId && <Text>{entityId}</Text> }
             </View>
         )
     }
 }
 
-export default CardCounter
+export default CardEntity
