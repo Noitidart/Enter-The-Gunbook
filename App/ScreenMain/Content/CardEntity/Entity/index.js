@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import { Text, View, ScrollView } from 'react-native'
+import { Image, ScrollView, Text, View } from 'react-native'
 import { connect } from 'react-redux'
 import { toTitleCase } from 'cmn/lib/all'
 
@@ -10,11 +10,24 @@ import StatRow from './StatRow'
 import { ENTITYS } from '../../../../flow-control/entitys'
 
 import styles from './styles'
+import QUALITY_A from './quality-a.png'
+import QUALITY_B from './quality-b.png'
+import QUALITY_C from './quality-c.png'
+import QUALITY_D from './quality-d.png'
+import QUALITY_S from './quality-s.png'
 
 import type { Entity as EntityType, EntityKind } from '../../../flow-control/entitys/types'
 import type { Card } from '../../../flow-control/cards'
 import type { Shape as AppShape } from '../../../flow-control'
 import type { Shape as EntitysShape } from '../../../flow-control/entitys'
+
+const QUALITY = {
+    A: QUALITY_A,
+    B: QUALITY_B,
+    C: QUALITY_C,
+    D: QUALITY_D,
+    S: QUALITY_S
+}
 
 type OwnProps = {
     entityId: Id
@@ -45,7 +58,10 @@ class EntityDumb extends PureComponent<Props> {
                 <View style={styles.inlineImageRow}>
                     <View>
                         <Text style={styles.name}>{entityId}</Text>
-                        <Text style={styles.kind}>{toTitleCase(kind)}</Text>
+                        <View style={styles.descRow}>
+                            <Text style={styles.kind}>{toTitleCase(kind)}</Text>
+                            { entity.quality && <Image style={styles.quality} source={QUALITY[entity.quality]} /> }
+                        </View>
                     </View>
                 </View>
                 <ScrollView style={styles.body}>

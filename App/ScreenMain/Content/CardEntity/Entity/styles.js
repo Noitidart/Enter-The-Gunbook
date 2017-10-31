@@ -43,6 +43,17 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         marginLeft: 130 // indent to avoid image
     },
+    descRow: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    quality: {
+        resizeMode: 'stretch',
+        width: 10,
+        height: 14,
+        marginTop: 1,
+        marginHorizontal: 6
+    },
     name: {
         fontSize: 24,
         color: OFF_WHITE
