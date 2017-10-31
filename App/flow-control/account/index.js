@@ -55,7 +55,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
 
     yield call(waitRehydrate);
 
-    const MIN_TIME_SINCE_SYNC = 60000; // 24 * 60 * 60 * 1000; // 24
+    const MIN_TIME_SINCE_SYNC = 24 * 60 * 60 * 1000; // 24 hours
 
     while (true) {
         const {account:{ syncedEntitysAt }} = yield select();
@@ -124,7 +124,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
                     shotSpeed: parseInt(value['Shot Speed']) || null,
                     spread: parseInt(value.Spread) || null,
                     ...pickDotpath(value,
-                        'Icon as icon',
+                        'Icon as image',
                         'Notes as notes',
                         'Quality as quality',
                         'Quote as quote',
@@ -149,7 +149,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
                 idAttribute: 'Name',
                 processStrategy: value => pickDotpath(value,
                     'Effect as effect',
-                    'Icon as icon',
+                    'Icon as image',
                     'Quality as quality',
                     'Quote as quote',
                     'Type as type'

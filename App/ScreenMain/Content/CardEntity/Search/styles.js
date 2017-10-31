@@ -4,8 +4,9 @@ import { StyleSheet } from 'react-native'
 
 const styles = StyleSheet.create({
     main: {
-        justifyContent: 'center',
-        alignItems: 'center'
+        flex: 1,
+        alignItems: 'center',
+        padding: 20
     },
     subWrap: {
         margin: 10,

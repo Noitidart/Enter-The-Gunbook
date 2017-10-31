@@ -4,7 +4,7 @@ import { Image, View, Dimensions, Text } from 'react-native'
 
 import Content from './Content'
 import Loading from './Loading'
-import ScaledImage from './ScaledImage'
+import ImageScaled from './ImageScaled'
 
 import styles from './styles'
 import LOGO from './logo.png'
@@ -41,7 +41,7 @@ class ScreenMain extends Component<Props, State> {
             <View style={styles.screen} onLayout={this.handleLayoutScreen}>
                 <Image source={BACKGROUND} style={[styles.background, { opacity:(isPreLoaded ? 1 : 0) }]} onLoad={this.handleLoadBackground} />
                 <View style={styles.marginStatus} />
-                <ScaledImage style={{ opacity:(isPreLoaded ? 1 : 0) }} source={LOGO} screen={screen} sourceWidth={873} sourceHeight={281} width={isPortrait ? 0.8 : undefined} height={isPortrait ? undefined : 0.2} onLoad={this.handleLoadLogo} />
+                <ImageScaled style={{ opacity:(isPreLoaded ? 1 : 0) }} source={LOGO} screen={screen} sourceWidth={873} sourceHeight={281} width={isPortrait ? 0.8 : undefined} height={isPortrait ? undefined : 0.2} onLoad={this.handleLoadLogo} />
                 { !isLoaded && <Loading setLoadingStatus={this.setLoadingStatus} setLoaded={this.setLoaded} setPreLoaded={this.setPreLoaded} isBackgroundLoaded={this.state.isBackgroundLoaded} isLogoLoaded={this.state.isLogoLoaded} isPreLoaded={isPreLoaded} /> }
                 { isPreLoaded && !isLoaded &&
                     <View style={styles.statusWrap}>

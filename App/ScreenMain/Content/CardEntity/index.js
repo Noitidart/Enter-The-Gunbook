@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react'
 import { Text, View, TextInput } from 'react-native'
 
 import Search from './Search'
+import Entity from './Entity'
 
 import styles from './styles'
 
@@ -13,13 +14,13 @@ type Props = {
 
 class CardEntity extends PureComponent<Props> {
     render() {
-        const { entityId } = this.props;
+        const { entityId, id } = this.props;
         console.log('card props:', this.props);
 
         return (
             <View style={styles.container}>
-                { !entityId && <Search /> }
-                { entityId && <Text>{entityId}</Text> }
+                { !entityId && <Search cardId={id} /> }
+                { entityId && <Entity entityId={entityId} /> }
             </View>
         )
     }

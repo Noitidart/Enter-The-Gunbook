@@ -11,7 +11,7 @@ type Props = {
     imageProps: {}
 }
 
-class ScaledImage extends PureComponent<Props> {
+class ImageScaled extends PureComponent<Props> {
     render() {
         const { style:styleProp, screen, width, height, sourceWidth, sourceHeight, source, ...imageProps } = this.props;
 
@@ -29,4 +29,4 @@ class ScaledImage extends PureComponent<Props> {
     }
 }
 
-export default ScaledImage
+export default ImageScaled

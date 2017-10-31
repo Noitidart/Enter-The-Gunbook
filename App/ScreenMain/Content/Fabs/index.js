@@ -2,7 +2,9 @@ import React, { PureComponent } from 'react'
 import { TouchableOpacity, View, Platform } from 'react-native'
 import { connect } from 'react-redux'
 
-import { addCard, focusOrAddCard, CARDS } from '../../../flow-control/cards'
+import store from '../../../flow-control'
+
+import { addCard, focusOrAddCard, updateCard, CARDS } from '../../../flow-control/cards'
 
 import SortFab from './SortFab'
 import Icon from '../../../Icon'
@@ -39,7 +41,7 @@ class Fabs extends PureComponent<Props> {
                             </View>
                         </View>
                     </TouchableOpacity>
-                    <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.search} onPress={this.addCounterCard}>
+                    <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.search} onPress={this.updateToSearch}>
                         <View style={styles.backingBig}>
                             <Icon name="search" style={styles.labelBig} />
                         </View>
@@ -50,17 +52,27 @@ class Fabs extends PureComponent<Props> {
     }
 
     addAccountCard = () => {
-        const { findCardIndex, dispatch, getScroller, scrollToCard } = this.props;
+        const { findCardIndex, dispatch, scrollToCard } = this.props;
         const ixCard = findCardIndex(card => card.kind === CARDS.ACCOUNT)
         if (ixCard > -1) scrollToCard(ixCard);
         else dispatch(addCard({ kind:CARDS.ACCOUNT }));
     }
     addEntityCard = () => {
-        return this.props.removeCurrentCard(); // DEBUG:
-        const { findCardIndex, getCurrentCardIndex, dispatch, getScroller, scrollToCard } = this.props;
+        // return this.props.removeCurrentCard(); // DEBUG:
+        const { findCardIndex, getCurrentCardIndex, dispatch, scrollToCard } = this.props;
         const ixCard = findCardIndex(card => card.kind === CARDS.ENTITY && card.entityId === undefined)
         if (ixCard > -1) scrollToCard(ixCard);
         else dispatch(addCard({ kind:CARDS.ENTITY }, getCurrentCardIndex()+1));
+    }
+    updateToSearch = () => {
+        const { findCardIndex, getCurrentCardIndex, dispatch, scrollToCard } = this.props;
+        const ixCard = findCardIndex(card => card.kind === CARDS.ENTITY && card.entityId === undefined)
+        if (ixCard > -1) scrollToCard(ixCard);
+        else {
+            const currentCardIndex = getCurrentCardIndex();
+            const currentCardId = store.getState().cards[currentCardIndex].id;
+            dispatch(updateCard(currentCardId, { kind:CARDS.ENTITY, entityId:undefined }));
+        }
     }
     addCounterCard = () => this.props.dispatch(addCard({ kind:CARDS.COUNTER }, this.props.getCurrentCardIndex()+1));
 }

@@ -15,7 +15,7 @@ export type EntityBase = {
     id: Name,
     alts?: string[], // alternative names for voice recognition
     quote: string,
-    icon: Url,
+    image: Url,
     moreUrl: Url,
     fetchedMoreAt?: Unix,
     hasFetchedMore?: boolean,
