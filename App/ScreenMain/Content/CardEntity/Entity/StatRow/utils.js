@@ -14,7 +14,7 @@ export function getIconForStat(name: string): IconName | null {
         case 'shotSpeed': return 'slow_motion_video';
         case 'spread': return 'wifi_tethering'; // looks
         case 'notes': return 'receipt';
-        case 'effect': return 'bubble_chart'; // blur_on, flare, flash_on
+        case 'effect': return 'blur_on'; // bubble_chart, flare, flash_on
         default: return null; // return 'help';
     }
 }
@@ -31,6 +31,7 @@ export function getLabelForStat(name: string): string | null {
         case 'shotSpeed': return 'Shot Speed';
         case 'spread': return 'Spread';
         case 'notes': return 'Notes';
+        case 'effect': return 'Effect';
         default: return null; // return '???';
     }
 }
