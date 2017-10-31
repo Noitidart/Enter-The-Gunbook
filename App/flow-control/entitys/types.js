@@ -25,11 +25,19 @@ export type EntityBase = {
 export type Gun = {
     ...EntityBase,
     kind: typeof ENTITYS.GUN,
-    ammoCpacity: number,
-    damage: number,
+    ammoCpacity: number | Array<{
+        name: string,
+        value: number
+    }>,
+    damage: number | Array<{
+        name: string,
+        value: number, // float
+        perMulti?: number, // > 1, number of multiple, the value is damage per bullet
+        perSec?: true
+    }>,
     fireRate: null | number,
     force: null | number,
-    magazineSize: number,
+    magazineSize: null | number,
     notes: string,
     quality: Quality,
     range: null | number,

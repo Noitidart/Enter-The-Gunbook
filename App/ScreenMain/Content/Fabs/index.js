@@ -65,14 +65,10 @@ class Fabs extends PureComponent<Props> {
         else dispatch(addCard({ kind:CARDS.ENTITY }, getCurrentCardIndex()+1));
     }
     updateToSearch = () => {
-        const { findCardIndex, getCurrentCardIndex, dispatch, scrollToCard } = this.props;
-        const ixCard = findCardIndex(card => card.kind === CARDS.ENTITY && card.entityId === undefined)
-        if (ixCard > -1) scrollToCard(ixCard);
-        else {
-            const currentCardIndex = getCurrentCardIndex();
-            const currentCardId = store.getState().cards[currentCardIndex].id;
-            dispatch(updateCard(currentCardId, { kind:CARDS.ENTITY, entityId:undefined }));
-        }
+        const { getCurrentCardIndex, dispatch } = this.props;
+        const currentCardIndex = getCurrentCardIndex();
+        const currentCardId = store.getState().cards[currentCardIndex].id;
+        dispatch(updateCard(currentCardId, { kind:CARDS.ENTITY, entityId:undefined }));
     }
     addCounterCard = () => this.props.dispatch(addCard({ kind:CARDS.COUNTER }, this.props.getCurrentCardIndex()+1));
 }

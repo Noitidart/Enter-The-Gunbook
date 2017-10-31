@@ -51,11 +51,14 @@ function getYoutubeLikeToDisplay(millisec) {
 const SYNC_ENTITYS = A`SYNC_ENTITYS`
 type SyncEntitysAction = { type:typeof SYNC_ENTITYS };
 const syncEntitys = (): SyncEntitysAction => ({ type:SYNC_ENTITYS });
+const parseIntInf = value => value === 'Infinity' ? 'Infinity' : parseInt(value);
+const parseFloatInf = value => value === 'Infinity' ? 'Infinity' : parseFloat(value);
 const syncEntitysSaga = function* syncEntitysSaga() {
 
     yield call(waitRehydrate);
 
     const MIN_TIME_SINCE_SYNC = 24 * 60 * 60 * 1000; // 24 hours
+    // const MIN_TIME_SINCE_SYNC = 60000; // every minute
 
     while (true) {
         const {account:{ syncedEntitysAt }} = yield select();
@@ -114,16 +117,18 @@ const syncEntitysSaga = function* syncEntitysSaga() {
             const GunSchema = new schema.Entity('guns', undefined, {
                 idAttribute: 'Name',
                 processStrategy: value => ({
-                    ammoCapacity: parseInt(value['Ammo Capacity']),
-                    damage: parseInt(value.Damage),
-                    fireRate: parseFloat(value['Fire Rate']) || null,
-                    force: parseInt(value.Force) || null,
-                    magazineSize: parseInt(value['Magazine Size']),
-                    range: parseInt(value.Range),
-                    reloadTime: parseFloat(value['Reload Time']) || null,
-                    shotSpeed: parseInt(value['Shot Speed']) || null,
-                    spread: parseInt(value.Spread) || null,
+                    kind: ENTITYS.GUN,
+                    ammoCapacity: parseIntInf(value['Ammo Capacity']) || null, // TODO: not null
+                    damage: parseFloatInf(value.Damage) || null, // TODO: not null
+                    fireRate: parseFloatInf(value['Fire Rate']) || null,
+                    force: parseIntInf(value.Force) || null,
+                    magazineSize: parseIntInf(value['Magazine Size']) || null,
+                    range: parseIntInf(value.Range) || null,
+                    reloadTime: parseFloatInf(value['Reload Time']) || null,
+                    shotSpeed: parseIntInf(value['Shot Speed']) || null,
+                    spread: parseIntInf(value.Spread) || null,
                     ...pickDotpath(value,
+                        'Name as id',
                         'Icon as image',
                         'Notes as notes',
                         'Quality as quality',
@@ -136,6 +141,8 @@ const syncEntitysSaga = function* syncEntitysSaga() {
             entitys[ENTITYS.GUN] = normalize(data, [ GunSchema ]).entities.guns;
 
             console.log('guns data:', data);
+
+            checkForNaN(entitys[ENTITYS.GUN]);
         }
 
         let items;
@@ -147,19 +154,24 @@ const syncEntitysSaga = function* syncEntitysSaga() {
 
             const ItemSchema = new schema.Entity('items', undefined, {
                 idAttribute: 'Name',
-                processStrategy: value => pickDotpath(value,
-                    'Effect as effect',
-                    'Icon as image',
-                    'Quality as quality',
-                    'Quote as quote',
-                    'Type as type'
-                )
+                processStrategy: value => ({
+                    kind: ENTITYS.ITEM,
+                    ...pickDotpath(value,
+                        'Name as id',
+                        'Effect as effect',
+                        'Icon as image',
+                        'Quality as quality',
+                        'Quote as quote',
+                        'Type as type'
+                    )
+                })
             });
 
             entitys[ENTITYS.ITEM] = normalize(data, [ ItemSchema ]).entities.items;
 
             console.log('items data:', data);
 
+            checkForNaN(entitys[ENTITYS.ITEM]);
 
         }
 
@@ -178,6 +190,19 @@ const syncEntitysSaga = function* syncEntitysSaga() {
     }
 }
 sagas.push(syncEntitysSaga);
+
+function checkForNaN(entitys) {
+    // entitys === kindEntitys
+    for (const [id, entity] of Object.entries(entitys)) {
+        for (const [name, value] of Object.entries(entity)) {
+            if ([NaN].includes(value)) {
+                console.log('FOUND NaN at:', 'name:', name, 'entity:', entity);
+                throw new Error('');
+                // console.log('FOUND NaN at:', entity);
+            }
+        }
+    }
+}
 
 //
 type Action = UpdateAction;

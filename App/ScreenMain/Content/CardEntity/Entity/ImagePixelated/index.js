@@ -74,11 +74,11 @@ const html = `
                         var variable = sortable[i].variable;
                         var sorter = sortable[i].sorter;
                         if (variable == 'height') {
-                            if (sorter < WANTED_HEIGHT) {
+                            if (sorter <= WANTED_HEIGHT) {
                                 break;
                             }
                         } else if (variable == 'width') {
-                            if (sorter < WANTED_WIDTH) {
+                            if (sorter <= WANTED_WIDTH) {
                                 break;
                             }
                         }
@@ -144,7 +144,7 @@ class ImagePixelated extends Component {
 
         switch (action) {
             case 'LOG': {
-                    console.log(payload);
+                    // console.log(payload);
                 break;
             }
             case 'OK': {
@@ -179,7 +179,6 @@ class ImagePixelated extends Component {
         switch (status) {
             case STATUS.INIT: {
                 const { height, width } = this.state;
-                console.log('rendering webview');
                 // android: transparent the background in webview here too, because when switch to success, where display is not none, we see a flash of white
                 // android: the wrap of view is needed because WebView does not respect height as its a RN bug
                 return (

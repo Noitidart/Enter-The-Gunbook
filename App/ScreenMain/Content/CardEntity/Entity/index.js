@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import { Text, View } from 'react-native'
+import { Text, View, ScrollView } from 'react-native'
 import { connect } from 'react-redux'
 import { toTitleCase } from 'cmn/lib/all'
 
@@ -36,7 +36,7 @@ class EntityDumb extends PureComponent<Props> {
             <View style={styles.main}>
                 <View style={styles.header}>
                     <Icon style={styles.headerIcon} name="youtube_searched_for" />
-                    <Icon style={styles.headerIcon} name="arrow_upward" />
+                    <Icon style={styles.headerIcon} name="trending_up" />
                     <Icon style={styles.headerIcon} name="comment" />
                 </View>
                 <View style={styles.image}>
@@ -48,8 +48,8 @@ class EntityDumb extends PureComponent<Props> {
                         <Text style={styles.kind}>{toTitleCase(kind)}</Text>
                     </View>
                 </View>
-                <View style={styles.body}>
-                    <StatRow kind={kind} entityId={entityId} name="stat name" value="stat value" />
+                <ScrollView style={styles.body}>
+                    { Object.entries(entity).map( ([name, value]) => <StatRow kind={kind} key={name} entityId={entityId} name={name} value={value} /> ) }
                     <View style={styles.titleRow}>
                         <Icon style={styles.titleIcon} name="comment" />
                         <Text style={styles.title}>Comments</Text>
@@ -61,7 +61,7 @@ class EntityDumb extends PureComponent<Props> {
                         <Icon style={styles.titleIcon} name="youtube_searched_for" />
                         <Text style={styles.title}>Other Results</Text>
                     </View>
-                </View>
+                </ScrollView>
             </View>
         )
     }

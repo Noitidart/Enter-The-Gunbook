@@ -99,7 +99,7 @@ class SearchDumb extends PureComponent<Props, State> {
                 ...result.item,
                 score: result.score
             }));
-            console.log('matchs:', matchs);
+            // console.log('matchs:', matchs);
             return { matchs };
         })
     }
