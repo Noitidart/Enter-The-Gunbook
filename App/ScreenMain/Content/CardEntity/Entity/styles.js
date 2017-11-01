@@ -161,6 +161,9 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold'
     },
+    commentHeadText: {
+        flex: 1 // so trash icon goes in far right
+    },
     row: {
         flexDirection: 'row'
     },
@@ -170,6 +173,9 @@ const styles = StyleSheet.create({
     },
     commentDot: {
         color: '#FFFFFF'
+    },
+    commentDelete: {
+        color: OFF_WHITE
     },
     commentDate: {
         color: '#B2BBC4',
@@ -198,8 +204,11 @@ const styles = StyleSheet.create({
         paddingVertical: 4,
         marginBottom: 7,
         textAlignVertical: 'top'
-    }
+    },
 
+    spacer: {
+        flex: 1
+    }
 
 })
 

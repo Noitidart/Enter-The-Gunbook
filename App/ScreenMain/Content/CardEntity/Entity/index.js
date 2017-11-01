@@ -108,11 +108,15 @@ class EntityDumb extends PureComponent<Props> {
                             <View style={styles.commentAvatar}>
                                 <Text style={styles.commentAvatarLabel}>A</Text>
                             </View>
-                            <View>
+                            <View style={styles.commentHeadText}>
                                 <View style={styles.row}>
                                     <Text style={styles.commentAuthor}>Author</Text>
                                     <Text style={styles.commentDot}> &middot; </Text>
                                     <Text style={styles.commentDate}>2 min ago</Text>
+                                    <View style={styles.spacer} />
+                                    <TouchableOpacity>
+                                        <Icon style={styles.commentDelete} name="delete" />
+                                    </TouchableOpacity>
                                 </View>
                                 <TouchableOpacity onPress={()=>null}>
                                     <Text style={styles.commentHelpful}>You and 1 other found this helpful</Text>
@@ -128,11 +132,15 @@ class EntityDumb extends PureComponent<Props> {
                             <View style={styles.commentAvatar}>
                                 <Text style={styles.commentAvatarLabel}>A</Text>
                             </View>
-                            <View>
+                            <View style={styles.commentHeadText}>
                                 <View style={styles.row}>
                                     <Text style={styles.commentAuthor}>Author</Text>
                                     <Text style={styles.commentDot}> &middot; </Text>
                                     <Text style={styles.commentDate}>2 min ago</Text>
+                                    <View style={styles.spacer} />
+                                    <TouchableOpacity>
+                                        <Icon style={styles.commentDelete} name="delete" />
+                                    </TouchableOpacity>
                                 </View>
                                 <TouchableOpacity onPress={()=>null}>
                                     <Text style={styles.commentHelpful}>You and 1 other found this helpful</Text>
