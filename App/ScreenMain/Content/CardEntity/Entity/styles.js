@@ -165,7 +165,8 @@ const styles = StyleSheet.create({
         flex: 1 // so trash icon goes in far right
     },
     row: {
-        flexDirection: 'row'
+        flexDirection: 'row',
+        alignItems: 'center'
     },
     commentAuthor: {
         color: '#FFFFFF',
@@ -173,6 +174,9 @@ const styles = StyleSheet.create({
     },
     commentDot: {
         color: '#FFFFFF'
+    },
+    commentDeleteWrap: {
+        paddingLeft: 20
     },
     commentDelete: {
         color: OFF_WHITE

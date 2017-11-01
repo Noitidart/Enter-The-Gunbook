@@ -114,7 +114,7 @@ class EntityDumb extends PureComponent<Props> {
                                     <Text style={styles.commentDot}> &middot; </Text>
                                     <Text style={styles.commentDate}>2 min ago</Text>
                                     <View style={styles.spacer} />
-                                    <TouchableOpacity>
+                                    <TouchableOpacity style={styles.commentDeleteWrap}>
                                         <Icon style={styles.commentDelete} name="delete" />
                                     </TouchableOpacity>
                                 </View>
@@ -138,7 +138,7 @@ class EntityDumb extends PureComponent<Props> {
                                     <Text style={styles.commentDot}> &middot; </Text>
                                     <Text style={styles.commentDate}>2 min ago</Text>
                                     <View style={styles.spacer} />
-                                    <TouchableOpacity>
+                                    <TouchableOpacity style={styles.commentDeleteWrap}>
                                         <Icon style={styles.commentDelete} name="delete" />
                                     </TouchableOpacity>
                                 </View>
