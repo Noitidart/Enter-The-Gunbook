@@ -65,7 +65,7 @@ class StatRowDumb extends PureComponent<Props> {
                             <Text style={styles.name}>{getLabelForStat(name)}</Text>
                             <View style={styles.valueRow}>
                                 <View style={styles.bar}>
-                                    <View style={[styles.barFill, { width:`${percentOfValues}%` }, redFill && { backgroundColor:'#E51C23' }]} />
+                                    <View style={[styles.barFill, { width:`${percentOfValues}%` }, redFill && styles.barFillRed]} />
                                 </View>
                                 <Text style={styles.value}>{value}</Text>
                             </View>

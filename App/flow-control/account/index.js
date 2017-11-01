@@ -133,7 +133,8 @@ const syncEntitysSaga = function* syncEntitysSaga() {
                         'Notes as notes',
                         'Quality as quality',
                         // 'Quote as quote',
-                        'Type as type'
+                        'Type as type',
+                        'moreUrl'
                     )
                 })
             });
@@ -162,7 +163,8 @@ const syncEntitysSaga = function* syncEntitysSaga() {
                         'Icon as image',
                         'Quality as quality',
                         // 'Quote as quote',
-                        'Type as type'
+                        'Type as type',
+                        'moreUrl'
                     )
                 })
             });

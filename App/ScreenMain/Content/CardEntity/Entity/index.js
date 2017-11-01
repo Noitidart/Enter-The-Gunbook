@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import { Image, ScrollView, Text, View } from 'react-native'
+import { Image, Linking, ScrollView, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import { connect } from 'react-redux'
 import { toTitleCase } from 'cmn/lib/all'
 
@@ -40,6 +40,9 @@ type Props = {
 }
 
 class EntityDumb extends PureComponent<Props> {
+    body: *
+    commentsY: number = 0
+
     render() {
         const { entityId, entity, kind } = this.props;
 
@@ -48,9 +51,21 @@ class EntityDumb extends PureComponent<Props> {
         return (
             <View style={styles.main}>
                 <View style={styles.header}>
-                    <Icon style={styles.headerIcon} name="youtube_searched_for" />
-                    <Icon style={styles.headerIcon} name="trending_up" />
-                    <Icon style={styles.headerIcon} name="comment" />
+                    <TouchableOpacity onPress={()=>null}>
+                        <View style={[styles.headerIconWrap]}>
+                            <Icon style={[styles.headerIcon, { color:'#5677FC' }]} name="thumb_down" />
+                            <Text style={[styles.headerIconLabel, { color:'#5677FC' }]}>12</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={()=>null}>
+                        <View style={[styles.headerIconWrap]}>
+                        <Icon style={[styles.headerIcon, {  }]} name="thumb_up" />
+                        <Text style={[styles.headerIconLabel, {  }]}>1</Text>
+                        </View>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={this.scrollToComments}>
+                        <Icon style={styles.headerIcon} name="comment" />
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.image}>
                     <ImagePixelated url={entity.image} height={90} width={90} />
@@ -67,23 +82,78 @@ class EntityDumb extends PureComponent<Props> {
                         </View>
                     </View>
                 </View>
-                <ScrollView style={styles.body}>
+                <ScrollView style={styles.body} ref={this.refBody}>
                     { Object.entries(entity).map( ([name, value]) => <StatRow kind={kind} key={name} entityId={entityId} name={name} value={value} /> ) }
-                    <View style={styles.titleRow}>
+                    <View style={styles.rowButton}>
+                        <TouchableHighlight style={styles.button} onPress={()=>Linking.openURL(entity.moreUrl)}>
+                            <Text style={styles.buttonLabel}>SEE MORE ON GUNPEDIA</Text>
+                        </TouchableHighlight>
+                    </View>
+                    <View style={styles.titleRow} onLayout={this.handleLayoutComments}>
                         <Icon style={styles.titleIcon} name="comment" />
                         <Text style={styles.title}>Comments</Text>
+                        <View style={styles.titleSpacer} />
+                        <TouchableOpacity onPress={()=>null}>
+                            {/* <View style={styles.titleRightIconWrap}> */}
+                                <Icon style={styles.titleRightIcon} name="sort" />
+                                {/* <Text style={styles.titleRightIconLabel}>Date</Text> */}
+                            {/* </View> */}
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={this.scrollToAddComment}>
+                            <Icon style={styles.titleRightIcon} name="add" />
+                        </TouchableOpacity>
                     </View>
-                    <Text style={styles.para}>
-                        <Text>Coming soon</Text>
-                    </Text>
-                    <View style={styles.titleRow}>
-                        <Icon style={styles.titleIcon} name="youtube_searched_for" />
-                        <Text style={styles.title}>Other Results</Text>
+                    <View style={styles.comment}>
+                        <View style={styles.commentHead}>
+                            <View style={styles.commentAvatar}>
+                                <Text style={styles.commentAvatarLabel}>A</Text>
+                            </View>
+                            <View>
+                                <View style={styles.row}>
+                                    <Text style={styles.commentAuthor}>Author</Text>
+                                    <Text style={styles.commentDot}> &middot; </Text>
+                                    <Text style={styles.commentDate}>2 min ago</Text>
+                                </View>
+                                <TouchableOpacity onPress={()=>null}>
+                                    <Text style={styles.commentHelpful}>You and 1 other found this helpful</Text>
+                                </TouchableOpacity>
+                            </View>
+                            {/* if they have a thumb show it here as a subicon */}
+                        </View>
+                        <Text style={styles.commentBody}>body body body body body</Text>
+                    </View>
+                    <View style={styles.comment}>
+                        <View style={styles.commentHr} />
+                        <View style={styles.commentHead}>
+                            <View style={styles.commentAvatar}>
+                                <Text style={styles.commentAvatarLabel}>A</Text>
+                            </View>
+                            <View>
+                                <View style={styles.row}>
+                                    <Text style={styles.commentAuthor}>Author</Text>
+                                    <Text style={styles.commentDot}> &middot; </Text>
+                                    <Text style={styles.commentDate}>2 min ago</Text>
+                                </View>
+                                <TouchableOpacity onPress={()=>null}>
+                                    <Text style={styles.commentHelpful}>You and 1 other found this helpful</Text>
+                                </TouchableOpacity>
+                            </View>
+                            {/* if they have a thumb show it here as a subicon */}
+                        </View>
+                        <Text style={styles.commentBody}>body body body body body</Text>
+                    </View>
+                    <View style={styles.addComment}>
+
                     </View>
                 </ScrollView>
             </View>
         )
     }
+
+    refBody = el => this.body = el
+    handleLayoutComments = ({nativeEvent:{layout:{ y }}}:LayoutEvent) => this.commentsY = y
+    scrollToComments = () => this.body.scrollTo({ y:this.commentsY })
+    scrollToAddComment = () => this.body.scrollToEnd() // TODO: focus TextInput
 }
 
 const EntitySmart = connect(

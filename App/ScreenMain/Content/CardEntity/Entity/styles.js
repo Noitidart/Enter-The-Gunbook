@@ -25,6 +25,14 @@ const styles = StyleSheet.create({
         fontSize: 26,
         padding: 10
     },
+    headerIconLabel: {
+        color: '#FFFFFF',
+        fontSize: 15
+    },
+    headerIconWrap: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
 
     image: {
         width: 100,
@@ -80,16 +88,101 @@ const styles = StyleSheet.create({
         fontSize: 22,
         marginRight: 10
     },
-
-    body: {
-
+    titleRight: {
+        color: OFF_WHITE,
+        fontSize: 16,
+        marginHorizontal: 7
+    },
+    titleRightIcon: {
+        color: OFF_WHITE,
+        fontSize: 19,
+        marginHorizontal: 7
+    },
+    titleRightIconLabel: {
+        color: OFF_WHITE,
+        fontSize: 13
+    },
+    titleRightIconWrap: {
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    titleSpacer: {
+        flex: 1
     },
 
-    para: {
+    // body: {
+
+    // },
+
+    rowButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 10,
+        paddingVertical: 6
+    },
+    button: {
+        backgroundColor: '#5677FC',
+        borderRadius: 2,
+        padding: 8
+    },
+    buttonLabel: {
+        fontSize: 14,
+        color: '#FFFFFF',
+        fontWeight: 'bold'
+    },
+
+    comment: {
         paddingHorizontal: 15,
-        paddingVertical: 10,
+        paddingVertical: 5 // link3181
+    },
+    commentHr: {
+        height: 1,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        marginBottom: 10, // 2* link3181
+        alignSelf: 'center',
+        width: '95%'
+    },
+    commentHead: {
+        flexDirection: 'row'
+    },
+    commentAvatar: {
+        height: 36,
+        width: 36,
+        borderRadius: 36 / 2,
+        backgroundColor: '#858D90',
+        marginRight: 5,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    commentAvatarLabel: {
+        color: '#FFFFFF',
+        fontSize: 20,
+        fontWeight: 'bold'
+    },
+    row: {
+        flexDirection: 'row'
+    },
+    commentAuthor: {
+        color: '#FFFFFF',
+        fontWeight: 'bold'
+    },
+    commentDot: {
         color: '#FFFFFF'
+    },
+    commentDate: {
+        color: '#B2BBC4',
+        fontSize: 12
+    },
+    commentHelpful: {
+        color: '#B2BBC4'
+    },
+    commentBody: {
+        marginTop: 3,
+        marginHorizontal: 3,
+        color: '#D3DDE4'
     }
+
 })
 
 export default styles

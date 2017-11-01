@@ -52,6 +52,9 @@ const styles = StyleSheet.create({
         height: 10,
         backgroundColor: '#FFDB0C'
     },
+    barFillRed: {
+        backgroundColor: '#E51C23'
+    },
     value: {
         textAlign: 'right',
         width: 60,

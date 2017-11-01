@@ -17,7 +17,7 @@ type TouchableHighlightProps = {};
 type AnimatedValue = *;
 type AnimatedCallback = ({ finished:boolean }) => void
 
-type LayoutEvent = { nativeEvent:{ layout:{ width:number, height:number } } };
+type LayoutEvent = { nativeEvent:{ layout:{ width:number, height:number, x:number, y:number } } };
 type ImageLoadEvent = { nativeEvent:{ source:{ width:number, height:number } } };
 type ScrollEvent = {
     nativeEvent: { // tested on android 6.0/23 for onScroll and onMomentScrollEnd on <ScrollView>
