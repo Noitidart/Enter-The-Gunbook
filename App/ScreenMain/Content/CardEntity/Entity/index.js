@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import { Image, Linking, ScrollView, Text, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { Image, Linking, ScrollView, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import { connect } from 'react-redux'
 import { toTitleCase } from 'cmn/lib/all'
 
@@ -121,9 +121,9 @@ class EntityDumb extends PureComponent<Props> {
                             {/* if they have a thumb show it here as a subicon */}
                         </View>
                         <Text style={styles.commentBody}>body body body body body</Text>
+                        <View style={styles.commentHr} />
                     </View>
                     <View style={styles.comment}>
-                        <View style={styles.commentHr} />
                         <View style={styles.commentHead}>
                             <View style={styles.commentAvatar}>
                                 <Text style={styles.commentAvatarLabel}>A</Text>
@@ -141,9 +141,13 @@ class EntityDumb extends PureComponent<Props> {
                             {/* if they have a thumb show it here as a subicon */}
                         </View>
                         <Text style={styles.commentBody}>body body body body body</Text>
+                        <View style={styles.commentHr} />
                     </View>
                     <View style={styles.addComment}>
-
+                        <TextInput style={styles.addCommentInput} placeholder="Leave a comment" placeholderTextColor="#858D90" underlineColorAndroid="transparent" keyboardAppearance="dark" selectionColor="#5677FC" keyboardAppearance="dark" disableFullscreenUI multiline />
+                        <TouchableHighlight style={styles.button} onPress={()=>null}>
+                            <Text style={styles.buttonLabel}>POST</Text>
+                        </TouchableHighlight>
                     </View>
                 </ScrollView>
             </View>

@@ -124,7 +124,8 @@ const styles = StyleSheet.create({
     button: {
         backgroundColor: '#5677FC',
         borderRadius: 2,
-        padding: 8
+        padding: 8,
+        alignItems: 'center'
     },
     buttonLabel: {
         fontSize: 14,
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     commentHr: {
         height: 1,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        marginBottom: 10, // 2* link3181
+        marginTop: 10, // 2* link3181
         alignSelf: 'center',
         width: '95%'
     },
@@ -181,7 +182,24 @@ const styles = StyleSheet.create({
         marginTop: 3,
         marginHorizontal: 3,
         color: '#D3DDE4'
+    },
+
+    addComment: {
+        // backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        paddingHorizontal: 10,
+        paddingVertical: 10, // 2* link3181
+    },
+    addCommentInput: {
+        color: '#FFFFFF',
+        backgroundColor: '#2F2B31',
+        borderRadius: 5,
+        fontSize: 14,
+        height: 14 * 2 * 3, // android: line height is fontSize * 2 apparently, at least when fontSize is 14, * 3 for number of lines
+        paddingVertical: 4,
+        marginBottom: 7,
+        textAlignVertical: 'top'
     }
+
 
 })
 
