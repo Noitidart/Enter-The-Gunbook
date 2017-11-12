@@ -28,7 +28,7 @@ class Fabs extends PureComponent<Props> {
             <View style={styles.wrap}>
                 <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.settings} onPress={this.addAccountCard}>
                     <View style={styles.backingSmall}>
-                        <Icon name="attach_money" style={styles.labelSmall} />
+                        <Icon name="settings" style={styles.labelSmall} />
                     </View>
                 </TouchableOpacity>
                 <SortFab activeOpacity={ACTIVE_OPACITY} />

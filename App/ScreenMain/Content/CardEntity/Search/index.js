@@ -63,7 +63,7 @@ class SearchDumb extends PureComponent<Props, State> {
 
         return (
             <View style={styles.main}>
-                <TextInput style={styles.input} value={value} underlineColorAndroid="transparent" keyboardAppearance="dark" selectionColor="#5677FC" onChangeText={this.handleChangeText} onSubmitEditing={this.gotoFirstMatch} keyboardAppearance="dark" autoFocus disableFullscreenUI />
+                <TextInput style={styles.input} keyboardAppearance="dark" onChangeText={this.handleChangeText} onSubmitEditing={this.gotoFirstMatch} selectionColor="#5677FC" underlineColorAndroid="transparent" value={value} disableFullscreenUI autoFocus />
                 <View style={styles.subWrap}>
                     { !hasValue && <Text style={styles.sub}>(type a gun or item name)</Text> }
                     { hasValue && !hasMatchs && <Text style={styles.noMatches}>No matches found</Text> }

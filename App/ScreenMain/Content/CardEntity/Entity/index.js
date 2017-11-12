@@ -85,7 +85,7 @@ class EntityDumb extends PureComponent<Props> {
                 <ScrollView style={styles.body} ref={this.refBody}>
                     { Object.entries(entity).map( ([name, value]) => <StatRow kind={kind} key={name} entityId={entityId} name={name} value={value} /> ) }
                     <View style={styles.rowButton}>
-                        <TouchableHighlight style={styles.button} onPress={()=>Linking.openURL(entity.moreUrl)}>
+                        <TouchableHighlight style={styles.button} onPress={this.gotoGunpedia}>
                             <Text style={styles.buttonLabel}>SEE MORE ON GUNPEDIA</Text>
                         </TouchableHighlight>
                     </View>
@@ -152,7 +152,7 @@ class EntityDumb extends PureComponent<Props> {
                         <View style={styles.commentHr} />
                     </View>
                     <View style={styles.addComment}>
-                        <TextInput style={styles.addCommentInput} placeholder="Leave a comment" placeholderTextColor="#858D90" underlineColorAndroid="transparent" keyboardAppearance="dark" selectionColor="#5677FC" keyboardAppearance="dark" disableFullscreenUI multiline />
+                        <TextInput style={styles.addCommentInput} keyboardAppearance="dark" placeholder="Leave a comment" placeholderTextColor="#858D90" selectionColor="#5677FC" underlineColorAndroid="transparent" disableFullscreenUI multiline />
                         <TouchableHighlight style={styles.button} onPress={()=>null}>
                             <Text style={styles.buttonLabel}>POST</Text>
                         </TouchableHighlight>
@@ -166,6 +166,8 @@ class EntityDumb extends PureComponent<Props> {
     handleLayoutComments = ({nativeEvent:{layout:{ y }}}:LayoutEvent) => this.commentsY = y
     scrollToComments = () => this.body.scrollTo({ y:this.commentsY })
     scrollToAddComment = () => this.body.scrollToEnd() // TODO: focus TextInput
+
+    gotoGunpedia = () => Linking.openURL(this.props.entity.moreUrl)
 }
 
 const EntitySmart = connect(

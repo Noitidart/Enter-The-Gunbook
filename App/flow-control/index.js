@@ -4,6 +4,7 @@ import { applyMiddleware, combineReducers, createStore } from 'redux'
 import { persistStore, persistReducer } from 'redux-persist'
 import storage from 'redux-persist/es/storage'
 import createSagaMiddleware from 'redux-saga'
+import { reducer as form } from 'redux-form'
 import { fork, all } from 'redux-saga/effects'
 
 import account, { sagas as accountSagas } from './account'
@@ -24,7 +25,8 @@ export type Shape = {
     api: ApiShape,
     cards: CardsShape,
     counter: CounterShape,
-    entitys: EntitysShape
+    entitys: EntitysShape,
+    form: *
 }
 
 console.log('process.env.NODE_ENV:', process.env.NODE_ENV, process.env.NODE_ENV !== 'production');
@@ -39,7 +41,7 @@ const sagaMiddleware = createSagaMiddleware();
 let enhancers = applyMiddleware(sagaMiddleware);
 if (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) enhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(enhancers);
 
-const reducers = persistReducer(persistConfig, combineReducers({ account, api, cards, counter, entitys }));
+const reducers = persistReducer(persistConfig, combineReducers({ account, api, cards, counter, entitys, form }));
 const sagas = [ ...accountSagas, ...cardsSagas, ...counterSagas ];
 
 const store = createStore(reducers, enhancers);
