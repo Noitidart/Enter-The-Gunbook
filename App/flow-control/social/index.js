@@ -2,40 +2,18 @@
 
 import { delay } from 'redux-saga'
 import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
-import { normalize, schema } from 'normalizr'
+import './normalizers'
 import { pickDotpath } from 'cmn/lib/all'
 
 import { ENTITYS } from '../entitys'
 import { waitRehydrate } from '../utils'
 
-import type { Entity } from '../entitys/types'
+import type { SocialEntity, SocialEntityKind } from './types'
 
 type EntityName = $PropertyType<Entity, 'name'>;
 
-type Thumb = {
-
-}
-
-type Comment = {
-
-}
-
-type Displayname = {
-
-}
-
-type Helpful = {
-
-}
-
-type SocialEntity = {
-    comments: { [Id]: Comment },
-    helpfuls: { [Id]: Helpful },
-    thumbs: { [Id]: Thumb },
-    displaynames: { [Id]: Displayname }
-}
 export type Shape = {
-    [EntityName]: SocialEntity
+    [Id]: SocialEntity
 }
 
 const INITIAL = {}
@@ -44,175 +22,149 @@ export const sagas = [];
 const A = ([actionType]: string[]) => 'SOCIAL_' + actionType;
 
 //
-const PUT = A`PUT`;
-type PutAction = { type:typeof PUT, data:$Shape<Shape> };
-const put_ = (data): PutAction => ({ type:PUT, data });
+// the entity is not overriden, if "new data" has value and is undefined, then this value is deleted from actual data. if "new data" is missing a field, then the value for this entry in "state data" is unchanged
+// can use to change id
+const PATCH = A`PATCH`;
+type PatchAction = { type:typeof PATCH, id:Id, data:$Shape<Entity> };
+const patchEntity = (id:Id, data:$Shape<Entity>): PatchAction => ({ type:PATCH, id, data });
 
 //
-const PATCH = A`PATCH`;
-type PatchAction = { type:typeof PATCH, data:$Shape<Shape> };
-const patch_ = (data): PatchAction => ({ type:PATCH, data });
+// the entity is completely overriden with data, therefore data must be a complete "Entity" id is extracted from it
+const PUT = A`PUT`;
+type PutAction = { type:typeof PATCH, entity:Entity };
+const putEntity = (entity: Entity): PutAction => ({ type:PUT, entity });
 
-// sync entitys on action dispatch, on startup and not yet synced, or if last sync is stale
-const WATCH_ENTITY = A`WATCH_ENTITY`
-type WatchEntity = { type:typeof WATCH_ENTITY, name: };
-const watchEntity = (name): WatchEntity => ({ type:WATCH_ENTITY, name });
-const watchEntityWorker = function* watchEntityWorker() {
+//
+const DELETE = A`DELETE`;
+type DeleteAction = { type:typeof DELETE, id:Id };
+const deleteEntity = (id: Id): DeleteAction => ({ type:DELETE, id });
 
-    yield call(waitRehydrate);
+//
+const PUT_MANY = A`PUT_MANY`;
+type PutManyAction = { type:typeof PUT_MANY, many:EntitysMany };
+const putEntitys = (many: EntitysMany): PutManyAction => ({ type:PUT_MANY, many });
 
-    const MIN_TIME_SINCE_SYNC = 24 * 60 * 60 * 1000; // 24 hours
-    // const MIN_TIME_SINCE_SYNC = 60000; // every minute
+//
+const DELETE_MANY = A`DELETE_MANY`;
+type DeleteManyAction = { type:typeof DELETE_MANY, ids:Id[] };
+const deleteEntitys = (ids: Id[]): DeleteManyAction => ({ type:DELETE_MANY, ids });
 
-    while (true) {
-        const {account:{ syncedEntitysAt }} = yield select();
+//
+// responsible for manual/autorefresh, comment/like if social, deleting up entity
+const WATCH = A`WATCH`;
+type WatchAction = { type:typeof WATCH, id:Id };
+const watchSocialEntity = (id: Id): WatchAction => ({ type:WATCH, id });
+const watchWorker = function* watchWorker(action) {
+    const { id } = action;
 
-        // const timeSinceSync = Date.now() - syncedEntitysAt;
-        // const timeTillSync = MIN_TIME_SINCE_SYNC - timeSinceSync;
-        // console.log('timeTillSync:', timeTillSync);
-        // if (timeTillSync > 0) {
-        //     const { manual, auto } = yield race({
-        //         manual: take(SYNC_ENTITYS),
-        //         auto: call(delay, timeSinceSync)
-        //     });
-        //     console.log('manual:', manual, 'auto:', auto);
-        // }
-        // because of android long setTimeout bug i have to use this loop below instead of the above
-        while (true) {
-            const timeSinceSync = Date.now() - syncedEntitysAt;
-            const timeTillSync = MIN_TIME_SINCE_SYNC - timeSinceSync;
-            // console.log('timeTillSync:', timeTillSync);
-            if (timeTillSync <= 0) {
-                break; // either auto or stale on startup
-            } else {
-                const { manual, auto } = yield race({
-                    manual: take(SYNC_ENTITYS),
-                    auto: call(delay, 1000)
-                });
-                if (manual) break;
-            }
-        }
+    REFCNT[id] = REFCNT[id] ? REFCNT[id] + 1 : 1;
+    // const isDupe = REFCNT[id] > 1;
+    // if (isDupe) return;
 
-        let alts = {};
-        {
-            const res = yield call(fetch, 'https://github.com/Noitidart/Enter-The-Gunbook/wiki/Alternate-Phrases');
-            const html = yield call([res, res.text]);
+    yield put(refreshEntity(id));
+    // const {entitys:{ [id]:entity }} = yield select();
 
-            const table_stix = html.indexOf('<table', html.indexOf('voice recognition'));
-            const table_enix = html.indexOf('</table', table_stix);
-            const table = html.substr(table_stix, table_enix - table_stix);
+    // if (entity) {
 
-            const data = tableToJSON(table);
-            for (const { Name:name, Alternatives:altsStr } of data) {
-                alts[name] = altsStr.split(',');
-            }
-            console.log('alts data:', data, 'alts:', alts);
-        }
+    // }
 
-        const entitys = {};
+    const isDupe = REFCNT[id] > 1;
+    if (isDupe) return;
 
-        // guns
-        {
-            const res = yield call(fetch, 'https://enterthegungeon.gamepedia.com/Guns');
-            const html = yield call([res, res.text]);
-            const table = gamepediaExtractTable(html);
-            const data = tableToJSON(table, GUNGEON_PEDIA_PARSERS);
 
-            const GunSchema = new schema.Entity('guns', undefined, {
-                idAttribute: 'Name',
-                processStrategy: value => ({
-                    kind: ENTITYS.GUN,
-                    ammoCapacity: parseIntInf(value['Ammo Capacity']) || null, // TODO: not null
-                    damage: parseFloatInf(value.Damage) || null, // TODO: not null
-                    fireRate: parseFloatInf(value['Fire Rate']) || null,
-                    force: parseIntInf(value.Force) || null,
-                    magazineSize: parseIntInf(value['Magazine Size']) || null,
-                    range: parseIntInf(value.Range) || null,
-                    reloadTime: parseFloatInf(value['Reload Time']) || null,
-                    shotSpeed: parseIntInf(value['Shot Speed']) || null,
-                    spread: parseIntInf(value.Spread) || null,
-                    ...pickDotpath(value,
-                        'Name as id',
-                        'Icon as image',
-                        'Notes as notes',
-                        'Quality as quality',
-                        // 'Quote as quote',
-                        'Type as type',
-                        'moreUrl'
-                    )
-                })
-            });
+}
+const watchWatcher = function* watchWatcher(action) {
+    yield takeEvery(WATCH, watchWorker);
+}
+sagas.push(watchWatcher);
 
-            entitys[ENTITYS.GUN] = normalize(data, [ GunSchema ]).entities.guns;
+//
+const UNWATCH = A`UNWATCH`;
+type UnwatchAction = { type:typeof UNWATCH, id:Id };
+const unwatchSocialEntity = (id: Id): UnwatchAction => ({ type:UNWATCH, id });
+const unwatchWorker = function* unwatchWorker(action) {
+    const { id } = action;
 
-            console.log('guns data:', data);
-
-            checkForNaN(entitys[ENTITYS.GUN]);
-        }
-
-        let items;
-        {
-            const res = yield call(fetch, 'https://enterthegungeon.gamepedia.com/Items');
-            const html = yield call([res, res.text]);
-            const table = gamepediaExtractTable(html);
-            const data = tableToJSON(table, GUNGEON_PEDIA_PARSERS);
-
-            const ItemSchema = new schema.Entity('items', undefined, {
-                idAttribute: 'Name',
-                processStrategy: value => ({
-                    kind: ENTITYS.ITEM,
-                    ...pickDotpath(value,
-                        'Name as id',
-                        'Effect as effect',
-                        'Icon as image',
-                        'Quality as quality',
-                        // 'Quote as quote',
-                        'Type as type',
-                        'moreUrl'
-                    )
-                })
-            });
-
-            entitys[ENTITYS.ITEM] = normalize(data, [ ItemSchema ]).entities.items;
-
-            console.log('items data:', data);
-
-            checkForNaN(entitys[ENTITYS.ITEM]);
-
-        }
-
-        for (const aEntitys of Object.values(entitys)) {
-            for (const [id, entity] of Object.entries(aEntitys)) {
-                if (id in alts) {
-                    entity.alts = alts[id];
-                }
-            }
-        }
-        console.log('entitys:', entitys);
-
-        yield put(overwriteEntitys(entitys));
-
-        yield put(update({ syncedEntitysAt:Date.now() }))
+    if (REFCNT[id] === 1) {
+        delete REFCNT[id];
+        // yield put(deleteEntity(id));
+    } else {
+        REFCNT[id]--;
     }
 }
-const watchEntityWatcher = function* watchEntityWatcher() {
-    yield takeEvery(WATCH_ENTITY, watchEntityWorker);
+const unwatchWatcher = function* unwatchWatcher(action) {
+    yield takeEvery(UNWATCH, unwatchWorker);
 }
-sagas.push(watchEntityWorker);
+sagas.push(unwatchWatcher);
 
 //
 type Action =
-  | PutAction;
+  | PatchAction
+  | PutAction
+  | DeleteAction
+  | PutManyAction
+  | DeleteManyAction;
 
 export default function reducer(state: Shape = INITIAL, action:Action): Shape {
-    const watchWatcher = function* watchWatcher() {
-        yield
-    }
     switch(action.type) {
-        case PATCH: return { ...state, ...action.data };
-        case PUT: return { ...state, ...action.data };
+        case PUT: {
+            const { entity } = action;
+            return { ...state, [entity.id]:entity };
+        }
+        case PATCH: {
+            const { id, data } = action;
+
+            if (!(id in state)) console.warn('no such entity so cannot patch, id:', id); // DEBUG:
+            if (!(id in state)) return state;
+
+            const entityOld = state[id];
+            const entity = deleteUndefined({ ...entityOld, ...data });
+
+            const hasId = 'id' in data;
+            const idOld = entityOld.id;
+            const idNew = hasId ? data.id : idOld;
+
+            const stateNew = { ...state, [idNew]:entity };
+
+            if (idNew !== idOld) delete stateNew[idOld];
+
+            return stateNew;
+        }
+        case DELETE: return omit({ ...state }, action.id);
+        case DELETE_MANY: return omit({ ...state }, ...action.ids);
+        case PUT_MANY: {
+            const { many } = action;
+
+            const isEntitys = Array.isArray(many);
+            // const isEntities = !isEntitys && isObject(many) && getFirstKey(many) in ENTITY_KIND;
+            const isEntities = !isEntitys && isObject(many) && Object.keys(many).some( key => key in ENTITY_KIND);
+            const isEntitysObject = !isEntitys && !isEntities && isObject(many);
+
+            if (isEntitys) {
+                const stateNew = { ...state };
+                const entitys = many;
+                for (const entity of entitys) {
+                    stateNew[entity.id] = entity;
+                }
+                return stateNew;
+            } else if (isEntitysObject) {
+                return { ...state, ...many };
+            } else if (isEntities) {
+                const stateNew = { ...state };
+                for (const [kind, entitys] of Object.entries(many)) {
+                    if (kind in ENTITY_KIND) {
+                        Object.assign(stateNew, entitys);
+                    }
+                }
+                return stateNew;
+            }
+            else { // DEBUG:
+                console.warn('many is of improper type'); // DEBUG:
+                return state; // DEBUG:
+            } // DEBUG:
+        }
         default: return state;
     }
 }
 
-export { updateAccount, syncEntitys }
+export { watchSocialEntity, unwatchSocialEntity }

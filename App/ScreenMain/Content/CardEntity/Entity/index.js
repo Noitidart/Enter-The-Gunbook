@@ -8,6 +8,7 @@ import Icon from '../../../../Icon'
 import StatRow from './StatRow'
 
 import { ENTITYS } from '../../../../flow-control/entitys'
+import { watchSocialEntity, unwatchSocialEntity } from '../../../../flow-control/social'
 
 import styles from './styles'
 import QUALITY_A from './quality-a.png'
@@ -35,14 +36,30 @@ type OwnProps = {
 
 type Props = {
     ...OwnProps,
+    // redux
+    dispatch: Dispatch,
     kind: EntityKind,
-    entity: EntityType
+    entity: EntityType,
+    thumbs: {},
+    comments: {},
+    helpfuls: {},
+    article: {}
 }
 
 class EntityDumb extends PureComponent<Props> {
     body: *
     commentsY: number = 0
 
+    componentDidMount() {
+        const { entity:{ name } } = this.props;
+
+        dispatch(watchSocialEntity(name));
+    }
+    componentWillUnmount() {
+        const { entity:{ name } } = this.props;
+
+        dispatch(unwatchSocialEntity(name));
+    }
     render() {
         const { entityId, entity, kind } = this.props;
 
