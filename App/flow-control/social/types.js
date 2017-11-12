@@ -10,7 +10,7 @@ type SocialEntityKind = 'articles' | 'thumbs' | 'comments' | 'displaynames' | 'h
 type DateIso = string; // ISO 8601 - combined date in timezone offset - 2017-08-23 21:21:56
 type DateUnix = number;
 
-const K = { // short for SOCIAL_ENTITY_KIND
+const K:  {[key: SocialEntityKind]: SocialEntityKind} = { // short for SOCIAL_ENTITY_KIND
     articles: 'articles',
     thumbs: 'thumbs',
     comments: 'comments',

@@ -17,22 +17,22 @@ function pickEntity(kind, ...pickAsByStringArgs) {
 
 const SCHEMA_DISPLAYNAME = new schema.Entity(K.displaynames, undefined, pickEntity(K.displaynames, 'forename'));
 
-const SCHEMA_HELPFUL = new schema.Entity(K.helpfuls, { displayname:SCHEMA_DISPLAYNAME }, pickEntity(
+const SCHEMA_HELPFUL = new schema.Entity(K.helpfuls, { displaynameId:SCHEMA_DISPLAYNAME }, pickEntity(
                            K.helpfuls,
                            'created_at as createdAt',
-                           'displayname_id as displaynameId',
+                           'displayname as displaynameId',
                            'comment_id as commentId'
                        ));
 
 const SCHEMA_COMMENT = new schema.Entity(K.comments,
                            {
-                               displayname: SCHEMA_DISPLAYNAME,
+                               displaynameId: SCHEMA_DISPLAYNAME,
                                helpfulIds: [ SCHEMA_HELPFUL ]
                            },
-                           pickEntity(K.comments, 'body', 'created_at as createdAt', 'displayname_id as displaynameId', 'article_id as articleId', 'helpfuls as helpfulIds')
+                           pickEntity(K.comments, 'body', 'created_at as createdAt', 'displayname as displaynameId', 'article_id as articleId', 'helpfuls as helpfulIds')
                        );
 
-const SCHEMA_THUMB = new schema.Entity(K.thumbs, { displayname:SCHEMA_DISPLAYNAME }, pickEntity(K.thumbs, 'like', 'created_at as createdAt', 'displayname_id as displaynameId', 'article_id as articleId'));
+const SCHEMA_THUMB = new schema.Entity(K.thumbs, { displaynameId:SCHEMA_DISPLAYNAME }, pickEntity(K.thumbs, 'like', 'created_at as createdAt', 'displayname as displaynameId', 'article_id as articleId'));
 
 const SCHEMA_ARTICLE = new schema.Entity(K.articles,
                            {
