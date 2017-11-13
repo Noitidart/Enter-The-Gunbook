@@ -74,11 +74,11 @@ class CommentDumb extends PureComponent<Props> {
 
     deleteComment = () => {
         const { dispatch, forename, id } = this.props;
-        dispatch(deleteComment({ forename, id }));
+        dispatch(deleteComment(forename, id));
     }
     toggleHelpful = () => {
         const { dispatch, forename, id } = this.props;
-        dispatch(toggleHelpful({ forename, id }));
+        dispatch(toggleHelpful(forename, id));
     }
 }
 
@@ -100,8 +100,9 @@ const CommentSmart = connect(
         const cntHelpful = helpfulIds.length;
 
         return {
-            createdAt: createdAt,
-            body: body,
+            createdAt,
+            body,
+            forename,
             authorName: author.forename,
             isUserAuthor: hasDisplayname && displayname.id === author.id,
             isHelpful,

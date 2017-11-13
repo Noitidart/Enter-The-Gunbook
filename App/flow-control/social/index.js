@@ -215,15 +215,11 @@ const addComment = (name: string, body: string, forename: string, id: ?SocialEnt
 const addCommentWorker = function* addCommentWorker(action) {
     const { name, body, forename, id } = action;
 
-    if (hasId(id)) yield put(patchEntity(id, { kind:K.articles, isFetching:true }));
-
     const res = yield call(fetchApi, 'comments', {
         method: 'POST',
         body: { body, forename, name }
     });
     console.log('addComment res.status:', res.status);
-
-    if (hasId(id)) yield put(patchEntity(id, { kind:K.articles, isFetching:false }));
 
     yield put(refreshEntity(K.articles, name, id));
 }
@@ -231,6 +227,72 @@ const addCommentWatcher = function* addCommentWatcher(action) {
     yield takeEvery(ADD_COMMENT, addCommentWorker);
 }
 sagas.push(addCommentWatcher);
+
+//
+const DELETE_COMMENT = A`DELETE_COMMENT`;
+type DeleteCommentAction = { type: typeof DELETE_COMMENT, forename: string, id: CommentId };
+const deleteComment = (forename: string, id: CommentId): DeleteCommentAction => ({ type:DELETE_COMMENT, forename, id });
+
+const deleteCommentWorker = function* deleteCommentWorker(action) {
+    const { forename, id } = action;
+
+    console.log('DELETE forename:', forename);
+    const res = yield call(fetchApi, `comments/${id}`, { method:'DELETE', qs:{ forename } });
+    console.log('deleteComment res.status:', res.status);
+
+    if (res.status === 204) {
+        const { social } = yield select();
+        const comment = social.comments[id];
+        const article = social.articles[comment.articleId];
+        yield put(refreshEntity(K.articles, article.name, article.id));
+    } else {
+        let reply;
+        try {
+            reply = yield call([res, res.json]);
+        } catch(ignore) {}
+
+        console.log('reply:', reply);
+
+        if (reply.error) alert(reply.error);
+        else alert(`Failed to delete comment, bad server response status received: ${res.status}.`);
+    }
+}
+const deleteCommentWatcher = function* deleteCommentWatcher(action) {
+    yield takeEvery(DELETE_COMMENT, deleteCommentWorker);
+}
+sagas.push(deleteCommentWatcher);
+
+//
+const TOGGLE_HELPFUL = A`TOGGLE_HELPFUL`;
+type ToggleHelpfulAction = { type: typeof TOGGLE_HELPFUL, forename: string, id: CommentId };
+const toggleHelpful = (forename: string, id: CommentId): ToggleHelpfulAction => ({ type:TOGGLE_HELPFUL, forename, id });
+
+const toggleHelpfulWorker = function* toggleHelpfulWorker(action) {
+    const { forename, id } = action;
+
+    const res = yield call(fetchApi, `comments/${id}`, { method:'DELETE', qs:{ forename } });
+    console.log('toggleHelpful res.status:', res.status);
+
+    if (res.status === 204) {
+        const entities = yield select();
+        const comment = entities.comments[id];
+        const article = entities.articles[comment.articleId];
+        yield put(refreshEntity(K.articles, article.name, article.id));
+    } else {
+        let reply;
+        try {
+            reply = yield call([res, res.json]);
+        } catch(ignore) {}
+
+        console.log('reply:', reply);
+        if (reply) alert(reply.error);
+        else alert(`Failed to delete comment, bad server response status received: "${res.status}".`);
+    }
+}
+const toggleHelpfulWatcher = function* toggleHelpfulWatcher(action) {
+    yield takeEvery(TOGGLE_HELPFUL, toggleHelpfulWorker);
+}
+sagas.push(toggleHelpfulWatcher);
 
 //
 type Action =
@@ -294,4 +356,4 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
     }
 }
 
-export { refSocialEntity, unrefSocialEntity, toggleThumb, addComment }
+export { refSocialEntity, unrefSocialEntity, toggleThumb, addComment, deleteComment, toggleHelpful }
