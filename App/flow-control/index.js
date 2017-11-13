@@ -45,7 +45,7 @@ let enhancers = applyMiddleware(sagaMiddleware);
 if (window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__) enhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(enhancers);
 
 const reducers = persistReducer(persistConfig, combineReducers({ account, api, cards, counter, entitys, form, social }));
-const sagas = [ ...accountSagas, ...cardsSagas, ...counterSagas ];
+const sagas = [ ...accountSagas, ...cardsSagas, ...counterSagas, ...socialSagas ];
 
 const store = createStore(reducers, enhancers);
 

@@ -1,170 +1,232 @@
 // @flow
 
+// TODO: rename to entities maybe or entitas
+
 import { delay } from 'redux-saga'
 import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
-import './normalizers'
 import { pickDotpath } from 'cmn/lib/all'
 
-import { ENTITYS } from '../entitys'
-import { waitRehydrate } from '../utils'
+import { normalizeUniversal } from './normalizers'
+import { K } from './types'
+import { getSocialRefKey } from './utils'
+import { waitRehydrate, fetchApi } from '../utils'
 
-import type { SocialEntity, SocialEntityKind } from './types'
+import type { Entities, SocialEntity, SocialEntityId, SocialEntityKind } from './types'
 
-type EntityName = $PropertyType<Entity, 'name'>;
+// type EntityName = $PropertyType<Entity, 'name'>;
 
-export type Shape = {
-    [Id]: SocialEntity
-}
+export type Shape = Entities;
 
 const INITIAL = {}
 export const sagas = [];
 
 const A = ([actionType]: string[]) => 'SOCIAL_' + actionType;
 
+const REFCNT = {};
+
+const UNREFRESHABLE_KINDS = [K.thumbs, K.comments, K.displaynames, K.helpfuls];
+const MIN_MS_TILL_CAN_REFRESH_AGAIN = 10 * 1000; // 10s
+
 //
 // the entity is not overriden, if "new data" has value and is undefined, then this value is deleted from actual data. if "new data" is missing a field, then the value for this entry in "state data" is unchanged
 // can use to change id
-const PATCH = A`PATCH`;
-type PatchAction = { type:typeof PATCH, id:Id, data:$Shape<Entity> };
-const patchEntity = (id:Id, data:$Shape<Entity>): PatchAction => ({ type:PATCH, id, data });
+type PatchData = {
+    kind: SocialEntityKind, // kind is required
+    ...$Shape<SocialEntity>
+}
+const PATCH_ENTITY = A`PATCH`;
+type PatchEntityAction = { type:typeof PATCH_ENTITY, id:SocialEntityId, data:PatchData };
+const patchEntity = (id:SocialEntityId, data:PatchData): PatchEntityAction => ({ type:PATCH_ENTITY, id, data });
 
 //
 // the entity is completely overriden with data, therefore data must be a complete "Entity" id is extracted from it
-const PUT = A`PUT`;
-type PutAction = { type:typeof PATCH, entity:Entity };
-const putEntity = (entity: Entity): PutAction => ({ type:PUT, entity });
+const PUT_ENTITY = A`PUT_ENTITY`;
+type PutEntityAction = { type:typeof PATCH_ENTITY, entity:SocialEntity };
+const putEntity = (entity: SocialEntity): PutEntityAction => ({ type:PUT_ENTITY, entity });
 
 //
-const DELETE = A`DELETE`;
-type DeleteAction = { type:typeof DELETE, id:Id };
-const deleteEntity = (id: Id): DeleteAction => ({ type:DELETE, id });
+const DELETE_ENTITY = A`DELETE_ENTITY`;
+type DeleteEntityAction = { type:typeof DELETE_ENTITY, id:SocialEntityId };
+const deleteEntity = (kind: SocialEntityKind, id: SocialEntityId): DeleteEntityAction => ({ type:DELETE_ENTITY, id });
 
 //
-const PUT_MANY = A`PUT_MANY`;
-type PutManyAction = { type:typeof PUT_MANY, many:EntitysMany };
-const putEntitys = (many: EntitysMany): PutManyAction => ({ type:PUT_MANY, many });
+// does put on each entity - put(entities[kind][...]) - optimized
+// this is PUT_ENTITYS and NOT "PUT" because a PUT here would overwrite the branch entities
+type PutEntitysData = {
+    [key: SocialEntityKind]: {
+        [key: SocialEntityId]: SocialEntity
+    }
+}
+const PUT_ENTITYS = A`PUT_ENTITYS`;
+type PutEntitysAction = { type:typeof PUT_ENTITYS, data:PutEntitysData }; // data is entitysNew in shape of object, this just happens to match $Shape<Entities>
+const putEntitys = (data: PutEntitysData): PutEntitysAction => ({ type:PUT_ENTITYS, data });
 
 //
-const DELETE_MANY = A`DELETE_MANY`;
-type DeleteManyAction = { type:typeof DELETE_MANY, ids:Id[] };
-const deleteEntitys = (ids: Id[]): DeleteManyAction => ({ type:DELETE_MANY, ids });
+const REF_ENTITY = A`REF_ENTITY`;
+type RefEntityAction = { type:typeof REF_ENTITY, kind:SocialEntityKind, name:string };
+const refEntity = (kind:SocialEntityKind, name: string): RefEntityAction => ({ type:REF_ENTITY, kind, name });
+const refSocialEntity = refEntity;
 
-//
-// responsible for manual/autorefresh, comment/like if social, deleting up entity
-const WATCH = A`WATCH`;
-type WatchAction = { type:typeof WATCH, id:Id };
-const watchSocialEntity = (id: Id): WatchAction => ({ type:WATCH, id });
-const watchWorker = function* watchWorker(action) {
-    const { id } = action;
+const refEntityWorker = function* refEntityWorker(action) {
+    const { kind, name } = action;
+    const refKey = getSocialRefKey(kind, name);
 
-    REFCNT[id] = REFCNT[id] ? REFCNT[id] + 1 : 1;
-    // const isDupe = REFCNT[id] > 1;
-    // if (isDupe) return;
+    console.log('in refEntityWorker, refKey:', refKey);
 
-    yield put(refreshEntity(id));
-    // const {entitys:{ [id]:entity }} = yield select();
+    REFCNT[refKey] = REFCNT[refKey] ? REFCNT[refKey] + 1 : 1;
 
-    // if (entity) {
+    yield put(refreshEntity(kind, name));
 
-    // }
-
-    const isDupe = REFCNT[id] > 1;
+    const isDupe = REFCNT[refKey] > 1;
     if (isDupe) return;
 
 
 }
-const watchWatcher = function* watchWatcher(action) {
-    yield takeEvery(WATCH, watchWorker);
+const refEntityWatcher = function* refEntityWatcher(action) {
+    yield takeEvery(REF_ENTITY, refEntityWorker);
 }
-sagas.push(watchWatcher);
+sagas.push(refEntityWatcher);
 
 //
-const UNWATCH = A`UNWATCH`;
-type UnwatchAction = { type:typeof UNWATCH, id:Id };
-const unwatchSocialEntity = (id: Id): UnwatchAction => ({ type:UNWATCH, id });
-const unwatchWorker = function* unwatchWorker(action) {
-    const { id } = action;
+const UNREF_ENTITY = A`UNREF_ENTITY`;
+type UnrefEntityAction = { type: typeof UNREF_ENTITY, kind: SocialEntityKind, name: string };
+const unrefEntity = (kind: SocialEntityKind, name: string): UnrefEntityAction => ({ type:UNREF_ENTITY, kind, name });
+const unrefSocialEntity = unrefEntity;
 
-    if (REFCNT[id] === 1) {
-        delete REFCNT[id];
-        // yield put(deleteEntity(id));
+const unrefEntityWorker = function* unrefEntityWorker(action) {
+    const { kind, name } = action;
+    const refKey = getSocialRefKey(kind, name);
+
+    if (REFCNT[refKey] === 1) {
+        delete REFCNT[refKey];
+        // find id of name
+        const id = Object.values((yield select()).social[kind]).find(entity => entity.name === name); // id exists for sure, as REFCNT value is === 1
+        yield put(deleteEntity(kind, id));
     } else {
-        REFCNT[id]--;
+        REFCNT[refKey]--;
     }
 }
-const unwatchWatcher = function* unwatchWatcher(action) {
-    yield takeEvery(UNWATCH, unwatchWorker);
+const unrefEntityWatcher = function* unrefEntityWatcher(action) {
+    yield takeEvery(UNREF_ENTITY, unrefEntityWorker);
 }
-sagas.push(unwatchWatcher);
+sagas.push(unrefEntityWatcher);
+
+//
+const REFRESH_ENTITY = A`REFRESH_ENTITY`;
+type RefreshEntityAction = { type: typeof REFRESH_ENTITY, kind: SocialEntityKind, name: string, id?: SocialEntityId };
+const refreshEntity = (kind:SocialEntityKind, name: string, id: SocialEntityId): RefreshEntityAction => ({ type:REFRESH_ENTITY, kind, name, id });
+
+const refreshEntityWorker = function* refreshEntityWorker(action) {
+    const { kind, id, name } = action;
+
+    console.log('in refresh, kind:', kind, 'id:', id);
+
+    if (UNREFRESHABLE_KINDS.includes(kind)) return;
+
+    if (id !== undefined) {
+        const {entitys:{ [kind]:{ [id]:entity } }} = yield select();
+
+        if (entity) {
+            const { fetchedAt, isFetching } = entity;
+            const timeSinceFetched = Date.now() - fetchedAt;
+            if (isFetching || timeSinceFetched <= MIN_MS_TILL_CAN_REFRESH_AGAIN) {
+                return;
+            }
+        }
+
+        yield put(patchEntity(id, { isFetching:true }));
+    }
+
+    const endpoint = kind; // crossfile-link029189
+    const res = yield call(fetchApi, kind, { qs:{ name } });
+    console.log('res.status:', res.status);
+    if (res.status === 200) {
+        const reply = yield call([res, res.json]);
+
+        const entities = yield call(normalizeUniversal, reply);
+        console.log('entities:', entities);
+        yield put(putEntitys(entities)); // isFetching will go to undefined on put
+
+    } else if (kind === K.articles && res.status === 404) {
+        const entity = {
+            id: -1,
+            fetchedAt: Date.now(),
+            kind: K.articles,
+            name,
+            commentIds: [],
+            thumbIds: []
+        }
+        yield put(putEntity(entity));
+    } else {
+        if (id !== undefined) yield put(patchEntity(id, { isFetching:false }));
+    }
+
+}
+const refreshEntityWatcher = function* refreshEntityWatcher(action) {
+    yield takeEvery(REFRESH_ENTITY, refreshEntityWorker);
+}
+sagas.push(refreshEntityWatcher);
 
 //
 type Action =
-  | PatchAction
-  | PutAction
-  | DeleteAction
-  | PutManyAction
-  | DeleteManyAction;
+  | PatchEntityAction
+  | PutEntityAction
+  | DeleteEntityAction
+  | PutEntitysAction;
 
 export default function reducer(state: Shape = INITIAL, action:Action): Shape {
     switch(action.type) {
-        case PUT: {
-            const { entity } = action;
-            return { ...state, [entity.id]:entity };
+        case PUT_ENTITY: {
+            const { entity:entityNew, entity:{ kind, id } } = action;
+
+            return { ...state, [kind]:{ ...state[kind], [id]:entityNew } };
         }
-        case PATCH: {
-            const { id, data } = action;
+        case PATCH_ENTITY: {
+            const { id, data, data:{ kind } } = action;
 
-            if (!(id in state)) console.warn('no such entity so cannot patch, id:', id); // DEBUG:
-            if (!(id in state)) return state;
+            const entities = state;
 
-            const entityOld = state[id];
-            const entity = deleteUndefined({ ...entityOld, ...data });
+            const entitys = entities[kind];
+            // if (!(id in entitys)) console.warn('no such entity so cannot patch, id:', id, 'kind:', kind); // DEBUG:
+            // if (!(id in entitys)) return state;
+
+            const entity = entitys[id];
+            const entityNew = deleteUndefined({ ...entity, ...data });
 
             const hasId = 'id' in data;
-            const idOld = entityOld.id;
-            const idNew = hasId ? data.id : idOld;
+            const idNew = hasId ? data.id : null;
 
-            const stateNew = { ...state, [idNew]:entity };
-
-            if (idNew !== idOld) delete stateNew[idOld];
+            const entitiesNew = { ...entities, [kind]:{ ...entitys, [idNew || id]:entityNew } };
+            const stateNew = entitiesNew;
 
             return stateNew;
         }
-        case DELETE: return omit({ ...state }, action.id);
-        case DELETE_MANY: return omit({ ...state }, ...action.ids);
-        case PUT_MANY: {
-            const { many } = action;
+        case DELETE_ENTITY: {
+            const { kind, id } = action;
 
-            const isEntitys = Array.isArray(many);
-            // const isEntities = !isEntitys && isObject(many) && getFirstKey(many) in ENTITY_KIND;
-            const isEntities = !isEntitys && isObject(many) && Object.keys(many).some( key => key in ENTITY_KIND);
-            const isEntitysObject = !isEntitys && !isEntities && isObject(many);
+            const entities = state;
 
-            if (isEntitys) {
-                const stateNew = { ...state };
-                const entitys = many;
-                for (const entity of entitys) {
-                    stateNew[entity.id] = entity;
+            const entitys = entities[kind];
+            // if (!(id in entitys)) console.warn('no such entity so cannot delete, id:', id, 'kind:', kind); // DEBUG:
+            // if (!(id in entitys)) return state;
+
+            return { ...entities, [kind]:omit({ ...entitys }, id) };
+        }
+        case PUT_ENTITYS: {
+            const { data } = action;
+
+            const stateNew = { ...state };
+            for (const [kind, entitysNew] of Object.entries(data)) {
+                if (kind in K) {
+                    const entitys = state[kind];
+                    stateNew[kind] = { ...entitys, ...entitysNew };
                 }
-                return stateNew;
-            } else if (isEntitysObject) {
-                return { ...state, ...many };
-            } else if (isEntities) {
-                const stateNew = { ...state };
-                for (const [kind, entitys] of Object.entries(many)) {
-                    if (kind in ENTITY_KIND) {
-                        Object.assign(stateNew, entitys);
-                    }
-                }
-                return stateNew;
             }
-            else { // DEBUG:
-                console.warn('many is of improper type'); // DEBUG:
-                return state; // DEBUG:
-            } // DEBUG:
+
+            return stateNew;
         }
         default: return state;
     }
 }
 
-export { watchSocialEntity, unwatchSocialEntity }
+export { refSocialEntity, unrefSocialEntity }

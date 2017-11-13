@@ -7,8 +7,9 @@ import ImagePixelated from './ImagePixelated'
 import Icon from '../../../../Icon'
 import StatRow from './StatRow'
 
+import { K } from '../../../../flow-control/social/types'
 import { ENTITYS } from '../../../../flow-control/entitys'
-import { watchSocialEntity, unwatchSocialEntity } from '../../../../flow-control/social'
+import { refSocialEntity, unrefSocialEntity } from '../../../../flow-control/social'
 
 import styles from './styles'
 import QUALITY_A from './quality-a.png'
@@ -51,14 +52,15 @@ class EntityDumb extends PureComponent<Props> {
     commentsY: number = 0
 
     componentDidMount() {
-        const { entity:{ name } } = this.props;
+        const { entity:{ id:name }, dispatch } = this.props;
 
-        dispatch(watchSocialEntity(name));
+        console.log('dispatching refSocialEntity:', K.articles, name);
+        dispatch(refSocialEntity(K.articles, name));
     }
     componentWillUnmount() {
-        const { entity:{ name } } = this.props;
+        const { socialEntity:{ kind, id:name }, dispatch } = this.props;
 
-        dispatch(unwatchSocialEntity(name));
+        dispatch(unrefSocialEntity(K.articles, name));
     }
     render() {
         const { entityId, entity, kind } = this.props;
