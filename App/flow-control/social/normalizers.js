@@ -10,7 +10,7 @@ function pickEntity(kind, ...pickAsByStringArgs) {
         processStrategy: value => ({
             kind,
             fetchedAt: Date.now(),
-            ...pickAsByString(value, ...pickAsByStringArgs)
+            ...pickAsByString(value, 'id', ...pickAsByStringArgs)
         })
     }
 }

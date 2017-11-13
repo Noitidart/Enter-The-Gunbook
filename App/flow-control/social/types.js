@@ -79,4 +79,4 @@ type Helpful = {|
 type HelpfulId = $PropertyType<Helpful, 'id'>;
 
 export { K }
-export type { Entities, SocialEntity, SocialEntityKind, SocialEntityId }
+export type { Entities, SocialEntity, SocialEntityKind, SocialEntityId, ThumbId }

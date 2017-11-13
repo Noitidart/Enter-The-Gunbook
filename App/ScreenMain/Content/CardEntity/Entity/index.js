@@ -10,7 +10,7 @@ import StatRow from './StatRow'
 
 import { K } from '../../../../flow-control/social/types'
 import { ENTITYS } from '../../../../flow-control/entitys'
-import { refSocialEntity, unrefSocialEntity } from '../../../../flow-control/social'
+import { refSocialEntity, unrefSocialEntity, toggleThumb } from '../../../../flow-control/social'
 
 import styles from './styles'
 import QUALITY_A from './quality-a.png'
@@ -19,7 +19,7 @@ import QUALITY_C from './quality-c.png'
 import QUALITY_D from './quality-d.png'
 import QUALITY_S from './quality-s.png'
 
-import type { SocialEntity } from '../../../flow-control/social/types'
+import type { SocialEntity, ThumbId } from '../../../flow-control/social/types'
 import type { Entity as EntityType, EntityKind } from '../../../flow-control/entitys/types'
 import type { Card } from '../../../flow-control/cards'
 import type { Shape as AppShape } from '../../../flow-control'
@@ -50,6 +50,7 @@ type Props = {
     helpfuls: {},
     article: {},
     forename: string,
+    thumbId: ThumbId | null,
     isThumbUp: number,
     isThumbDn: number,
     cntThumbUp: boolean,
@@ -88,7 +89,7 @@ class EntityDumb extends PureComponent<Props, State> {
             <View style={styles.main}>
                 <View style={styles.header}>
                     { hasInitFetched &&
-                        <TouchableOpacity onPress={()=>null}>
+                        <TouchableOpacity onPress={this.toggleThumbDn}>
                             <View style={[styles.headerIconWrap]}>
                                 <Icon style={[styles.headerIcon, isThumbDn && { color:'#E51C23' }]} name="thumb_down" />
                                 <Text style={[styles.headerIconLabel, isThumbDn && { color:'#E51C23' }]}>{cntThumbDn}</Text>
@@ -96,21 +97,19 @@ class EntityDumb extends PureComponent<Props, State> {
                         </TouchableOpacity>
                     }
                     { hasInitFetched &&
-                        <TouchableOpacity onPress={()=>null}>
+                        <TouchableOpacity onPress={this.toggleThumbUp}>
                             <View style={[styles.headerIconWrap]}>
                                 <Icon style={[styles.headerIcon, isThumbUp && { color:'#5677FC' }]} name="thumb_up" />
                                 <Text style={[styles.headerIconLabel, isThumbUp && { color:'#5677FC' }]}>{cntThumbUp}</Text>
                             </View>
                         </TouchableOpacity>
                     }
-                    { hasInitFetched &&
-                        <TouchableOpacity onPress={this.scrollToComments}>
-                            <Icon style={styles.headerIcon} name="comment" />
-                        </TouchableOpacity>
-                    }
                     { !hasInitFetched &&
                         <ActivityIndicator color="#FFFFFF" size="small" style={styles.headerActivity} />
                     }
+                    <TouchableOpacity onPress={this.scrollToComments}>
+                        <Icon style={styles.headerIcon} name="comment" />
+                    </TouchableOpacity>
                 </View>
                 <View style={styles.image}>
                     <ImagePixelated url={entity.image} height={90} width={90} />
@@ -233,6 +232,36 @@ class EntityDumb extends PureComponent<Props, State> {
         const socialEntityId = await dispatch(refSocialEntity(K.articles, name)).promise;
         this.setState(() => ({ socialEntityId }));
     }
+
+    toggleThumbUp = () => {
+        const { dispatch, forename, entity:{ id:name }, isThumbUp, thumbId } = this.props;
+        let { socialEntityId:id } = this.state;
+
+        const hasForename = !!forename;
+        if (!hasForename) {
+            const shouldGoToSettings = confirm('To be able to vote, you need to first set a "display name" from the settings page. Go there now?')
+            if (shouldGoToSettings) push('settings');
+            return;
+        }
+        const isDelete = isThumbUp;
+        if (isDelete) dispatch(toggleThumb({ forename, name, thumbId, id, like:null }));
+        else dispatch(toggleThumb({ forename, name, like:true, id }));
+    }
+    toggleThumbDn = () => {
+        const { dispatch, forename, entity:{ id:name }, isThumbDn, thumbId } = this.props;
+        let { socialEntityId:id } = this.state;
+
+        const hasForename = !!forename;
+        if (!hasForename) {
+            const shouldGoToSettings = confirm('To be able to vote, you need to first set a "display name" from the settings page. Go there now?')
+            if (shouldGoToSettings) push('settings');
+            return;
+        }
+
+        const isDelete = isThumbDn;
+        if (isDelete) dispatch(toggleThumb({ id, forename, name, thumbId, like:null }));
+        else dispatch(toggleThumb({ id, forename, name, like:false }));
+    }
 }
 
 const EntitySmart = connect(
@@ -242,12 +271,14 @@ const EntitySmart = connect(
         const name = entityId;
         const socialEntity = Object.values(social[K.articles]).find(entity => entity.name === name);
 
-        const thumbs = !socialEntity ? {} : pick(social.thumbs, socialEntity.thumbIds);
-        const comments = !socialEntity ? {}  : pick(social.comments, socialEntity.commentIds);
-        const helpfuls = !socialEntity ? {}  : pick(social.helpfuls, socialEntity.helpfulIds);
+        const thumbs = !socialEntity ? {} : pick(social.thumbs, ...socialEntity.thumbIds);
+        const comments = !socialEntity ? {}  : pick(social.comments, ...socialEntity.commentIds);
+        const helpfuls = {}; // !socialEntity ? {}  : pick(social.helpfuls, ...socialEntity.helpfulIds);
 
         const hasForename = !!forename;
-        const thumb = !hasForename ? null : Object.values(thumbs).find(thumb => thumb.display)
+        const displayname = !hasForename ? false : Object.values(social.displaynames).find(displayname => displayname.forename.toLowerCase() === forename.toLowerCase());
+        const hasDisplayname = !!displayname;
+        const thumb = !hasDisplayname ? null : Object.values(thumbs).find(thumb => thumb.displaynameId === displayname.id);
         const isThumbUp = thumb ? thumb.like : false;
         const isThumbDn = thumb ? !thumb.like : false;
         const cntThumbUp = Object.values(thumbs).reduce( (sum, { like }) => like ? ++sum : sum, 0 );
@@ -258,6 +289,7 @@ const EntitySmart = connect(
             kind,
             forename,
             socialEntity,
+            thumbId: thumb ? thumb.id : null,
             thumbs,
             comments,
             helpfuls,

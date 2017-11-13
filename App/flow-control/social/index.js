@@ -4,14 +4,14 @@
 
 import { delay } from 'redux-saga'
 import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
-import { pickDotpath } from 'cmn/lib/all'
+import { pickDotpath, omit } from 'cmn/lib/all'
 
 import { normalizeUniversal } from './normalizers'
 import { K } from './types'
-import { getSocialRefKey } from './utils'
-import { waitRehydrate, fetchApi, promisifyAction } from '../utils'
+import { getSocialRefKey, hasId } from './utils'
+import { waitRehydrate, fetchApi, promisifyAction, deleteUndefined } from '../utils'
 
-import type { Entities, SocialEntity, SocialEntityId, SocialEntityKind } from './types'
+import type { Entities, SocialEntity, SocialEntityId, SocialEntityKind, ThumbId } from './types'
 import type { PromiseAction } from '../utils'
 
 // type EntityName = $PropertyType<Entity, 'name'>;
@@ -32,7 +32,7 @@ const A = ([actionType]: string[]) => 'SOCIAL_' + actionType;
 const REFCNT = {};
 
 const UNREFRESHABLE_KINDS = [K.thumbs, K.comments, K.displaynames, K.helpfuls];
-const MIN_MS_TILL_CAN_REFRESH_AGAIN = 10 * 1000; // 10s
+const MIN_MS_TILL_CAN_REFRESH_AGAIN = 1 * 1000; // 10s
 
 //
 // the entity is not overriden, if "new data" has value and is undefined, then this value is deleted from actual data. if "new data" is missing a field, then the value for this entry in "state data" is unchanged
@@ -106,7 +106,7 @@ const unrefEntityWorker = function* unrefEntityWorker(action) {
     if (REFCNT[refKey] === 1) {
         delete REFCNT[refKey];
         // find id of name
-        yield put(deleteEntity(kind, id));
+        // yield put(deleteEntity(kind, id));
     } else {
         REFCNT[refKey]--;
     }
@@ -128,8 +128,8 @@ const refreshEntityWorker = function* refreshEntityWorker(action) {
 
     if (UNREFRESHABLE_KINDS.includes(kind)) return;
 
-    if (id !== undefined) {
-        const {entitys:{ [kind]:{ [id]:entity } }} = yield select();
+    if (hasId(id)) {
+        const {social:{ [kind]:{ [id]:entity } }} = yield select();
 
         if (entity) {
             const { fetchedAt, isFetching } = entity;
@@ -140,7 +140,7 @@ const refreshEntityWorker = function* refreshEntityWorker(action) {
             }
         }
 
-        yield put(patchEntity(id, { isFetching:true }));
+        yield put(patchEntity(id, { kind, isFetching:true }));
     }
 
     const endpoint = kind; // crossfile-link029189
@@ -162,8 +162,8 @@ const refreshEntityWorker = function* refreshEntityWorker(action) {
     } else if (kind === K.articles && res.status === 404) {
         if (resolve) resolve(null);
     } else {
-        if (id !== undefined) {
-            yield put(patchEntity(id, { isFetching:false }));
+        if (hasId(id)) {
+            yield put(patchEntity(id, { kind, isFetching:false }));
             if (resolve) resolve(id);
         }
     }
@@ -173,6 +173,39 @@ const refreshEntityWatcher = function* refreshEntityWatcher(action) {
     yield takeEvery(REFRESH_ENTITY, refreshEntityWorker);
 }
 sagas.push(refreshEntityWatcher);
+
+//
+// thumbId only passed if
+const TOGGLE_THUMB = A`TOGGLE_THUMB`;
+type ToggleThumbAction =
+  | { type: typeof TOGGLE_THUMB, id?: SocialEntityId, name: string, forename: string, like: boolean, thumbId: void }
+  | { type: typeof TOGGLE_THUMB, id: SocialEntityId,  name: string, forename: string,  like: null,   thumbId: ThumbId }; // thumbId passed only when like is null, for delete
+type ToggleThumbArg =
+  | { id: void | SocialEntityId, like: boolean, name: string, forename: string } // create or update
+  | { id: SocialEntityId,        like: null,    name: string, forename: string, thumbId: ThumbId } // delete
+const toggleThumb = ({ id, like, name, forename, thumbId}: ToggleThumbArg): ToggleThumbAction => ({ type:TOGGLE_THUMB, id, name, forename, like, thumbId });
+
+const toggleThumbWorker = function* toggleThumbWorker(action) {
+    const { name, forename, like, thumbId, id } = action;
+
+    const isDelete = like === null;
+
+    yield put(patchEntity(id, { kind:K.articles, isFetching:true }));
+
+    const res = yield call(fetchApi, isDelete ? `thumbs/${thumbId}` : 'thumbs', {
+        method: isDelete ? 'DELETE' : 'POST',
+        qs: !isDelete ? null : { forename },
+        body: isDelete ? undefined : { like, forename, name }
+    });
+    console.log('toggleThumb res.status:', res.status);
+
+    yield put(patchEntity(id, { kind:K.articles, isFetching:false }));
+    yield put(refreshEntity(K.articles, name, id));
+}
+const toggleThumbWatcher = function* toggleThumbWatcher(action) {
+    yield takeEvery(TOGGLE_THUMB, toggleThumbWorker);
+}
+sagas.push(toggleThumbWatcher);
 
 //
 type Action =
@@ -236,4 +269,4 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
     }
 }
 
-export { refSocialEntity, unrefSocialEntity }
+export { refSocialEntity, unrefSocialEntity, toggleThumb }
