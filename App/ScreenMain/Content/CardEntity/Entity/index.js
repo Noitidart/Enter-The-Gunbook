@@ -4,6 +4,7 @@ import { connect } from 'react-redux'
 import { toTitleCase, pick } from 'cmn/lib/all'
 import { depth0Or1Equal } from 'cmn/lib/recompose'
 
+import Comment from './Comment'
 import ImagePixelated from './ImagePixelated'
 import Icon from '../../../../Icon'
 import StatRow from './StatRow'
@@ -47,8 +48,6 @@ type Props = {
     socialEntity?: SocialEntity,
     thumbs: {},
     comments: {},
-    helpfuls: {},
-    article: {},
     forename: string,
     thumbId: ThumbId | null,
     isThumbUp: number,
@@ -84,6 +83,8 @@ class EntityDumb extends PureComponent<Props, State> {
         const isFetching = !hasInitFetched || (socialEntity && socialEntity.isFetching);
 
         console.log('entity:', entity, 'socialEntity:', socialEntity);
+
+        const hasComments = !socialEntity ? false : !!socialEntity.commentIds.length;
 
         return (
             <View style={styles.main}>
@@ -154,57 +155,11 @@ class EntityDumb extends PureComponent<Props, State> {
                     { !hasInitFetched &&
                         <ActivityIndicator color="#FFFFFF" size="large" style={styles.commentsLoading} />
                     }
-                    { hasInitFetched &&
-                        <View style={styles.comment}>
-                            <View style={styles.commentHead}>
-                                <View style={styles.commentAvatar}>
-                                    <Text style={styles.commentAvatarLabel}>A</Text>
-                                </View>
-                                <View style={styles.commentHeadText}>
-                                    <View style={styles.row}>
-                                        <Text style={styles.commentAuthor}>Author</Text>
-                                        <Text style={styles.commentDot}> &middot; </Text>
-                                        <Text style={styles.commentDate}>2 min ago</Text>
-                                        <View style={styles.spacer} />
-                                        <TouchableOpacity style={styles.commentDeleteWrap}>
-                                            <Icon style={styles.commentDelete} name="delete" />
-                                        </TouchableOpacity>
-                                    </View>
-                                    <TouchableOpacity onPress={()=>null}>
-                                        <Text style={styles.commentHelpful}>You and 1 other found this helpful</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                {/* if they have a thumb show it here as a subicon */}
-                            </View>
-                            <Text style={styles.commentBody}>body body body body body</Text>
-                            <View style={styles.commentHr} />
-                        </View>
+                    { hasInitFetched && hasComments &&
+                        socialEntity.commentIds.map( id => <Comment id={id} key={id} /> )
                     }
-                    { hasInitFetched &&
-                        <View style={styles.comment}>
-                            <View style={styles.commentHead}>
-                                <View style={styles.commentAvatar}>
-                                    <Text style={styles.commentAvatarLabel}>A</Text>
-                                </View>
-                                <View style={styles.commentHeadText}>
-                                    <View style={styles.row}>
-                                        <Text style={styles.commentAuthor}>Author</Text>
-                                        <Text style={styles.commentDot}> &middot; </Text>
-                                        <Text style={styles.commentDate}>2 min ago</Text>
-                                        <View style={styles.spacer} />
-                                        <TouchableOpacity style={styles.commentDeleteWrap}>
-                                            <Icon style={styles.commentDelete} name="delete" />
-                                        </TouchableOpacity>
-                                    </View>
-                                    <TouchableOpacity onPress={()=>null}>
-                                        <Text style={styles.commentHelpful}>You and 1 other found this helpful</Text>
-                                    </TouchableOpacity>
-                                </View>
-                                {/* if they have a thumb show it here as a subicon */}
-                            </View>
-                            <Text style={styles.commentBody}>body body body body body</Text>
-                            <View style={styles.commentHr} />
-                        </View>
+                    { hasInitFetched && !hasComments &&
+                        <Text style={styles.commentsMessage}>No comments yet</Text>
                     }
                     { hasInitFetched &&
                         <View style={styles.addComment}>
@@ -239,8 +194,7 @@ class EntityDumb extends PureComponent<Props, State> {
 
         const hasForename = !!forename;
         if (!hasForename) {
-            const shouldGoToSettings = confirm('To be able to vote, you need to first set a "display name" from the settings page. Go there now?')
-            if (shouldGoToSettings) push('settings');
+            const shouldGoToSettings = alert('To be able to vote, you need to first set a "display name" from the settings page.')
             return;
         }
         const isDelete = isThumbUp;
@@ -253,8 +207,7 @@ class EntityDumb extends PureComponent<Props, State> {
 
         const hasForename = !!forename;
         if (!hasForename) {
-            const shouldGoToSettings = confirm('To be able to vote, you need to first set a "display name" from the settings page. Go there now?')
-            if (shouldGoToSettings) push('settings');
+            const shouldGoToSettings = alert('To be able to vote, you need to first set a "display name" from the settings page.')
             return;
         }
 
@@ -269,30 +222,24 @@ const EntitySmart = connect(
         const kind = entitys[ENTITYS.GUN][entityId] ? ENTITYS.GUN : ENTITYS.ITEM;
 
         const name = entityId;
-        const socialEntity = Object.values(social[K.articles]).find(entity => entity.name === name);
+        const socialEntity = Object.values(social.articles).find(entity => entity.name === name);
+        console.log('socialEntity:', socialEntity);
 
-        const thumbs = !socialEntity ? {} : pick(social.thumbs, ...socialEntity.thumbIds);
-        const comments = !socialEntity ? {}  : pick(social.comments, ...socialEntity.commentIds);
-        const helpfuls = {}; // !socialEntity ? {}  : pick(social.helpfuls, ...socialEntity.helpfulIds);
+        const thumbs = !socialEntity ? null : pick(social.thumbs, ...socialEntity.thumbIds);
 
-        const hasForename = !!forename;
-        const displayname = !hasForename ? false : Object.values(social.displaynames).find(displayname => displayname.forename.toLowerCase() === forename.toLowerCase());
-        const hasDisplayname = !!displayname;
-        const thumb = !hasDisplayname ? null : Object.values(thumbs).find(thumb => thumb.displaynameId === displayname.id);
+        const displayname = !forename ? false : Object.values(social.displaynames).find(displayname => displayname.forename.toLowerCase() === forename.toLowerCase());
+        const thumb = !thumbs ? null : Object.values(thumbs).find(thumb => thumb.displaynameId === displayname.id);
         const isThumbUp = thumb ? thumb.like : false;
         const isThumbDn = thumb ? !thumb.like : false;
-        const cntThumbUp = Object.values(thumbs).reduce( (sum, { like }) => like ? ++sum : sum, 0 );
-        const cntThumbDn = Object.values(thumbs).reduce( (sum, { like }) => !like ? ++sum : sum, 0 );
+        const cntThumbUp = !thumbs ? 0 : Object.values(thumbs).reduce( (sum, { like }) => like ? ++sum : sum, 0 );
+        const cntThumbDn = !thumbs ? 0 : Object.values(thumbs).reduce( (sum, { like }) => !like ? ++sum : sum, 0 );
 
         return {
             entity: entitys[ENTITYS.GUN][entityId] || entitys[ENTITYS.ITEM][entityId],
             kind,
             forename,
             socialEntity,
-            thumbId: thumb ? thumb.id : null,
-            thumbs,
-            comments,
-            helpfuls,
+            thumbId: !thumb ? null : thumb.id,
             isThumbUp,
             isThumbDn,
             cntThumbUp,

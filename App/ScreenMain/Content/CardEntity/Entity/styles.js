@@ -118,9 +118,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 7 // from link339
     },
 
-    commentsLoading: {
-        marginVertical: 20
-    },
     // body: {
 
     // },
@@ -223,6 +220,16 @@ const styles = StyleSheet.create({
 
     spacer: {
         flex: 1
+    },
+
+    commentsLoading: {
+        marginVertical: 20
+    },
+    commentsMessage: {
+        color: '#D3DDE4',
+        fontSize: 16,
+        textAlign: 'center',
+        marginVertical: 20
     }
 
 })
