@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     headerIcon: {
         color: '#FFFFFF',
         fontSize: 26,
-        padding: 10
+        padding: 10 // link18847
     },
     headerIconLabel: {
         color: '#FFFFFF',
@@ -32,6 +32,10 @@ const styles = StyleSheet.create({
     headerIconWrap: {
         flexDirection: 'row',
         alignItems: 'center'
+    },
+
+    headerActivity: {
+        padding: 10 // from link18847
     },
 
     image: {
@@ -96,7 +100,7 @@ const styles = StyleSheet.create({
     titleRightIcon: {
         color: OFF_WHITE,
         fontSize: 19,
-        marginHorizontal: 7
+        marginHorizontal: 7 // link339
     },
     titleRightIconLabel: {
         color: OFF_WHITE,
@@ -110,6 +114,13 @@ const styles = StyleSheet.create({
         flex: 1
     },
 
+    titleActivity: {
+        marginHorizontal: 7 // from link339
+    },
+
+    commentsLoading: {
+        marginVertical: 20
+    },
     // body: {
 
     // },

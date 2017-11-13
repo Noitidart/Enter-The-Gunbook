@@ -9,15 +9,22 @@ import { pickDotpath } from 'cmn/lib/all'
 import { normalizeUniversal } from './normalizers'
 import { K } from './types'
 import { getSocialRefKey } from './utils'
-import { waitRehydrate, fetchApi } from '../utils'
+import { waitRehydrate, fetchApi, promisifyAction } from '../utils'
 
 import type { Entities, SocialEntity, SocialEntityId, SocialEntityKind } from './types'
+import type { PromiseAction } from '../utils'
 
 // type EntityName = $PropertyType<Entity, 'name'>;
 
 export type Shape = Entities;
 
-const INITIAL = {}
+const INITIAL = {
+    articles: {},
+    thumbs: {},
+    comments: {},
+    displaynames: {},
+    helpfuls: {}
+}// Object.keys(K).reduce((entities, kind) => Object.assign(entities, { [kind]:{} }), {});
 export const sagas = [];
 
 const A = ([actionType]: string[]) => 'SOCIAL_' + actionType;
@@ -63,23 +70,22 @@ const putEntitys = (data: PutEntitysData): PutEntitysAction => ({ type:PUT_ENTIT
 
 //
 const REF_ENTITY = A`REF_ENTITY`;
-type RefEntityAction = { type:typeof REF_ENTITY, kind:SocialEntityKind, name:string };
-const refEntity = (kind:SocialEntityKind, name: string): RefEntityAction => ({ type:REF_ENTITY, kind, name });
+type RefEntityAction = { type:typeof REF_ENTITY, kind:SocialEntityKind, name:string, ...PromiseAction };
+const refEntity = (kind:SocialEntityKind, name: string): RefEntityAction => promisifyAction({ type:REF_ENTITY, kind, name });
 const refSocialEntity = refEntity;
 
 const refEntityWorker = function* refEntityWorker(action) {
-    const { kind, name } = action;
+    const { kind, name, resolve } = action;
     const refKey = getSocialRefKey(kind, name);
 
     console.log('in refEntityWorker, refKey:', refKey);
 
     REFCNT[refKey] = REFCNT[refKey] ? REFCNT[refKey] + 1 : 1;
 
-    yield put(refreshEntity(kind, name));
+    yield put(refreshEntity(kind, name, undefined, resolve));
 
     const isDupe = REFCNT[refKey] > 1;
     if (isDupe) return;
-
 
 }
 const refEntityWatcher = function* refEntityWatcher(action) {
@@ -89,18 +95,17 @@ sagas.push(refEntityWatcher);
 
 //
 const UNREF_ENTITY = A`UNREF_ENTITY`;
-type UnrefEntityAction = { type: typeof UNREF_ENTITY, kind: SocialEntityKind, name: string };
-const unrefEntity = (kind: SocialEntityKind, name: string): UnrefEntityAction => ({ type:UNREF_ENTITY, kind, name });
+type UnrefEntityAction = { type: typeof UNREF_ENTITY, kind: SocialEntityKind, name: string, id: SocialEntityId };
+const unrefEntity = (kind: SocialEntityKind, name: string, id: SocialEntityId): UnrefEntityAction => ({ type:UNREF_ENTITY, kind, name, id });
 const unrefSocialEntity = unrefEntity;
 
 const unrefEntityWorker = function* unrefEntityWorker(action) {
-    const { kind, name } = action;
+    const { kind, name, id } = action;
     const refKey = getSocialRefKey(kind, name);
 
     if (REFCNT[refKey] === 1) {
         delete REFCNT[refKey];
         // find id of name
-        const id = Object.values((yield select()).social[kind]).find(entity => entity.name === name); // id exists for sure, as REFCNT value is === 1
         yield put(deleteEntity(kind, id));
     } else {
         REFCNT[refKey]--;
@@ -113,13 +118,13 @@ sagas.push(unrefEntityWatcher);
 
 //
 const REFRESH_ENTITY = A`REFRESH_ENTITY`;
-type RefreshEntityAction = { type: typeof REFRESH_ENTITY, kind: SocialEntityKind, name: string, id?: SocialEntityId };
-const refreshEntity = (kind:SocialEntityKind, name: string, id: SocialEntityId): RefreshEntityAction => ({ type:REFRESH_ENTITY, kind, name, id });
+type RefreshEntityAction = { type: typeof REFRESH_ENTITY, kind: SocialEntityKind, name: string, id?: SocialEntityId, resolve?: $PropertyType<PromiseAction, 'resolve'> };
+const refreshEntity = (kind: SocialEntityKind, name: string, id: ?SocialEntityId, resolve?: $PropertyType<PromiseAction, 'resolve'>): RefreshEntityAction => ({ type:REFRESH_ENTITY, kind, name, id, resolve });
 
 const refreshEntityWorker = function* refreshEntityWorker(action) {
-    const { kind, id, name } = action;
+    const { kind, id, name, resolve } = action;
 
-    console.log('in refresh, kind:', kind, 'id:', id);
+    console.log('in refresh, kind:', kind, 'id:', id, 'name:', name);
 
     if (UNREFRESHABLE_KINDS.includes(kind)) return;
 
@@ -130,6 +135,7 @@ const refreshEntityWorker = function* refreshEntityWorker(action) {
             const { fetchedAt, isFetching } = entity;
             const timeSinceFetched = Date.now() - fetchedAt;
             if (isFetching || timeSinceFetched <= MIN_MS_TILL_CAN_REFRESH_AGAIN) {
+                if (resolve) resolve(entity.id);
                 return;
             }
         }
@@ -147,18 +153,19 @@ const refreshEntityWorker = function* refreshEntityWorker(action) {
         console.log('entities:', entities);
         yield put(putEntitys(entities)); // isFetching will go to undefined on put
 
-    } else if (kind === K.articles && res.status === 404) {
-        const entity = {
-            id: -1,
-            fetchedAt: Date.now(),
-            kind: K.articles,
-            name,
-            commentIds: [],
-            thumbIds: []
+        if (resolve) {
+            for (const entity of Object.values(entities[kind])) {
+                if (entity.name === name) resolve(entity.id);
+            }
+            resolve(null); // as promise cant be resolved twice, if it was not resolved with entity.id we resolve it here with null
         }
-        yield put(putEntity(entity));
+    } else if (kind === K.articles && res.status === 404) {
+        if (resolve) resolve(null);
     } else {
-        if (id !== undefined) yield put(patchEntity(id, { isFetching:false }));
+        if (id !== undefined) {
+            yield put(patchEntity(id, { isFetching:false }));
+            if (resolve) resolve(id);
+        }
     }
 
 }

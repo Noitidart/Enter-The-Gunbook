@@ -66,3 +66,10 @@ export function fetchApi(input:string, init={}) {
 
     return fetch(input, init);
 }
+
+export type PromiseAction = { promise:Promise<any>, resolve:any=>void }
+export function promisifyAction<T: Action>(action: T): T {
+    // adds action.promise and action.resolve to T
+    action.promise = new Promise(resolve => action.resolve = resolve);
+    return action;
+}
