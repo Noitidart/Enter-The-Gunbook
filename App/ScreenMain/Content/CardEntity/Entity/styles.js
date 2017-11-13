@@ -2,8 +2,7 @@
 
 import { StyleSheet } from 'react-native'
 
-const OFF_WHITE = 'rgba(255, 255, 255, 0.8)';
-const OFF_WHITE_1 = 'rgba(255, 255, 255, 0.7)';
+import colors from './colors'
 
 const styles = StyleSheet.create({
     main: {
@@ -21,12 +20,12 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(0, 0, 0, 0.3)'
     },
     headerIcon: {
-        color: '#FFFFFF',
+        color: colors.white,
         fontSize: 26,
         padding: 10 // link18847
     },
     headerIconLabel: {
-        color: '#FFFFFF',
+        color: colors.white,
         fontSize: 15
     },
     headerIconWrap: {
@@ -68,11 +67,11 @@ const styles = StyleSheet.create({
     },
     name: {
         fontSize: 24,
-        color: OFF_WHITE
+        color: colors.white80
     },
     kind: {
         fontSize: 15,
-        color: OFF_WHITE
+        color: colors.white80
     },
 
     titleRow: {
@@ -81,29 +80,29 @@ const styles = StyleSheet.create({
         padding: 10,
         marginBottom: 10,
         borderBottomWidth: 1,
-        borderBottomColor: OFF_WHITE_1
+        borderBottomColor: colors.white70
     },
     title: {
         fontSize: 18,
-        color: OFF_WHITE
+        color: colors.white80
     },
     titleIcon: {
-        color: OFF_WHITE,
+        color: colors.white80,
         fontSize: 22,
         marginRight: 10
     },
     titleRight: {
-        color: OFF_WHITE,
+        color: colors.white80,
         fontSize: 16,
         marginHorizontal: 7
     },
     titleRightIcon: {
-        color: OFF_WHITE,
+        color: colors.white80,
         fontSize: 19,
         marginHorizontal: 7 // link339
     },
     titleRightIconLabel: {
-        color: OFF_WHITE,
+        color: colors.white80,
         fontSize: 13
     },
     titleRightIconWrap: {
@@ -129,94 +128,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 6
     },
-    button: {
-        backgroundColor: '#5677FC',
-        borderRadius: 2,
-        padding: 8,
-        alignItems: 'center'
-    },
-    buttonLabel: {
-        fontSize: 14,
-        color: '#FFFFFF',
-        fontWeight: 'bold'
-    },
-
-    comment: {
-        paddingHorizontal: 15,
-        paddingVertical: 5 // link3181
-    },
-    commentHr: {
-        height: 1,
-        backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        marginTop: 10, // 2* link3181
-        alignSelf: 'center',
-        width: '95%'
-    },
-    commentHead: {
-        flexDirection: 'row'
-    },
-    commentAvatar: {
-        height: 36,
-        width: 36,
-        borderRadius: 36 / 2,
-        backgroundColor: '#858D90',
-        marginRight: 5,
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    commentAvatarLabel: {
-        color: '#FFFFFF',
-        fontSize: 20,
-        fontWeight: 'bold'
-    },
-    commentHeadText: {
-        flex: 1 // so trash icon goes in far right
-    },
-    row: {
-        flexDirection: 'row',
-        alignItems: 'center'
-    },
-    commentAuthor: {
-        color: '#FFFFFF',
-        fontWeight: 'bold'
-    },
-    commentDot: {
-        color: '#FFFFFF'
-    },
-    commentDeleteWrap: {
-        paddingLeft: 20
-    },
-    commentDelete: {
-        color: OFF_WHITE
-    },
-    commentDate: {
-        color: '#B2BBC4',
-        fontSize: 12
-    },
-    commentHelpful: {
-        color: '#B2BBC4'
-    },
-    commentBody: {
-        marginTop: 3,
-        marginHorizontal: 3,
-        color: '#D3DDE4'
-    },
-
-    addComment: {
-        // backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        paddingHorizontal: 10,
-        paddingVertical: 10, // 2* link3181
-    },
-    addCommentInput: {
-        color: '#FFFFFF',
-        backgroundColor: '#2F2B31',
-        borderRadius: 5,
-        fontSize: 14,
-        height: 14 * 2 * 3, // android: line height is fontSize * 2 apparently, at least when fontSize is 14, * 3 for number of lines
-        paddingVertical: 4,
-        marginBottom: 7,
-        textAlignVertical: 'top'
-    },
 
     spacer: {
         flex: 1
@@ -226,12 +137,18 @@ const styles = StyleSheet.create({
         marginVertical: 20
     },
     commentsMessage: {
-        color: '#D3DDE4',
+        color: colors.whiteSlight,
         fontSize: 16,
         textAlign: 'center',
         marginVertical: 20
-    }
+    },
 
+    red: {
+        color: colors.red
+    },
+    blue: {
+        color: colors.blue
+    }
 })
 
 export default styles

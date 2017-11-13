@@ -1,3 +1,5 @@
+// @flow
+
 import React, { PureComponent } from 'react'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { connect } from 'react-redux'
@@ -106,11 +108,6 @@ const CommentSmart = connect(
             cntHelpful,
             helpfulId: helpful ? helpful.id : null
         }
-    },
-    undefined,
-    undefined,
-    {
-        areStatePropsEqual: (props, propsOld) => depth0Or1Equal(props, propsOld, { thumbs:1, comments:1, helpfuls:1 })
     }
 )
 

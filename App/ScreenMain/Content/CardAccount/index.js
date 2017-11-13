@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react'
 import { Linking, Text, TouchableHighlight, View } from 'react-native'
 
+import ButtonFlat from '../CardEntity/Entity/ButtonFlat'
 import SettingsForm from './SettingsForm'
 import Icon from '../../../Icon'
 
@@ -26,9 +27,7 @@ class CardAccount extends PureComponent<Props> {
                 <View style={styles.para}>
                     <Text style={styles.paraBody}>Please support the development and server costs. A server is used for the comment/vote feature, and IBM Watson is used for voice recognition service.</Text>
                     <View style={styles.rowButton}>
-                        <TouchableHighlight style={styles.button} onPress={this.gotoPaypal}>
-                            <Text style={styles.buttonLabel}>CONTRIBUTE WITH PAYPAL</Text>
-                        </TouchableHighlight>
+                        <ButtonFlat label="CONTRIBUTE WITH PAYPAL" onPress={this.gotoPaypal} />
                     </View>
                     {/* <View style={styles.paraHr} /> */}
                 </View>

@@ -2,9 +2,10 @@ import React, { PureComponent } from 'react'
 import { ActivityIndicator, Image, Linking, ScrollView, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import { connect } from 'react-redux'
 import { toTitleCase, pick } from 'cmn/lib/all'
-import { depth0Or1Equal } from 'cmn/lib/recompose'
 
+import ButtonFlat from './ButtonFlat'
 import Comment from './Comment'
+import AddComment from './AddComment'
 import ImagePixelated from './ImagePixelated'
 import Icon from '../../../../Icon'
 import StatRow from './StatRow'
@@ -92,16 +93,16 @@ class EntityDumb extends PureComponent<Props, State> {
                     { hasInitFetched &&
                         <TouchableOpacity onPress={this.toggleThumbDn}>
                             <View style={[styles.headerIconWrap]}>
-                                <Icon style={[styles.headerIcon, isThumbDn && { color:'#E51C23' }]} name="thumb_down" />
-                                <Text style={[styles.headerIconLabel, isThumbDn && { color:'#E51C23' }]}>{cntThumbDn}</Text>
+                                <Icon style={[styles.headerIcon, isThumbDn && styles.red]} name="thumb_down" />
+                                <Text style={[styles.headerIconLabel, isThumbDn && styles.red]}>{cntThumbDn}</Text>
                             </View>
                         </TouchableOpacity>
                     }
                     { hasInitFetched &&
                         <TouchableOpacity onPress={this.toggleThumbUp}>
                             <View style={[styles.headerIconWrap]}>
-                                <Icon style={[styles.headerIcon, isThumbUp && { color:'#5677FC' }]} name="thumb_up" />
-                                <Text style={[styles.headerIconLabel, isThumbUp && { color:'#5677FC' }]}>{cntThumbUp}</Text>
+                                <Icon style={[styles.headerIcon, isThumbUp && styles.blue]} name="thumb_up" />
+                                <Text style={[styles.headerIconLabel, isThumbUp && styles.blue]}>{cntThumbUp}</Text>
                             </View>
                         </TouchableOpacity>
                     }
@@ -130,9 +131,7 @@ class EntityDumb extends PureComponent<Props, State> {
                 <ScrollView style={styles.body} ref={this.refBody}>
                     { Object.entries(entity).map( ([name, value]) => <StatRow kind={kind} key={name} entityId={entityId} name={name} value={value} /> ) }
                     <View style={styles.rowButton}>
-                        <TouchableHighlight style={styles.button} onPress={this.gotoGunpedia}>
-                            <Text style={styles.buttonLabel}>SEE MORE ON GUNPEDIA</Text>
-                        </TouchableHighlight>
+                        <ButtonFlat label="SEE MORE ON GUNPEDIA" onPress={this.gotoGunpedia} />
                     </View>
                     <View style={styles.titleRow} onLayout={this.handleLayoutComments}>
                         <Icon style={styles.titleIcon} name="comment" />
@@ -161,14 +160,7 @@ class EntityDumb extends PureComponent<Props, State> {
                     { hasInitFetched && !hasComments &&
                         <Text style={styles.commentsMessage}>No comments yet</Text>
                     }
-                    { hasInitFetched &&
-                        <View style={styles.addComment}>
-                            <TextInput style={styles.addCommentInput} keyboardAppearance="dark" placeholder="Leave a comment" placeholderTextColor="#858D90" selectionColor="#5677FC" underlineColorAndroid="transparent" disableFullscreenUI multiline />
-                            <TouchableHighlight style={styles.button} onPress={()=>null}>
-                                <Text style={styles.buttonLabel}>POST</Text>
-                            </TouchableHighlight>
-                        </View>
-                    }
+                    { hasInitFetched && <AddComment name={entityId} id={!socialEntity ? null : socialEntity.id} /> }
                 </ScrollView>
             </View>
         )
@@ -245,11 +237,6 @@ const EntitySmart = connect(
             cntThumbUp,
             cntThumbDn
         }
-    },
-    undefined,
-    undefined,
-    {
-        areStatePropsEqual: (props, propsOld) => depth0Or1Equal(props, propsOld, { thumbs:1, comments:1, helpfuls:1 })
     }
 )
 

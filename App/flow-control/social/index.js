@@ -175,7 +175,6 @@ const refreshEntityWatcher = function* refreshEntityWatcher(action) {
 sagas.push(refreshEntityWatcher);
 
 //
-// thumbId only passed if
 const TOGGLE_THUMB = A`TOGGLE_THUMB`;
 type ToggleThumbAction =
   | { type: typeof TOGGLE_THUMB, id?: SocialEntityId, name: string, forename: string, like: boolean, thumbId: void }
@@ -190,7 +189,7 @@ const toggleThumbWorker = function* toggleThumbWorker(action) {
 
     const isDelete = like === null;
 
-    yield put(patchEntity(id, { kind:K.articles, isFetching:true }));
+    if (hasId(id)) yield put(patchEntity(id, { kind:K.articles, isFetching:true }));
 
     const res = yield call(fetchApi, isDelete ? `thumbs/${thumbId}` : 'thumbs', {
         method: isDelete ? 'DELETE' : 'POST',
@@ -199,13 +198,39 @@ const toggleThumbWorker = function* toggleThumbWorker(action) {
     });
     console.log('toggleThumb res.status:', res.status);
 
-    yield put(patchEntity(id, { kind:K.articles, isFetching:false }));
+    if (hasId(id)) yield put(patchEntity(id, { kind:K.articles, isFetching:false }));
+
     yield put(refreshEntity(K.articles, name, id));
 }
 const toggleThumbWatcher = function* toggleThumbWatcher(action) {
     yield takeEvery(TOGGLE_THUMB, toggleThumbWorker);
 }
 sagas.push(toggleThumbWatcher);
+
+//
+const ADD_COMMENT = A`ADD_COMMENT`;
+type AddCommentAction = { type: typeof ADD_COMMENT, body: string, name: string, forename: string, id?: SocialEntityId };
+const addComment = (name: string, body: string, forename: string, id: ?SocialEntityId): AddCommentAction => ({ type:ADD_COMMENT, name, body, forename, id });
+
+const addCommentWorker = function* addCommentWorker(action) {
+    const { name, body, forename, id } = action;
+
+    if (hasId(id)) yield put(patchEntity(id, { kind:K.articles, isFetching:true }));
+
+    const res = yield call(fetchApi, 'comments', {
+        method: 'POST',
+        body: { body, forename, name }
+    });
+    console.log('addComment res.status:', res.status);
+
+    if (hasId(id)) yield put(patchEntity(id, { kind:K.articles, isFetching:false }));
+
+    yield put(refreshEntity(K.articles, name, id));
+}
+const addCommentWatcher = function* addCommentWatcher(action) {
+    yield takeEvery(ADD_COMMENT, addCommentWorker);
+}
+sagas.push(addCommentWatcher);
 
 //
 type Action =
@@ -269,4 +294,4 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
     }
 }
 
-export { refSocialEntity, unrefSocialEntity, toggleThumb }
+export { refSocialEntity, unrefSocialEntity, toggleThumb, addComment }

@@ -2,6 +2,8 @@
 
 import { StyleSheet } from 'react-native'
 
+import colors from '../colors'
+
 const OFF_BLACK = 'rgba(0, 0, 0, 0.3)';
 
 const styles = StyleSheet.create({
@@ -37,7 +39,7 @@ const styles = StyleSheet.create({
     },
     icon: {
         fontSize: 30,
-        color: '#FFFFFF'
+        color: colors.white
     },
     name: {
         fontSize: 12,
@@ -50,20 +52,20 @@ const styles = StyleSheet.create({
     },
     barFill: {
         height: 10,
-        backgroundColor: '#FFDB0C'
+        backgroundColor: colors.yellow
     },
     barFillRed: {
-        backgroundColor: '#E51C23'
+        backgroundColor: colors.red
     },
     value: {
         textAlign: 'right',
         width: 60,
-        color: '#FFFFFF',
+        color: colors.white,
         fontWeight: 'bold',
         fontSize: 16
     },
     para: {
-        color: '#FFFFFF',
+        color: colors.white,
         fontSize: 15
     }
 

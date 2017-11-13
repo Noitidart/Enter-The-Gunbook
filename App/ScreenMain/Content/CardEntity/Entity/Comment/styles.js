@@ -2,8 +2,7 @@
 
 import { StyleSheet } from 'react-native'
 
-const OFF_WHITE = 'rgba(255, 255, 255, 0.8)';
-const OFF_WHITE_1 = 'rgba(255, 255, 255, 0.7)';
+import colors from '../colors'
 
 const styles = StyleSheet.create({
     comment: {
@@ -24,13 +23,13 @@ const styles = StyleSheet.create({
         height: 36,
         width: 36,
         borderRadius: 36 / 2,
-        backgroundColor: '#858D90',
+        backgroundColor: colors.gray,
         marginRight: 5,
         justifyContent: 'center',
         alignItems: 'center'
     },
     commentAvatarLabel: {
-        color: '#FFFFFF',
+        color: colors.white,
         fontSize: 20,
         fontWeight: 'bold'
     },
@@ -42,29 +41,29 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     commentAuthor: {
-        color: '#FFFFFF',
+        color: colors.white,
         fontWeight: 'bold'
     },
     commentDot: {
-        color: '#FFFFFF'
+        color: colors.white
     },
     commentDeleteWrap: {
         paddingLeft: 20
     },
     commentDelete: {
-        color: OFF_WHITE
+        color: colors.white80
     },
     commentDate: {
-        color: '#B2BBC4',
+        color: colors.graySlight,
         fontSize: 12
     },
     commentHelpful: {
-        color: '#B2BBC4'
+        color: colors.graySlight
     },
     commentBody: {
         marginTop: 3,
         marginHorizontal: 3,
-        color: '#D3DDE4'
+        color: colors.whiteSlight
     },
 
     addComment: {
@@ -73,7 +72,7 @@ const styles = StyleSheet.create({
         paddingVertical: 10, // 2* link3181
     },
     addCommentInput: {
-        color: '#FFFFFF',
+        color: colors.white,
         backgroundColor: '#2F2B31',
         borderRadius: 5,
         fontSize: 14,
