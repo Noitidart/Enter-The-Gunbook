@@ -4,7 +4,7 @@ import { takeEvery, call, put, select } from 'redux-saga/effects'
 
 import { getIdSync, deleteUndefined } from '../utils'
 import { updateAccount } from '../account'
-import { getCardEntitys, groupSortables, sortAscByValue } from './utils'
+import { getCardEntitys, groupSortables, sortDescByValue } from './utils'
 
 import type { EntityKey } from '../entitys/types'
 
@@ -69,7 +69,7 @@ const sortWorker = function* sortWorker(action: SortAction) {
     console.log('sortableCards:', sortableCards, 'nonSortableCards:', nonSortableCards, 'nonSortableEntityCards:', nonSortableEntityCards);
     if (!sortableCards.length === 0) return;
 
-    sortableCards.sort(sortAscByValue);
+    sortableCards.sort(sortDescByValue);
 
     const cardsNew = [ ...sortableCards.map(({ card }) => card), ...nonSortableCards, ...nonSortableEntityCards ];
 

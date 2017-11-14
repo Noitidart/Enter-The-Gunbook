@@ -31,7 +31,7 @@ class Fabs extends PureComponent<Props> {
                         <Icon name="settings" style={styles.labelSmall} />
                     </View>
                 </TouchableOpacity>
-                <SortFab activeOpacity={ACTIVE_OPACITY} />
+                <SortFab />
                 <View style={styles.row}>
                     <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.searchNew} onPress={this.addEntityCard}>
                         <View style={styles.backingSmall}>

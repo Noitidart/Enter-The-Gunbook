@@ -16,14 +16,16 @@ export type Shape = {
     searchMode: 'voice' | 'text',
     syncedEntitysAt: number, // Date
     forename: string,
-    numericKeys: { [EntityKey]: true }
+    numericKeys: { [EntityKey]: true },
+    sortCommentsBy: 'date' | 'helpful'
 };
 
 const INITIAL = {
     searchMode: 'voice',
     syncedEntitysAt: 0,
     forename: '',
-    numericKeys: {}
+    numericKeys: {},
+    sortCommentsBy: 'date'
 }
 export const sagas = [];
 

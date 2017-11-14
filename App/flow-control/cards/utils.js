@@ -53,12 +53,12 @@ export function groupSortables(cards: Card[], cardEntitys: Entity[], byKey: Enti
     return { sortableCards, nonSortableCards, nonSortableEntityCards };
 }
 
-export function sortAscByValue({ byValue:byValueA }, { byValue:byValueB }) {
+export function sortDescByValue({ byValue:byValueA }, { byValue:byValueB }) {
     const isNotNumberA = byValueA === null || isNaN(byValueA); // can be isNaN because if a numeric group has some non-numeric values (for sure there are nulls)
     const isNotNumberB = byValueB === null || isNaN(byValueB);
 
     if (isNotNumberA && isNotNumberB) return 0;
     else if (isNotNumberB) return 1;
     else if (isNotNumberA) return 1;
-    else return byValueA - byValueB;
+    else return byValueB - byValueA;
 }

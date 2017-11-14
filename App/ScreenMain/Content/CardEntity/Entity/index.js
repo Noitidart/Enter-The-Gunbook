@@ -3,14 +3,17 @@ import { ActivityIndicator, Image, Linking, ScrollView, Text, TextInput, Touchab
 import { connect } from 'react-redux'
 import { toTitleCase, pick } from 'cmn/lib/all'
 
+import { sortDescHelpful } from './utils'
+
 import ButtonFlat from './ButtonFlat'
 import Comment from './Comment'
+import CommentSort from './CommentSort'
 import AddComment from './AddComment'
 import ImagePixelated from './ImagePixelated'
 import Icon from '../../../../Icon'
 import StatRow from './StatRow'
 
-import { K } from '../../../../flow-control/social/types'
+import { K, CommentId } from '../../../../flow-control/social/types'
 import { ENTITYS } from '../../../../flow-control/entitys'
 import { refSocialEntity, unrefSocialEntity, toggleThumb } from '../../../../flow-control/social'
 
@@ -54,7 +57,8 @@ type Props = {
     isThumbUp: number,
     isThumbDn: number,
     cntThumbUp: boolean,
-    cntThumbDn: boolean
+    cntThumbDn: boolean,
+    sortedCommentIds: null | CommentId[]
 }
 
 type State = {
@@ -76,7 +80,7 @@ class EntityDumb extends PureComponent<Props, State> {
         if (socialEntityId !== null && socialEntityId !== undefined) dispatch(unrefSocialEntity(K.articles, name, socialEntityId));
     }
     render() {
-        const { entityId, entity, kind, socialEntity, isThumbUp, isThumbDn, cntThumbUp, cntThumbDn } = this.props;
+        const { entityId, entity, kind, socialEntity, isThumbUp, isThumbDn, cntThumbUp, cntThumbDn, sortedCommentIds } = this.props;
 
         const { socialEntityId } = this.state;
 
@@ -135,14 +139,7 @@ class EntityDumb extends PureComponent<Props, State> {
                         <Icon style={styles.titleIcon} name="comment" />
                         <Text style={styles.title}>Comments</Text>
                         <View style={styles.titleSpacer} />
-                        { hasInitFetched &&
-                            <TouchableOpacity onPress={()=>null}>
-                                {/* <View style={styles.titleRightIconWrap}> */}
-                                    <Icon style={styles.titleRightIcon} name="sort" />
-                                    {/* <Text style={styles.titleRightIconLabel}>Date</Text> */}
-                                {/* </View> */}
-                            </TouchableOpacity>
-                        }
+                        { hasInitFetched && <CommentSort /> }
                         { hasInitFetched &&
                             <TouchableOpacity onPress={this.scrollToAddComment}>
                                 <Icon style={styles.titleRightIcon} name="add" />
@@ -153,7 +150,7 @@ class EntityDumb extends PureComponent<Props, State> {
                         <ActivityIndicator color="#FFFFFF" size="large" style={styles.commentsLoading} />
                     }
                     { hasInitFetched && hasComments &&
-                        socialEntity.commentIds.map( id => <Comment id={id} key={id} /> )
+                        sortedCommentIds.map( id => <Comment id={id} key={id} /> )
                     }
                     { hasInitFetched && !hasComments &&
                         <Text style={styles.commentsMessage}>No comments yet</Text>
@@ -207,7 +204,7 @@ class EntityDumb extends PureComponent<Props, State> {
 }
 
 const EntitySmart = connect(
-    function({ entitys, social, account:{ forename } }: AppShape, { entityId }: OwnProps) {
+    function({ entitys, social, account:{ forename, sortCommentsBy } }: AppShape, { entityId }: OwnProps) {
         const kind = entitys[ENTITYS.GUN][entityId] ? ENTITYS.GUN : ENTITYS.ITEM;
 
         const name = entityId;
@@ -222,6 +219,16 @@ const EntitySmart = connect(
         const cntThumbUp = !thumbs ? 0 : Object.values(thumbs).reduce( (sum, { like }) => like ? ++sum : sum, 0 );
         const cntThumbDn = !thumbs ? 0 : Object.values(thumbs).reduce( (sum, { like }) => !like ? ++sum : sum, 0 );
 
+        let sortedCommentIds = null;
+        if (socialEntity) {
+            if (sortCommentsBy === 'helpful') {
+                const comments = !socialEntity ? null : pick(social.comments, ...socialEntity.commentIds);
+                sortedCommentIds = !comments ? null : Object.values(comments).sort(sortDescHelpful).map(({ id }) => id);
+            } else {
+                sortedCommentIds = socialEntity.commentIds;
+            }
+        }
+
         return {
             entity: entitys[ENTITYS.GUN][entityId] || entitys[ENTITYS.ITEM][entityId],
             kind,
@@ -231,7 +238,8 @@ const EntitySmart = connect(
             isThumbUp,
             isThumbDn,
             cntThumbUp,
-            cntThumbDn
+            cntThumbDn,
+            sortedCommentIds
         }
     }
 )

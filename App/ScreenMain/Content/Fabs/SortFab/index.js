@@ -16,13 +16,11 @@ import type { Shape as AccountShape } from '../../../../flow-control/account'
 import type { Shape as CardsShape } from '../../../../flow-control/cards'
 import type { Shape as EntitysShape } from '../../../../flow-control/entitys'
 
-type OwnProps = {
-    activeOpacity: number,
-}
+const PROMPT_TITLE = 'Sort your items by:';
 
 type Props = {
-    ...OwnProps,
     // redux
+    dispatch: Dispatch,
     numericKeys: $PropertyType<AccountShape, 'numericKeys'>,
     cards: CardsShape,
     cardEntitys: Entity[]
@@ -46,7 +44,6 @@ class SortFabDumb extends PureComponent<Props, State> {
         this.recalcOptions();
     }
     render() {
-        const { activeOpacity } = this.props;
         const { options } = this.state;
 
         let onPress, Wrapper;
@@ -67,7 +64,7 @@ class SortFabDumb extends PureComponent<Props, State> {
                 <View style={styles.backingSmall} >
                     <Icon name="sort" style={styles.labelSmall} />
                     { options && Platform.OS === 'android' &&
-                        <Picker prompt="Sort your items by:" selectedValue="cancel" onValueChange={this.handlePicked} style={stylesThis.picker}>
+                        <Picker prompt={PROMPT_TITLE} selectedValue="cancel" onValueChange={this.handlePicked} style={stylesThis.picker}>
                             { options.map( option => <Picker.Item label={option.label} value={option.value} key={option.value} /> )}
                         </Picker>
                     }
@@ -78,7 +75,7 @@ class SortFabDumb extends PureComponent<Props, State> {
 
     handlePress = () => {
         const { options } = this.state;
-        Alert.alert( 'Sort your items by:', undefined,
+        Alert.alert(PROMPT_TITLE, undefined,
             options.map( option => ({ text:option.label, onPress:()=>this.handlePicked(option.value), style:(option.value === 'cancel' ? 'cancel' : undefined) }) )
         );
     }
