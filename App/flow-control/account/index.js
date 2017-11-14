@@ -67,8 +67,8 @@ const numberOrInf = value => isNaN(value) ? 'Infinity' : value;
 const syncEntitysSaga = function* syncEntitysSaga() {
     yield call(waitRehydrate);
 
-    // const MIN_TIME_SINCE_SYNC = 24 * 60 * 60 * 1000; // 24 hours
-    const MIN_TIME_SINCE_SYNC = 30000; // every 30s
+    const MIN_TIME_SINCE_SYNC = 24 * 60 * 60 * 1000; // 24 hours
+    // const MIN_TIME_SINCE_SYNC = 30000; // every 30s
 
     while (true) {
         const {account:{ syncedEntitysAt }} = yield select();
@@ -127,10 +127,10 @@ const syncEntitysSaga = function* syncEntitysSaga() {
             const GunSchema = new schema.Entity('guns', undefined, {
                 idAttribute: 'Name',
                 processStrategy: value => {
-                    if (value.Name.includes('Rad Gun')) {
-                        console.log('value:', value);
-                        console.log('value.Spread:', value.Spread, 'parseIntInf:', parseIntInf(value.Spread));
-                    }
+                    // if (value.Name.includes('Rad Gun')) {
+                    //     console.log('value:', value);
+                    //     console.log('value.Spread:', value.Spread, 'parseIntInf:', parseIntInf(value.Spread));
+                    // }
                     return ({
                         kind: ENTITYS.GUN,
                         ammoCapacity: numberOrInf(parseIntInf(value['Ammo Capacity'])), // TODO: verify that all things with null ammoCapacity are actually Infinity
