@@ -78,6 +78,13 @@ class CommentDumb extends PureComponent<Props> {
     }
     toggleHelpful = () => {
         const { dispatch, forename, id, isHelpful, helpfulId } = this.props;
+
+        const hasForename = !!forename;
+        if (!hasForename) {
+            const shouldGoToSettings = alert('To be able to mark a comment as helpful, you need to first set a "display name" from the settings page.')
+            return;
+        }
+
         dispatch(toggleHelpful(id, !isHelpful, forename, helpfulId));
     }
 }
