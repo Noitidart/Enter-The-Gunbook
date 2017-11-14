@@ -40,7 +40,7 @@ class AddCommentDumb extends PureComponent<Props, State> {
 
         return (
             <View style={styles.addComment}>
-                <TextInput style={styles.addCommentInput} keyboardAppearance="dark" onChangeText={this.handleChangeText} placeholder="Leave a comment" placeholderTextColor="#858D90" selectionColor="#5677FC" underlineColorAndroid="transparent" value={body} disableFullscreenUI multiline />
+                <TextInput style={styles.addCommentInput} keyboardAppearance="dark" numberOfLines={4} onChangeText={this.handleChangeText} placeholder="Leave a comment" placeholderTextColor="#858D90" returnKeyType="none" selectionColor="#5677FC" underlineColorAndroid="transparent" value={body} disableFullscreenUI multiline />
                 <ButtonFlat label="POST" onPress={this.addComment} />
             </View>
         )
