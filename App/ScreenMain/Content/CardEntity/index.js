@@ -15,7 +15,6 @@ type Props = {
 class CardEntity extends PureComponent<Props> {
     render() {
         const { entityId, id } = this.props;
-        console.log('card props:', this.props);
 
         return (
             <View style={styles.container}>

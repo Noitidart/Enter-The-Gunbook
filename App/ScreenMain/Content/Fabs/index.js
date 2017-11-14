@@ -52,17 +52,18 @@ class Fabs extends PureComponent<Props> {
     }
 
     addAccountCard = () => {
-        const { findCardIndex, dispatch, scrollToCard } = this.props;
+        const { findCardIndex, dispatch, scrollToCard, getCurrentCardIndex } = this.props;
         const ixCard = findCardIndex(card => card.kind === CARDS.ACCOUNT)
         if (ixCard > -1) scrollToCard(ixCard);
-        else dispatch(addCard({ kind:CARDS.ACCOUNT }));
+        else dispatch(addCard({ kind:CARDS.ACCOUNT }, getCurrentCardIndex()+1));
     }
     addEntityCard = () => {
         // return this.props.removeCurrentCard(); // DEBUG:
         const { findCardIndex, getCurrentCardIndex, dispatch, scrollToCard } = this.props;
-        const ixCard = findCardIndex(card => card.kind === CARDS.ENTITY && card.entityId === undefined)
-        if (ixCard > -1) scrollToCard(ixCard);
-        else dispatch(addCard({ kind:CARDS.ENTITY }, getCurrentCardIndex()+1));
+        dispatch(addCard({ kind:CARDS.ENTITY }, getCurrentCardIndex()+1)); // for now just always add a card
+        // const ixCard = findCardIndex(card => card.kind === CARDS.ENTITY && card.entityId === undefined)
+        // if (ixCard > -1) scrollToCard(ixCard);
+        // else dispatch(addCard({ kind:CARDS.ENTITY }, getCurrentCardIndex()+1));
     }
     updateToSearch = () => {
         const { getCurrentCardIndex, dispatch } = this.props;

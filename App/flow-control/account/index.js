@@ -10,11 +10,13 @@ import { gamepediaExtractTable, GUNGEON_PEDIA_PARSERS } from './wiki'
 import { tableToJSON } from './utils'
 import { waitRehydrate } from '../utils'
 
+import type { EntityKey } from '../entitys/types'
+
 export type Shape = {
     searchMode: 'voice' | 'text',
     syncedEntitysAt: number, // Date
     forename: string,
-    numericKeys: { [EntityKey: string]: true }
+    numericKeys: { [EntityKey]: true }
 };
 
 const INITIAL = {

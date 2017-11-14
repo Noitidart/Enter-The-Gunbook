@@ -5,6 +5,8 @@ import { ENTITYS } from './'
 export type Entity = Gun | Item;
 export type EntityKind = $Keys<typeof ENTITYS>;
 
+export type EntityKey = $Keys<Entity>; // any key inside Entity
+
 type Url = string;
 type Unix = number;
 export type Name = Id;

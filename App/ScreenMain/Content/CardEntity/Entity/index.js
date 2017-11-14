@@ -83,8 +83,6 @@ class EntityDumb extends PureComponent<Props, State> {
         const hasInitFetched = socialEntityId !== undefined;
         const isFetching = !hasInitFetched || (socialEntity && socialEntity.isFetching);
 
-        console.log('entity:', entity, 'socialEntity:', socialEntity);
-
         const hasComments = !socialEntity ? false : !!socialEntity.commentIds.length;
 
         return (
@@ -175,7 +173,6 @@ class EntityDumb extends PureComponent<Props, State> {
 
     refEntity = async () => {
         const { entity:{ id:name }, dispatch } = this.props;
-        console.log('dispatching refSocialEntity:', K.articles, name);
         const socialEntityId = await dispatch(refSocialEntity(K.articles, name)).promise;
         this.setState(() => ({ socialEntityId }));
     }
@@ -215,7 +212,6 @@ const EntitySmart = connect(
 
         const name = entityId;
         const socialEntity = Object.values(social.articles).find(entity => entity.name === name);
-        console.log('socialEntity:', socialEntity);
 
         const thumbs = !socialEntity ? null : pick(social.thumbs, ...socialEntity.thumbIds);
 

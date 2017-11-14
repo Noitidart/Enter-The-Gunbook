@@ -78,7 +78,7 @@ const refEntityWorker = function* refEntityWorker(action) {
     const { kind, name, resolve } = action;
     const refKey = getSocialRefKey(kind, name);
 
-    console.log('in refEntityWorker, refKey:', refKey);
+    // console.log('in refEntityWorker, refKey:', refKey);
 
     REFCNT[refKey] = REFCNT[refKey] ? REFCNT[refKey] + 1 : 1;
 

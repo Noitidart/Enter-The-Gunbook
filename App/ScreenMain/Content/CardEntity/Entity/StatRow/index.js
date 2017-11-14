@@ -56,7 +56,7 @@ class StatRowDumb extends PureComponent<Props> {
 
             const redFill = value > valuesMax ? true : false;
 
-            console.log('name:', name, 'value:', value, 'valuesAvg:', valuesAvg, 'valuesMedian:', valuesMedian, 'valuesMax:',  valuesMax, 'percent:', `${percentOfValues}%`, 'values:', values);
+            // console.log('name:', name, 'value:', value, 'valuesAvg:', valuesAvg, 'valuesMedian:', valuesMedian, 'valuesMax:',  valuesMax, 'percent:', `${percentOfValues}%`, 'values:', values);
             return (
                 <View style={styles.row}>
                     <View style={styles.columns}>

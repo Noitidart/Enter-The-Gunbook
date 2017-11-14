@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react'
 import { Image, ScrollView, Text, View } from 'react-native'
 import { connect } from 'react-redux'
+import shallowEqual from 'recompose/shallowEqual'
 
 import { CARDS, removeCard, updateCard } from '../../flow-control/cards'
 
@@ -63,7 +64,30 @@ class ContentDumb extends PureComponent<Props> {
                 const ids = cards.map(card => card.id);
                 const removedIndex = idsOld.findIndex(idOld => !ids.includes(idOld));
                 this.scrollToCard(removedIndex === 0 ? 0 : removedIndex - 1);
-            } // else it was sorted probably, go to first card
+            } else { // else it was sorted maybe OR a card was updated (like entityId changed)
+                let isSort;
+                for (let i=0; i<cards.length; i++) {
+                    const card = cards[i];
+                    const cardOld = cardsOld[i];
+                    if (card.id !== cardOld.id) {
+                        isSort = true;
+                        break;
+                    } else {
+                        if (!shallowEqual(card, cardOld)) {
+                            // its a card update
+                            isSort = false;
+                            break;
+                        }
+                    }
+                }
+                if (isSort === undefined) isSort = true; // no card was updated, the sorter, sorted things to be in same order (we know this as reference changed but everything is in place)
+                console.log('isSort:', isSort);
+                if (isSort) {
+                    this.scroller.scrollTo({ x:0 });
+                    this.currentCardIndex = 0;
+                }
+            }
+
         }
     }
     render() {
@@ -83,14 +107,17 @@ class ContentDumb extends PureComponent<Props> {
 
     refScroller = el => this.scroller = el
 
-    handleScrollEnd = ({nativeEvent:{contentOffset:{ x:scrollX },layoutMeasurement:{ width:cardWidthWithMargins }}}: ScrollEvent) => this.currentCardIndex = Math.round(scrollX / cardWidthWithMargins);
+    handleScrollEnd = ({nativeEvent:{contentOffset:{ x:scrollX },layoutMeasurement:{ width:cardWidthWithMargins }}}: ScrollEvent) => {
+        this.currentCardIndex = Math.round(scrollX / cardWidthWithMargins);
+        // console.log('scroll end hapend, this.currentCardIndex is now:', this.currentCardIndex);
+    }
     handleLayout = () => this.scrollToCard(this.currentCardIndex);
     scrollToCard = (index: number) => {
-        console.log('in scorllToCard, index:', index, 'cards.length:', this.props.cards.length);
+        // console.log('in scorllToCard, index:', index, 'cards.length:', this.props.cards.length);
         if (index > -1 && index < this.props.cards.length) {
-            console.log('ok scrolling, x:', this.props.screen.width*index);
+            // console.log('ok scrolling, x:', this.props.screen.width*index);
             this.currentCardIndex = index; // need this as am setting this.currentCardIndex onMomentumScrollEnd now instead of onScroll
-            this.scroller.scrollTo({ x:this.props.screen.width*index })
+            if (this.scroller) this.scroller.scrollTo({ x:this.props.screen.width*index });
         }
     }
     getCurrentCardIndex = () => this.currentCardIndex

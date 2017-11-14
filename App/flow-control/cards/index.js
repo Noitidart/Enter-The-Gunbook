@@ -4,6 +4,9 @@ import { takeEvery, call, put, select } from 'redux-saga/effects'
 
 import { getIdSync, deleteUndefined } from '../utils'
 import { updateAccount } from '../account'
+import { getCardEntitys, groupSortables, sortAscByValue } from './utils'
+
+import type { EntityKey } from '../entitys/types'
 
 const CARDS = {
     ENTITY: 'ENTITY',
@@ -45,16 +48,33 @@ type UpdateAction = { type:typeof UPDATE, id:Id, data:$Shape<Card> };
 const updateCard = (id, data): UpdateAction => ({ type:UPDATE, id, data });
 
 //
+// only used by sortWorker
+const SET = A`SET`;
+type SetAction = { type:typeof SET, state:Shape };
+const set = (state: Shape): SetAction => ({ type:SET, state });
+
+//
 const SORT = A`SORT`;
-type SortAction = { type:typeof SORT, by:string };
-const sortCards = (by): SortAction => ({ type:SORT, by });
+type SortAction = { type:typeof SORT, byKey:EntityKey };
+const sortCards = (byKey: EntityKey): SortAction => ({ type:SORT, byKey });
 
 const sortWorker = function* sortWorker(action: SortAction) {
-    const { by } = action;
+    const { byKey } = action;
 
-    const { account:{ by:byOld }} = yield select();
+    const { cards, entitys:entities } = yield select();
 
-    if (byOld === by) return;
+    const cardEntitys = getCardEntitys(cards, entities);
+    const { sortableCards, nonSortableCards, nonSortableEntityCards } = groupSortables(cards, cardEntitys, byKey);
+
+    console.log('sortableCards:', sortableCards, 'nonSortableCards:', nonSortableCards, 'nonSortableEntityCards:', nonSortableEntityCards);
+    if (!sortableCards.length === 0) return;
+
+    sortableCards.sort(sortAscByValue);
+
+    const cardsNew = [ ...sortableCards.map(({ card }) => card), ...nonSortableCards, ...nonSortableEntityCards ];
+
+    // if (shallowCompare(cardsNew, cards))
+    yield put(set(cardsNew));
 
     // after sorting check if it changed order, if it didnt then dont do anything, simple shallowEqual will do the trick
 
@@ -68,7 +88,8 @@ sagas.push(sortWatcher);
 type Action =
   | AddAction
   | RemoveAction
-  | UpdateAction;
+  | UpdateAction
+  | SetAction;
 
 export default function reducer(state: Shape = INITIAL, action:Action): Shape {
     switch(action.type) {
@@ -87,8 +108,10 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
             const { id, data } = action;
             return state.map( entry => entry.id !== id ? entry : deleteUndefined({ ...entry, ...data }) );
         }
+        case SET: return action.state;
         default: return state;
     }
 }
 
+export type { Card }
 export { CARDS, addCard, removeCard, updateCard, sortCards }
