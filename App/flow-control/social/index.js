@@ -8,10 +8,10 @@ import { pickDotpath, omit } from 'cmn/lib/all'
 
 import { normalizeUniversal } from './normalizers'
 import { K } from './types'
-import { getSocialRefKey, hasId } from './utils'
+import { getSocialRefKey, hasId, alertError } from './utils'
 import { waitRehydrate, fetchApi, promisifyAction, deleteUndefined } from '../utils'
 
-import type { Entities, SocialEntity, SocialEntityId, SocialEntityKind, ThumbId } from './types'
+import type { Entities, SocialEntity, SocialEntityId, SocialEntityKind, ThumbId, HelpfulId } from './types'
 import type { PromiseAction } from '../utils'
 
 // type EntityName = $PropertyType<Entity, 'name'>;
@@ -32,7 +32,7 @@ const A = ([actionType]: string[]) => 'SOCIAL_' + actionType;
 const REFCNT = {};
 
 const UNREFRESHABLE_KINDS = [K.thumbs, K.comments, K.displaynames, K.helpfuls];
-const MIN_MS_TILL_CAN_REFRESH_AGAIN = 1 * 1000; // 10s
+const MIN_MS_TILL_CAN_REFRESH_AGAIN = 0 * 1000; // 10s
 
 //
 // the entity is not overriden, if "new data" has value and is undefined, then this value is deleted from actual data. if "new data" is missing a field, then the value for this entry in "state data" is unchanged
@@ -246,15 +246,7 @@ const deleteCommentWorker = function* deleteCommentWorker(action) {
         const article = social.articles[comment.articleId];
         yield put(refreshEntity(K.articles, article.name, article.id));
     } else {
-        let reply;
-        try {
-            reply = yield call([res, res.json]);
-        } catch(ignore) {}
-
-        console.log('reply:', reply);
-
-        if (reply.error) alert(reply.error);
-        else alert(`Failed to delete comment, bad server response status received: ${res.status}.`);
+        yield call(alertError, res, 'Failed to delete comment, bad server response status received: %STATUS%.');
     }
 }
 const deleteCommentWatcher = function* deleteCommentWatcher(action) {
@@ -264,30 +256,31 @@ sagas.push(deleteCommentWatcher);
 
 //
 const TOGGLE_HELPFUL = A`TOGGLE_HELPFUL`;
-type ToggleHelpfulAction = { type: typeof TOGGLE_HELPFUL, forename: string, id: CommentId };
-const toggleHelpful = (forename: string, id: CommentId): ToggleHelpfulAction => ({ type:TOGGLE_HELPFUL, forename, id });
+type ToggleHelpfulAction =
+  | { type: typeof TOGGLE_HELPFUL, id: CommentId, isHelpful: true, forename: string }
+  | { type: typeof TOGGLE_HELPFUL, id: CommentId, isHelpful: false, forename: string, isHelpfulId: HelpfulId };
+const toggleHelpful = (id: CommentId, isHelpful: boolean, forename: string, helpfulId: ?HelpfulId): ToggleHelpfulAction => ({ type:TOGGLE_HELPFUL, id, isHelpful, forename, helpfulId });
 
 const toggleHelpfulWorker = function* toggleHelpfulWorker(action) {
-    const { forename, id } = action;
+    const { forename, isHelpful, id, helpfulId } = action;
 
-    const res = yield call(fetchApi, `comments/${id}`, { method:'DELETE', qs:{ forename } });
+    console.log('toggleHelpfulWorker',  forename, isHelpful, id, helpfulId );
+    const isDelete = !isHelpful;
+
+    const res = yield call(fetchApi, `helpfuls/${isDelete ? helpfulId : id}`, {
+        method: isDelete ? 'DELETE' : 'POST',
+        qs: !isDelete ? undefined : { forename },
+        body: isDelete ? undefined : { forename }
+    });
     console.log('toggleHelpful res.status:', res.status);
 
-    if (res.status === 204) {
-        const entities = yield select();
-        const comment = entities.comments[id];
-        const article = entities.articles[comment.articleId];
-        yield put(refreshEntity(K.articles, article.name, article.id));
-    } else {
-        let reply;
-        try {
-            reply = yield call([res, res.json]);
-        } catch(ignore) {}
+    if (!isDelete && res.status !== 201) yield call(alertError, res, 'Failed to mark comment as helpful, bad server response status received: %STATUS%.');
+    else if (isDelete && res.status !== 204) yield call(alertError, res, 'Failed to remove helpful vote from comment, bad server response status received: %STATUS%.');
 
-        console.log('reply:', reply);
-        if (reply) alert(reply.error);
-        else alert(`Failed to delete comment, bad server response status received: "${res.status}".`);
-    }
+    const { social } = yield select();
+    const comment = social.comments[id];
+    const article = social.articles[comment.articleId];
+    yield put(refreshEntity(K.articles, article.name, article.id));
 }
 const toggleHelpfulWatcher = function* toggleHelpfulWatcher(action) {
     yield takeEvery(TOGGLE_HELPFUL, toggleHelpfulWorker);

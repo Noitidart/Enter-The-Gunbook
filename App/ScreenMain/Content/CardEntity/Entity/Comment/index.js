@@ -12,7 +12,7 @@ import { deleteComment, toggleHelpful } from '../../../../../flow-control/social
 
 import styles from './styles'
 
-import type { SocialEntity, CommentId } from '../../../../../flow-control/social/types'
+import type { SocialEntity, CommentId, HelpfulId } from '../../../../../flow-control/social/types'
 import type { Shape as SocialShape } from '../../../../../flow-control/social'
 import type { Shape as AppShape } from '../../../../../flow-control'
 
@@ -55,7 +55,7 @@ class CommentDumb extends PureComponent<Props> {
                         </View>
                         <TouchableOpacity onPress={this.toggleHelpful}>
                             <Text style={styles.commentHelpful}>
-                                { isHelpful && cntHelpful === 1 && 'Only you have found this helpful. Do you still?' }
+                                { isHelpful && cntHelpful === 1 && 'Only you found this helpful. Do you still?' }
                                 { isHelpful && cntHelpful === 2 && 'You and 1 other found this helpful. Do you still?' }
                                 { isHelpful && cntHelpful > 2 && `You and ${cntHelpful-1} others found this helpful. Do you still?` }
                                 { !isHelpful && cntHelpful === 1 && '1 person found this helpful. Did you too?' }
@@ -77,8 +77,8 @@ class CommentDumb extends PureComponent<Props> {
         dispatch(deleteComment(forename, id));
     }
     toggleHelpful = () => {
-        const { dispatch, forename, id } = this.props;
-        dispatch(toggleHelpful(forename, id));
+        const { dispatch, forename, id, isHelpful, helpfulId } = this.props;
+        dispatch(toggleHelpful(id, !isHelpful, forename, helpfulId));
     }
 }
 
@@ -94,9 +94,8 @@ const CommentSmart = connect(
         const hasDisplayname = !!displayname;
 
         const helpfuls = pick(social.helpfuls, ...helpfulIds);
-        const helpful = hasDisplayname && helpfulIds.some(helpful => helpful.displaynameId === displayname.id);
+        const helpful = !hasDisplayname ? null : Object.values(helpfuls).find(helpful => helpful.displaynameId === displayname.id);
         const isHelpful = !!helpful;
-
         const cntHelpful = helpfulIds.length;
 
         return {
@@ -106,8 +105,8 @@ const CommentSmart = connect(
             authorName: author.forename,
             isUserAuthor: hasDisplayname && displayname.id === author.id,
             isHelpful,
-            cntHelpful,
-            helpfulId: helpful ? helpful.id : null
+            helpfulId: !helpful ? null : helpful.id,
+            cntHelpful
         }
     }
 )

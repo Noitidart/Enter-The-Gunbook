@@ -59,6 +59,7 @@ type Comment = {|
     createdAt: DateIso,
     articleId: ArticleId,
     displaynameId: DisplaynameId,
+    body: string,
     helpfulIds: HelpfulId[]
 |}
 type CommentId = $PropertyType<Comment, 'id'>;

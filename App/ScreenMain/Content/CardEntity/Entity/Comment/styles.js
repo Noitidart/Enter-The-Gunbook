@@ -58,7 +58,8 @@ const styles = StyleSheet.create({
         fontSize: 12
     },
     commentHelpful: {
-        color: colors.graySlight
+        color: colors.graySlight,
+        fontSize: 12
     },
     commentBody: {
         marginTop: 3,
