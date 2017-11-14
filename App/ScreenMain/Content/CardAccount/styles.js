@@ -94,8 +94,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: 10,
         paddingVertical: 6
-    },
-
+    }
 })
 
 export default styles

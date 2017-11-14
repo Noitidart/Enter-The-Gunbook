@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import { Linking, Text, TouchableHighlight, View } from 'react-native'
+import { Linking, ScrollView, Text, TouchableHighlight, View } from 'react-native'
 
 import ButtonFlat from '../CardEntity/Entity/ButtonFlat'
 import SettingsForm from './SettingsForm'
@@ -19,18 +19,20 @@ class CardAccount extends PureComponent<Props> {
                     <Icon style={styles.headerIcon} name="settings" />
                     <Text style={styles.headerLabel}>Settings</Text>
                 </View>
-                <SettingsForm />
-                <View style={styles.titleRow} onLayout={this.handleLayoutComments}>
-                    <Icon style={styles.titleIcon} name="attach_money" />
-                    <Text style={styles.title}>Support</Text>
-                </View>
-                <View style={styles.para}>
-                    <Text style={styles.paraBody}>Please support the development and server costs. A server is used for the comment/vote feature, and IBM Watson is used for voice recognition service.</Text>
-                    <View style={styles.rowButton}>
-                        <ButtonFlat label="CONTRIBUTE WITH PAYPAL" onPress={this.gotoPaypal} />
+                <ScrollView>
+                    <SettingsForm />
+                    <View style={styles.titleRow} onLayout={this.handleLayoutComments}>
+                        <Icon style={styles.titleIcon} name="attach_money" />
+                        <Text style={styles.title}>Support</Text>
                     </View>
-                    {/* <View style={styles.paraHr} /> */}
-                </View>
+                    <View style={styles.para}>
+                        <Text style={styles.paraBody}>Please support the development and server costs. A server is used for the comment/vote feature, and IBM Watson is used for voice recognition service.</Text>
+                        <View style={styles.rowButton}>
+                            <ButtonFlat label="CONTRIBUTE WITH PAYPAL" onPress={this.gotoPaypal} />
+                        </View>
+                        {/* <View style={styles.paraHr} /> */}
+                    </View>
+                </ScrollView>
             </View>
         )
     }
