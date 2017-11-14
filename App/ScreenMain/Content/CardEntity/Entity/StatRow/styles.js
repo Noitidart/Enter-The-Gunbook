@@ -48,10 +48,11 @@ const styles = StyleSheet.create({
     bar: {
         height: 10,
         backgroundColor: 'rgba(255, 255, 255, 0.2)',
-        flex: 1
+        flex: 1,
+        justifyContent: 'center'
     },
     barFill: {
-        height: 10,
+        height: '100%',
         backgroundColor: colors.yellow
     },
     barFillRed: {
@@ -67,6 +68,13 @@ const styles = StyleSheet.create({
     para: {
         color: colors.white,
         fontSize: 15
+    },
+
+    nonNumericValueForMostlyNumericValues: {
+        color: colors.white,
+        fontWeight: 'bold',
+        fontSize: 8,
+        textAlign: 'center'
     }
 
 })

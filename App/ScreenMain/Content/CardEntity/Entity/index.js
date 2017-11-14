@@ -89,6 +89,8 @@ class EntityDumb extends PureComponent<Props, State> {
 
         const hasComments = !socialEntity ? false : !!socialEntity.commentIds.length;
 
+        console.log('entity:', entity);
+
         return (
             <View style={styles.main}>
                 <View style={styles.header}>

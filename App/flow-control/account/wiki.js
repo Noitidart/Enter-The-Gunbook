@@ -49,6 +49,6 @@ export function getValueFromHtml(cell_html, attr_name) {
         return ['A', 'B', 'C', 'D', 'S'].includes(quality) ? quality : null;
     } else {
         const str = stripTags(cell_html).trim();
-        return str.length ? str : null;
+        return str.length ? str : undefined;
     }
 }

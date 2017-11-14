@@ -40,14 +40,35 @@ const update = updateAccount = (data): UpdateAction => ({ type:UPDATE, data });
 const SYNC_ENTITYS = A`SYNC_ENTITYS`
 type SyncEntitysAction = { type:typeof SYNC_ENTITYS };
 const syncEntitys = (): SyncEntitysAction => ({ type:SYNC_ENTITYS });
-const parseIntInf = value => value === 'Infinity' ? 'Infinity' : parseInt(value);
-const parseFloatInf = value => value === 'Infinity' ? 'Infinity' : parseFloat(value);
-const syncEntitysSaga = function* syncEntitysSaga() {
+const parseIntInf = value => {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    else if (value === 'Infinity') return 'Infinity';
+    else if (value.includes('Error creating thumb')) return undefined;
+    else if (value === 'N/A' || value === '-') return null; // im pretty sure wiki.js does the trimming
+    // else if (value.length === 0) return undefined; // taken care of by wiki.js#getValueFromHtml
+    else if (isNaN(value) && value) return value;
+    else return numberOrUnd(parseInt(value));
+}
+const parseFloatInf = value => {
+    if (value === undefined) return undefined;
+    if (value === null) return null;
+    else if (value === 'Infinity') return 'Infinity';
+    else if (value.includes('Error creating thumb')) return undefined;
+    else if (value === 'N/A' || value === '-') return null; // im pretty sure wiki.js does the trimming
+    // else if (value.length === 0) return undefined; // taken care of by wiki.js#getValueFromHtml
+    else if (isNaN(value) && value) return value;
+    else return numberOrUnd(parseFloat(value));
+}
 
+const numberOrUnd = value => isNaN(value) ? undefined : value; // null is a number
+const numberOrInf = value => isNaN(value) ? 'Infinity' : value;
+
+const syncEntitysSaga = function* syncEntitysSaga() {
     yield call(waitRehydrate);
 
-    const MIN_TIME_SINCE_SYNC = 24 * 60 * 60 * 1000; // 24 hours
-    // const MIN_TIME_SINCE_SYNC = 30000; // every 30s
+    // const MIN_TIME_SINCE_SYNC = 24 * 60 * 60 * 1000; // 24 hours
+    const MIN_TIME_SINCE_SYNC = 30000; // every 30s
 
     while (true) {
         const {account:{ syncedEntitysAt }} = yield select();
@@ -105,34 +126,40 @@ const syncEntitysSaga = function* syncEntitysSaga() {
 
             const GunSchema = new schema.Entity('guns', undefined, {
                 idAttribute: 'Name',
-                processStrategy: value => ({
-                    kind: ENTITYS.GUN,
-                    ammoCapacity: parseIntInf(value['Ammo Capacity']) || null, // TODO: not null
-                    damage: parseFloatInf(value.Damage) || null, // TODO: not null
-                    fireRate: parseFloatInf(value['Fire Rate']) || null,
-                    force: parseIntInf(value.Force) || null,
-                    magazineSize: parseIntInf(value['Magazine Size']) || null,
-                    range: parseIntInf(value.Range) || null,
-                    reloadTime: parseFloatInf(value['Reload Time']) || null,
-                    shotSpeed: parseIntInf(value['Shot Speed']) || null,
-                    spread: parseIntInf(value.Spread) || null,
-                    ...pickDotpath(value,
-                        'Name as id',
-                        'Icon as image',
-                        'Notes as notes',
-                        'Quality as quality',
-                        // 'Quote as quote',
-                        'Type as type',
-                        'moreUrl'
-                    )
-                })
+                processStrategy: value => {
+                    if (value.Name.includes('Rad Gun')) {
+                        console.log('value:', value);
+                        console.log('value.Spread:', value.Spread, 'parseIntInf:', parseIntInf(value.Spread));
+                    }
+                    return ({
+                        kind: ENTITYS.GUN,
+                        ammoCapacity: numberOrInf(parseIntInf(value['Ammo Capacity'])), // TODO: verify that all things with null ammoCapacity are actually Infinity
+                        damage: parseFloatInf(value.Damage), // TODO: its never null
+                        fireRate: parseFloatInf(value['Fire Rate']),
+                        force: parseIntInf(value.Force),
+                        magazineSize: parseIntInf(value['Magazine Size']),
+                        range: parseIntInf(value.Range),
+                        reloadTime: parseFloatInf(value['Reload Time']),
+                        shotSpeed: parseIntInf(value['Shot Speed']),
+                        spread: parseIntInf(value.Spread),
+                        ...pickDotpath(value,
+                            'Name as id',
+                            'Icon as image',
+                            'Notes as notes',
+                            'Quality as quality',
+                            // 'Quote as quote',
+                            'Type as type',
+                            'moreUrl'
+                        )
+                    })
+                }
             });
 
             entitys[ENTITYS.GUN] = normalize(data, [ GunSchema ]).entities.guns;
 
             console.log('guns data:', data);
 
-            checkForNaN(entitys[ENTITYS.GUN]);
+            // checkForNaN(entitys[ENTITYS.GUN]);
         }
 
         let items;
@@ -162,7 +189,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
 
             console.log('items data:', data);
 
-            checkForNaN(entitys[ENTITYS.ITEM]);
+            // checkForNaN(entitys[ENTITYS.ITEM]);
 
         }
 
@@ -203,18 +230,18 @@ const syncEntitysSaga = function* syncEntitysSaga() {
 }
 sagas.push(syncEntitysSaga);
 
-function checkForNaN(entitys) {
-    // entitys === kindEntitys
-    for (const [id, entity] of Object.entries(entitys)) {
-        for (const [name, value] of Object.entries(entity)) {
-            if ([NaN].includes(value)) {
-                console.log('FOUND NaN at:', 'name:', name, 'entity:', entity);
-                throw new Error('');
-                // console.log('FOUND NaN at:', entity);
-            }
-        }
-    }
-}
+// function checkForNaN(entitys) {
+//     // entitys === kindEntitys
+//     for (const [id, entity] of Object.entries(entitys)) {
+//         for (const [name, value] of Object.entries(entity)) {
+//             if ([NaN].includes(value)) {
+//                 console.log('FOUND NaN at:', 'name:', name, 'entity:', entity);
+//                 throw new Error('');
+//                 // console.log('FOUND NaN at:', entity);
+//             }
+//         }
+//     }
+// }
 
 //
 type Action = UpdateAction;
