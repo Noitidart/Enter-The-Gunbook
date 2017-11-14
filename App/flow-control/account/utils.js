@@ -3,11 +3,20 @@
 import { stripTags } from 'cmn/lib/all'
 
 // https://stackoverflow.com/a/2970667/1828637
-function toCamelCase(str) {
+export function toCamelCase(str) {
     return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
         if (+match === 0) return ''; // or if (/\s+/.test(match)) for white spaces
         return index == 0 ? match.toLowerCase() : match.toUpperCase();
     });
+}
+
+// https://stackoverflow.com/a/4149393/1828637
+export function unCamelCase(str) {
+    return str
+    // insert a space before all caps
+    .replace(/([A-Z])/g, ' $1')
+    // uppercase the first character
+    .replace(/^./, function(str){ return str.toUpperCase(); })
 }
 
 tableToJSON.defaultParser = cell_html => stripTags(`${cell_html}`).trim();

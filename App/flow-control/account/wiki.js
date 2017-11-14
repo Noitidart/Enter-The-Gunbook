@@ -4,7 +4,11 @@ import { stripTags } from 'cmn/lib/all'
 
 export const GUNGEON_PEDIA_PARSERS = {
     default: cell_html => getValueFromHtml(cell_html), // cell_html.includes('Infinity.png') ? 'Infinity' : stripTags(`${cell_html}`).trim(),
-    Icon: cell_html => cell_html.match(/src="([^"]+)/)[1],
+    Icon: (cell_html, cells) => {
+        const [, icon] = cell_html.match(/src="([^"]+)/) || [];
+        // if (icon === undefined) console.log('ERRRRRROR: icon is undefined, cell_html:', cell_html, 'cells:', cells);
+        return icon;
+    },
     // Quality: cell_html => {
     //     let match = cell_html.match(/alt="(.) Quality Item/);
     //     if (!match) return null;

@@ -5,7 +5,7 @@ import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
 import { normalize, schema } from 'normalizr'
 import { pickDotpath } from 'cmn/lib/all'
 
-import { ENTITYS, overwriteEntitys } from '../entitys'
+import { ENTITYS, overwriteEntitys, NUMERIC_THRESHOLD } from '../entitys'
 import { gamepediaExtractTable, GUNGEON_PEDIA_PARSERS } from './wiki'
 import { tableToJSON } from './utils'
 import { waitRehydrate } from '../utils'
@@ -13,13 +13,15 @@ import { waitRehydrate } from '../utils'
 export type Shape = {
     searchMode: 'voice' | 'text',
     syncedEntitysAt: number, // Date
-    forename: string
+    forename: string,
+    numericKeys: { [EntityKey: string]: true }
 };
 
 const INITIAL = {
     searchMode: 'voice',
     syncedEntitysAt: 0,
-    forename: ''
+    forename: '',
+    numericKeys: {}
 }
 export const sagas = [];
 
@@ -41,7 +43,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
     yield call(waitRehydrate);
 
     const MIN_TIME_SINCE_SYNC = 24 * 60 * 60 * 1000; // 24 hours
-    // const MIN_TIME_SINCE_SYNC = 60000; // every minute
+    // const MIN_TIME_SINCE_SYNC = 30000; // every 30s
 
     while (true) {
         const {account:{ syncedEntitysAt }} = yield select();
@@ -169,9 +171,30 @@ const syncEntitysSaga = function* syncEntitysSaga() {
         }
         console.log('entitys:', entitys);
 
+        // update/calc numeric keys
+        const numericKeys = {};
+        const keyStats: { [EntityKey: string]: { numeric:number, non:number }} = {};
+        for (const aEntitys of Object.values(entitys)) {
+            for (const entity of Object.values(aEntitys)) {
+                // check each key,
+                for (const [key, value] of Object.entries(entity)) {
+                    if (!(key in keyStats)) keyStats[key] = { numeric:0, non:0 };
+                    if (value === null || isNaN(value)) keyStats[key].non++;
+                    else keyStats[key].numeric++;
+                }
+            }
+        }
+        for (const [key, stats] of Object.entries(keyStats)) {
+            const percentNumeric = stats.numeric / (stats.numeric + stats.non);
+            stats.percentNumeric = percentNumeric; // DEBUG:
+            if (percentNumeric > NUMERIC_THRESHOLD) numericKeys[key] = true;
+        }
+        console.log('keyStats:', keyStats, 'numericKeys:', numericKeys);
+        // end - update/calc numeric keys
+
         yield put(overwriteEntitys(entitys));
 
-        yield put(update({ syncedEntitysAt:Date.now() }))
+        yield put(update({ syncedEntitysAt:Date.now(), numericKeys }))
     }
 }
 sagas.push(syncEntitysSaga);

@@ -22,6 +22,8 @@ const INITIAL = {
     [ENTITYS.GUN]: {}
 }
 
+const NUMERIC_THRESHOLD = 0.2; // percent of total keys should be at least this much
+
 // export const sagas = [];
 
 const A = ([actionType]: string[]) => 'ENTITYS_' + actionType;
@@ -106,4 +108,4 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
     }
 }
 
-export { ENTITYS, overwriteEntitys }
+export { ENTITYS, overwriteEntitys, NUMERIC_THRESHOLD }
