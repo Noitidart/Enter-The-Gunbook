@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react'
-import { TouchableOpacity, View, Platform } from 'react-native'
+import { Keyboard, Platform, TouchableOpacity, View } from 'react-native'
 import { connect } from 'react-redux'
 
 import store from '../../../flow-control'
@@ -22,9 +22,26 @@ type Props = {
     findCardIndex: (Card=>boolean) => number
 }
 
-class Fabs extends PureComponent<Props> {
+type State = {
+    shouldHideFabs: boolean
+}
+
+class Fabs extends PureComponent<Props, State> {
+    state = {
+        shouldHideFabs: false
+    }
+
+    componentDidMount() {
+        Keyboard.addListener('keyboardDidShow', this.hideFabs);
+        Keyboard.addListener('keyboardDidHide', this.showFabs);
+    }
+    componentWillUnmount() {
+        Keyboard.removeListener('keyboardDidShow', this.hideFabs);
+        Keyboard.removeListener('keyboardDidHide', this.showFabs);
+    }
     render() {
-        return (
+        const { shouldHideFabs } = this.state;
+        return shouldHideFabs ? null : (
             <View style={styles.wrap}>
                 <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.settings} onPress={this.addAccountCard}>
                     <View style={styles.backingSmall}>
@@ -72,6 +89,9 @@ class Fabs extends PureComponent<Props> {
         dispatch(updateCard(currentCardId, { kind:CARDS.ENTITY, entityId:undefined }));
     }
     addCounterCard = () => this.props.dispatch(addCard({ kind:CARDS.COUNTER }, this.props.getCurrentCardIndex()+1));
+
+    hideFabs = () => this.setState(() => ({ shouldHideFabs:true }))
+    showFabs = () => this.setState(() => ({ shouldHideFabs:false }))
 }
 
 export default Fabs

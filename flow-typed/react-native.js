@@ -30,3 +30,14 @@ type ScrollEvent = {
         velocity: { x:number, y:number }
     }
 }
+
+type KeyboardDidShowEvent = { // tested on android 6.0/23
+    endCoodrinates: {
+        height: number,
+        screenX: number,
+        screenY: number, // float
+        width: number
+    }
+}
+
+type KeyboardDidHideEvent = null;  // tested on android 6.0/23
