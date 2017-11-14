@@ -220,7 +220,7 @@ const EntitySmart = connect(
         const thumbs = !socialEntity ? null : pick(social.thumbs, ...socialEntity.thumbIds);
 
         const displayname = !forename ? false : Object.values(social.displaynames).find(displayname => displayname.forename.toLowerCase() === forename.toLowerCase());
-        const thumb = !thumbs ? null : Object.values(thumbs).find(thumb => thumb.displaynameId === displayname.id);
+        const thumb = !thumbs || !displayname ? null : Object.values(thumbs).find(thumb => thumb.displaynameId === displayname.id);
         const isThumbUp = thumb ? thumb.like : false;
         const isThumbDn = thumb ? !thumb.like : false;
         const cntThumbUp = !thumbs ? 0 : Object.values(thumbs).reduce( (sum, { like }) => like ? ++sum : sum, 0 );
