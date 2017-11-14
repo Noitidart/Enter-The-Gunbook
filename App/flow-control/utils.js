@@ -48,8 +48,8 @@ export function fetchApi(input:string, init={}) {
 
     // currently only supports string `input`
 
-    // const DOMAIN = 'https://gunbook.sundayschoolonline.org';
-    const DOMAIN = 'http://localhost:8000';
+    const DOMAIN = 'https://gunbook.sundayschoolonline.org';
+    // const DOMAIN = 'http://localhost:8000';
 
     init.headers = Object.assign({
         Accept: 'application/json',
