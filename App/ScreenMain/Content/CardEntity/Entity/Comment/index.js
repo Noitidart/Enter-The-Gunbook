@@ -9,6 +9,7 @@ import { pick } from 'cmn/lib/all'
 import Icon from '../../../../../Icon'
 
 import { deleteComment, toggleHelpful } from '../../../../../flow-control/social'
+import { alertDisplayname } from '../../../../../flow-control/social/utils'
 
 import styles from './styles'
 
@@ -81,7 +82,7 @@ class CommentDumb extends PureComponent<Props> {
 
         const hasForename = !!forename;
         if (!hasForename) {
-            const shouldGoToSettings = alert('To be able to mark a comment as helpful, you need to first set a "display name" from the settings page.')
+            alertDisplayname(dispatch, 'To be able to mark a comment as helpful, you need to first set a "display name" from the settings page.');
             return;
         }
 

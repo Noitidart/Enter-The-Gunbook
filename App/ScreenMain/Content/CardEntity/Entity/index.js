@@ -16,6 +16,7 @@ import StatRow from './StatRow'
 import { K, CommentId } from '../../../../flow-control/social/types'
 import { ENTITYS } from '../../../../flow-control/entitys'
 import { refSocialEntity, unrefSocialEntity, toggleThumb } from '../../../../flow-control/social'
+import { alertDisplayname } from '../../../../flow-control/social/utils'
 
 import styles from './styles'
 import QUALITY_A from './quality-a.png'
@@ -182,9 +183,10 @@ class EntityDumb extends PureComponent<Props, State> {
 
         const hasForename = !!forename;
         if (!hasForename) {
-            const shouldGoToSettings = alert('To be able to vote, you need to first set a "display name" from the settings page.')
+            alertDisplayname(dispatch, 'To be able to vote, you need to first set a "display name" from the settings page.');
             return;
         }
+
         const isDelete = isThumbUp;
         if (isDelete) dispatch(toggleThumb({ forename, name, thumbId, id, like:null }));
         else dispatch(toggleThumb({ forename, name, like:true, id }));
@@ -195,7 +197,7 @@ class EntityDumb extends PureComponent<Props, State> {
 
         const hasForename = !!forename;
         if (!hasForename) {
-            const shouldGoToSettings = alert('To be able to vote, you need to first set a "display name" from the settings page.')
+            alertDisplayname(dispatch, 'To be able to vote, you need to first set a "display name" from the settings page.');
             return;
         }
 

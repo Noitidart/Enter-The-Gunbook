@@ -1,12 +1,13 @@
 // @flow
 
 import React, { PureComponent } from 'react'
-import { Text, TextInput, View } from 'react-native'
+import { Alert, Text, TextInput, View } from 'react-native'
 import { connect } from 'react-redux'
 
 import ButtonFlat from '../ButtonFlat'
 
 import { addComment } from '../../../../../flow-control/social'
+import { alertDisplayname } from '../../../../../flow-control/social/utils'
 
 import styles from './styles'
 
@@ -51,7 +52,19 @@ class AddCommentDumb extends PureComponent<Props, State> {
     addComment = () => {
         const { dispatch, forename, name, id } = this.props;
         const { body } = this.state;
-        dispatch(addComment(name, body, forename, id));
+
+        if (!body.trim()) {
+            Alert.alert('Message Required', 'You cannot post a blank message.', [{ text:'OK' }]);
+            return;
+        }
+
+        const hasForename = !!forename;
+        if (!hasForename) {
+            alertDisplayname(dispatch, 'To be able to post a comment, you need to first set a "display name" from the settings page.');
+            return;
+        }
+
+        dispatch(addComment(name, body.trim(), forename, id));
         this.setState(() => ({ body:'' }));
     }
 }
