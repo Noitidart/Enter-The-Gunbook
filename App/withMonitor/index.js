@@ -45,9 +45,11 @@ function withMonitor(WrappedComponent) {
                     const hasPredicate = monitors.find( monitor => monitor.predicate === predicate );
                     if (hasPredicate) throw new Error('monitor already installed');
 
-                    if (!predicate(this.props, this.state)) {
+                    const preRez = predicate(this.props, this.state);
+                    if (!preRez) {
                         const predicateWrapped: PredicateWrapped = () => {
                             const rez = predicate(this.props, this.state);
+                            console.log('prediate rez:', rez);
                             if (rez) {
                                 const ix = monitors.findIndex( ({ predicateWrapped:aPredicateWrapped }) => aPredicateWrapped === predicateWrapped );
                                 monitors.splice(ix, 1);
@@ -57,7 +59,7 @@ function withMonitor(WrappedComponent) {
                         monitors.push({ predicateWrapped, predicate });
                     } else {
                         // predicate is already true on add of monitor
-                        resolve();
+                        resolve(preRez);
                     }
                 })
             }
