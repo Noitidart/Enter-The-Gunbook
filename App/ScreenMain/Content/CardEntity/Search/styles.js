@@ -5,12 +5,12 @@ import { StyleSheet } from 'react-native'
 const styles = StyleSheet.create({
     main: {
         flex: 1,
-        alignItems: 'center',
         padding: 20
     },
     subWrap: {
         margin: 10,
-        alignItems: 'center'
+        // alignItems: 'center',
+        flex: 1
     },
     sub: {
         color: '#FFFFFF',
@@ -39,7 +39,8 @@ const styles = StyleSheet.create({
         fontSize: 17,
         paddingTop: 8,
         paddingBottom: 10,
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+        alignSelf: 'center'
     }
 })
 

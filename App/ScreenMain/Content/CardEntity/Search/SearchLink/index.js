@@ -12,14 +12,13 @@ import type { Shape as AppShape } from '../../../flow-control'
 import type { Match } from '../'
 
 type OwnProps = {
-    ...Match,
+    entityId: string, // article name
     cardId: $PropertType<Card, 'id'>
 }
 
 type Props = {
     ...OwnProps,
     dispatch: Dispatch,
-    entity: Entity
 }
 
 class SearchLinkDumb extends PureComponent<Props> {
@@ -35,13 +34,7 @@ class SearchLinkDumb extends PureComponent<Props> {
     }
 }
 
-const SearchLinkSmart = connect(
-    function({ entitys }: AppShape, { entityId, kind }: OwnProps) {
-        return {
-            entity: entitys[kind][entityId]
-        }
-    }
-)
+const SearchLinkSmart = connect()
 
 const SearchLink = SearchLinkSmart(SearchLinkDumb)
 

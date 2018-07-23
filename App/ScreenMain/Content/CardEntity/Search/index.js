@@ -1,9 +1,10 @@
 import React, { PureComponent } from 'react'
-import { ScrollView, Text, TextInput, View } from 'react-native'
+import { Text, TextInput, View } from 'react-native'
 import { connect } from 'react-redux'
 import Fuse from 'fuse.js'
 
-import SearchLink from './SearchLink'
+import ActivityList from './ActivityList'
+import MatchList from './MatchList'
 
 import { updateCard } from '../../../../flow-control/cards'
 import { ENTITYS } from '../../../../flow-control/entitys'
@@ -67,11 +68,8 @@ class SearchDumb extends PureComponent<Props, State> {
                 <View style={styles.subWrap}>
                     { !hasValue && <Text style={styles.sub}>(type a gun or item name)</Text> }
                     { hasValue && !hasMatchs && <Text style={styles.noMatches}>No matches found</Text> }
-                    <ScrollView>
-                        { hasValue && hasMatchs &&
-                            matchs.map(match => <SearchLink key={match.entityId} {...match} cardId={cardId} />)
-                        }
-                    </ScrollView>
+                    { hasValue && hasMatchs && <MatchList matchs={matchs} cardId={cardId} /> }
+                    { !hasValue && <ActivityList cardId={cardId} /> }
                 </View>
             </View>
         )
