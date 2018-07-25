@@ -5,7 +5,8 @@ import { StyleSheet } from 'react-native'
 const APP_BACKGROUND = '#F6F8FB';
 
 const app = {
-    flex: 1
+    flex: 1,
+    height: '100%'
 }
 const styles = StyleSheet.create({
     app,
@@ -14,21 +15,8 @@ const styles = StyleSheet.create({
         backgroundColor: APP_BACKGROUND // to hide splash in background - not working when keyboard view pushes it away though
     },
 
-    container: {
-        flex: 1,
-        // justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: '#F5FCFF'
-    },
-    welcome: {
-        fontSize: 20,
-        textAlign: 'center',
-        margin: 10
-    },
-    instructions: {
-        textAlign: 'center',
-        color: '#333333',
-        marginBottom: 5
+    appContent: {
+        height: '100%'
     }
 })
 

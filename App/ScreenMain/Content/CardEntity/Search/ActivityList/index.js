@@ -106,7 +106,7 @@ class ActivityList extends React.PureComponent<Props, State> {
                 { isFetching && !activitys.length &&
                     <ActivityIndicator color="#FFFFFF" size="large" />
                 }
-                <FlatList style={styles.activityList} contentContainerStyle={styles.activityListContent} data={activitys} renderItem={this.renderItem} keyExtractor={extractKeyFromActivity} />
+                <FlatList style={styles.activityList} contentContainerStyle={styles.activityListContent} data={activitys} renderItem={this.renderItem} keyExtractor={extractKeyFromActivity} keyboardShouldPersistTaps="handled" />
             </View>
         )
     }

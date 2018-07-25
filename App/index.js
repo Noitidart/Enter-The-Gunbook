@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react'
-import { AppRegistry, Platform, StatusBar, View } from 'react-native'
+import { AppRegistry, Platform, StatusBar, ScrollView } from 'react-native'
 import { Provider } from 'react-redux'
 import DialogAndroid from 'react-native-dialogs'
 
@@ -37,9 +37,9 @@ export default class App extends Component<void, State> {
 
         return (
             <Provider store={store}>
-                <View style={isOpaque ? styles.appOpaque : styles.app}>
+                <ScrollView style={isOpaque ? styles.appOpaque : styles.app} contentContainerStyle={styles.appContent} keyboardShouldPersistTaps="handled" scrollEnabled={false}>
                     <ScreenMain setAppOpaque={this.setAppOpaque} />
-                </View>
+                </ScrollView>
             </Provider>
         )
     }

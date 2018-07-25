@@ -82,7 +82,7 @@ class ContentDumb extends PureComponent<Props> {
 
         return (
             <View style={styles.content}>
-                <ScrollView style={styles.scroller} contentContainerStyle={styles.contentContainer} horizontal pagingEnabled ref={this.refScroller} onScroll={this.handleScroll} scrollEventThrottle={16} onLayout={this.handleLayout} onMomentumScrollEnd={this.handleScrollEnd}>
+                <ScrollView style={styles.scroller} contentContainerStyle={styles.contentContainer} horizontal pagingEnabled ref={this.refScroller} onScroll={this.handleScroll} scrollEventThrottle={16} onLayout={this.handleLayout} onMomentumScrollEnd={this.handleScrollEnd} keyboardShouldPersistTaps="handled">
                     { cards.map( card => this.renderCard(card) ) }
                 </ScrollView>
                 <Fabs dispatch={dispatch} findCardIndex={this.findCardIndex} scrollToCard={this.scrollToCard} getCurrentCardIndex={this.getCurrentCardIndex} removeCurrentCard={this.removeCurrentCard} />

@@ -20,7 +20,7 @@ class MatchList extends React.PureComponent<Props> {
         const { matchs, cardId } = this.props;
 
         return (
-            <ScrollView style={styles.matchList} contentContainerStyle={styles.matchListContent}>
+            <ScrollView style={styles.matchList} contentContainerStyle={styles.matchListContent} keyboardShouldPersistTaps="handled">
                 { matchs.map(match => <SearchLink key={match.entityId} entityId={match.entityId} cardId={cardId} />) }
             </ScrollView>
         )
