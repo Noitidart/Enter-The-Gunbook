@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react'
-import { Text, View, Alert, Platform, Picker, TouchableOpacity } from 'react-native'
+import { Text, View, Alert, Platform, TouchableOpacity } from 'react-native'
+import DialogAndroid from 'react-native-dialogs'
 import { connect } from 'react-redux'
 
 import { updateAccount } from '../../../../../flow-control/account'
@@ -7,7 +8,6 @@ import { updateAccount } from '../../../../../flow-control/account'
 import Icon from '../../../../../Icon'
 
 import styles from '../styles'
-import stylesThis from './styles'
 
 import type { Shape as AppShape } from '../../../../flow-control'
 import type { Shape as AccountShape } from '../../../../flow-control/account'
@@ -30,27 +30,31 @@ class CommentSortDumb extends PureComponent<Props> {
     render() {
         const { sortCommentsBy } = this.props;
 
-        const Wrapper = Platform.OS !== 'android' ? TouchableOpacity : View;
-
         return (
-            <Wrapper onPress={Platform.OS !== 'android' ? this.handlePress : undefined}>
-                {/* <View style={styles.titleRightIconWrap}> */}
-                    <Icon style={styles.titleRightIcon} name="sort" />
-                    {/* <Text style={styles.titleRightIconLabel}>{sortCommentsBy}</Text> */}
-                    { Platform.OS === 'android' &&
-                        <Picker prompt={PROMPT_TITLE} selectedValue="cancel" onValueChange={this.handlePicked} style={stylesThis.picker}>
-                            { OPTIONS.map( option => <Picker.Item label={option.label} value={option.value} key={option.value} /> )}
-                        </Picker>
-                    }
-                {/* </View> */}
-            </Wrapper>
+            <TouchableOpacity onPress={this.handlePress}>
+                <Icon style={styles.titleRightIcon} name="sort" />
+            </TouchableOpacity>
         )
     }
 
-    handlePress = () => {
-        Alert.alert( PROMPT_TITLE, undefined,
-            OPTIONS.map( option => ({ text:option.label, onPress:()=>this.handlePicked(option.value), style:(option.value === 'cancel' ? 'cancel' : undefined) }) )
-        );
+    handlePress = async () => {
+        const { sortCommentsBy } = this.props;
+
+        if (Platform.OS === 'ios') {
+            Alert.alert( PROMPT_TITLE, undefined,
+                OPTIONS.map( option => ({ text:option.label, onPress:()=>this.handlePicked(option.value), style:(option.value === 'cancel' ? 'cancel' : undefined) }) )
+            );
+        } else {
+            const { selectedItem } = await DialogAndroid.showPicker(PROMPT_TITLE, null, {
+                items: OPTIONS.slice(0, OPTIONS.length-1), // no cancel button
+                idKey: 'value',
+                type: DialogAndroid.listRadio,
+                selectedId: sortCommentsBy,
+                positiveText: null,
+                negativeText: 'Cancel'
+            });
+            if (selectedItem) this.handlePicked(selectedItem.value);
+        }
     }
 
     handlePicked = sortCommentsBy => this.props.dispatch(updateAccount({ sortCommentsBy }))

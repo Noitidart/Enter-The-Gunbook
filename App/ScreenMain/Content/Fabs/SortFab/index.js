@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react'
-import { Text, View, Alert, Platform, Picker, TouchableOpacity } from 'react-native'
+import { Text, View, Alert, Platform, TouchableOpacity } from 'react-native'
+import DialogAndroid from 'react-native-dialogs'
 import { connect } from 'react-redux'
 
 import { unCamelCase } from '../../../../flow-control/account/utils'
@@ -9,7 +10,6 @@ import { getCardEntitys, groupSortables } from '../../../../flow-control/cards/u
 import Icon from '../../../../Icon'
 
 import styles from '../styles'
-import stylesThis from './styles'
 
 import type { Shape as AppShape } from '../../../../flow-control'
 import type { Shape as AccountShape } from '../../../../flow-control/account'
@@ -46,38 +46,31 @@ class SortFabDumb extends PureComponent<Props, State> {
     render() {
         const { options } = this.state;
 
-        let onPress, Wrapper;
-        if (options) {
-            if (Platform.OS !== 'android') {
-                Wrapper = View;
-                onPress = this.handlePress;
-            } else {
-                // android
-                Wrapper = View;
-            }
-        } else {
-            Wrapper = TouchableOpacity;
-            onPress = this.handleCannotPress;
-        }
         return (
-            <Wrapper style={styles.sort} onPress={onPress}>
-                <View style={styles.backingSmall} >
-                    <Icon name="sort" style={styles.labelSmall} />
-                    { options && Platform.OS === 'android' &&
-                        <Picker prompt={PROMPT_TITLE} selectedValue="cancel" onValueChange={this.handlePicked} style={stylesThis.picker}>
-                            { options.map( option => <Picker.Item label={option.label} value={option.value} key={option.value} /> )}
-                        </Picker>
-                    }
-                </View>
-            </Wrapper>
+            <TouchableOpacity style={[styles.sort, styles.backingSmall]} onPress={this.handlePress} activeOpacity={0.7}>
+                <Icon name="sort" style={styles.labelSmall} />
+            </TouchableOpacity>
         )
     }
 
-    handlePress = () => {
+    handlePress = async () => {
         const { options } = this.state;
-        Alert.alert(PROMPT_TITLE, undefined,
-            options.map( option => ({ text:option.label, onPress:()=>this.handlePicked(option.value), style:(option.value === 'cancel' ? 'cancel' : undefined) }) )
-        );
+
+        if (!options) return this.handleCannotPress();
+
+        if (Platform.OS === 'ios') {
+            Alert.alert(PROMPT_TITLE, undefined,
+                options.map( option => ({ text:option.label, onPress:()=>this.handlePicked(option.value), style:(option.value === 'cancel' ? 'cancel' : undefined) }) )
+            );
+        } else {
+            const { selectedItem } = await DialogAndroid.showPicker(PROMPT_TITLE, null, {
+                items: options.slice(0, options.length-1), // no cancel button
+                idKey: 'value',
+                positiveText: null,
+                negativeText: 'Cancel'
+            });
+            if (selectedItem) this.handlePicked(selectedItem.value);
+        }
     }
 
     handleCannotPress = () => Alert.alert('Nothing to Sort', 'You currently have no items that can be sorted. Items are sortable if they have any numeric properties.', [{ text:'OK', style:'cancel' }]);
@@ -100,7 +93,7 @@ class SortFabDumb extends PureComponent<Props, State> {
             this.setState(() => ({ options:null }))
         } else {
             options.sort(SortFab.sortAscLabel);
-            options.push({ label:'Cancel', value:'cancel' }); // NOTE: on android, because selectedValue of <Picker> defaults to first value, so if that value is pressed nothing happens, so i put in cancel
+            options.push({ label:'Cancel', value:'cancel' });
             this.setState(() => ({ options }));
         }
     }

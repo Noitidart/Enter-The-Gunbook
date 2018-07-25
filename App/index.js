@@ -2,6 +2,7 @@
 import React, { Component } from 'react'
 import { AppRegistry, Platform, StatusBar, View } from 'react-native'
 import { Provider } from 'react-redux'
+import DialogAndroid from 'react-native-dialogs'
 
 import store from './flow-control'
 
@@ -12,6 +13,14 @@ import styles from './styles'
 if (Platform.OS === 'android') {
     StatusBar.setTranslucent(true);
     StatusBar.setBackgroundColor('rgba(0, 0, 0, .7)', false);
+
+    DialogAndroid.assignDefaults({
+        contentColor: '#000000',
+        positiveColor: '#191231',
+        negativeColor: '#191231',
+        neutralColor: '#191231',
+        widgetColor: '#191231'
+    });
 }
 
 type State = {
