@@ -4,7 +4,7 @@ import { StyleSheet } from 'react-native'
 
 const styles = StyleSheet.create({
     activityListWrap: {
-
+        flex: 1
     },
     activityList: {
 
@@ -29,13 +29,13 @@ const styles = StyleSheet.create({
     },
     activityItem__description: {
         color: '#FFFFFF',
-        width: '20%',
+        width: '15%',
         paddingHorizontal: 4,
         textAlign: 'center'
     },
     activityItem__time: {
         color: '#FFFFFF',
-        width: '20%',
+        width: '25%',
         fontSize: 13,
         paddingLeft: 4,
         textAlign: 'right'
