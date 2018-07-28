@@ -31,6 +31,19 @@ type ScrollEvent = {
     }
 }
 
+type ScrollEndEvent = {
+    nativeEvent: { // tested on android 6.0/23 for onScroll and onMomentScrollEnd on <ScrollView>
+        contentInset: { bottom:number, left:number, right:number, top:number },
+        contentOffset: { x:number, y:number },
+        contentSize: { height:number, width:number },
+        layoutMeasurement: { height:number, width:number },
+        responderIgnoreScroll: boolean,
+        responderIgnoreScroll: boolean,
+        target: number,
+        velocity: { x:number, y:number }
+    }
+}
+
 type KeyboardDidShowEvent = { // tested on android 6.0/23
     endCoodrinates: {
         height: number,

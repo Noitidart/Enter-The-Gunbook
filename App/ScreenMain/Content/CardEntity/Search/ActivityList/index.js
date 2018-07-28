@@ -6,7 +6,8 @@ import { delay } from 'redux-saga'
 import { fetchApi } from '../../../../../flow-control/utils'
 
 import Icon from '../../../../../Icon'
-import SearchLink from '../SearchLink';
+import SearchLink from '../SearchLink'
+import FlatListPullable from './FlatListPullable'
 
 import styles from './styles'
 
@@ -16,7 +17,9 @@ type Props = {|
     cardId: $PropertType<Card, 'id'>
 |}
 
-type State = {||}
+type State = {|
+
+|}
 
 type Activity = {|
     id: number,
@@ -106,7 +109,12 @@ class ActivityList extends React.PureComponent<Props, State> {
                 { isFetching && !activitys.length &&
                     <ActivityIndicator color="#FFFFFF" size="large" />
                 }
-                <FlatList style={styles.activityList} contentContainerStyle={styles.activityListContent} data={activitys} renderItem={this.renderItem} keyExtractor={extractKeyFromActivity} keyboardShouldPersistTaps="handled" />
+                <FlatListPullable
+                    data={activitys}
+                    keyExtractor={extractKeyFromActivity}
+                    keyboardShouldPersistTaps="handled"
+                    renderItem={this.renderItem}
+                />
             </View>
         )
     }
@@ -167,5 +175,6 @@ class ActivityList extends React.PureComponent<Props, State> {
         }
     }
 }
+
 
 export default ActivityList
