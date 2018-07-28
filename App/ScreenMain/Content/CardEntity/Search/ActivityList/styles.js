@@ -4,13 +4,18 @@ import { StyleSheet } from 'react-native'
 
 const styles = StyleSheet.create({
     activityListWrap: {
-        flex: 1
+
+    },
+    activityList: {
+
+    },
+    activityListContent: {
+
     },
     title: {
         color: '#FFFFFF',
         fontSize: 18,
-        fontWeight: '500',
-        marginVertical: 8
+        fontWeight: '500'
     },
     activityItem: {
         flexDirection: 'row'
@@ -24,13 +29,13 @@ const styles = StyleSheet.create({
     },
     activityItem__description: {
         color: '#FFFFFF',
-        width: '15%',
+        width: '20%',
         paddingHorizontal: 4,
         textAlign: 'center'
     },
     activityItem__time: {
         color: '#FFFFFF',
-        width: '25%',
+        width: '20%',
         fontSize: 13,
         paddingLeft: 4,
         textAlign: 'right'
