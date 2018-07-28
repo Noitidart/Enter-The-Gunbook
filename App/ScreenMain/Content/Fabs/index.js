@@ -42,7 +42,7 @@ class Fabs extends PureComponent<Props, State> {
     render() {
         const { shouldHideFabs } = this.state;
         return shouldHideFabs ? null : (
-            <View style={styles.wrap}>
+            <View style={styles.wrap} pointerEvents="box-none">
                 <TouchableOpacity activeOpacity={ACTIVE_OPACITY} style={styles.settings} onPress={this.addAccountCard}>
                     <View style={styles.backingSmall}>
                         <Icon name="settings" style={styles.labelSmall} />
