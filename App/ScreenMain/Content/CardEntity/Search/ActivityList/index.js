@@ -106,7 +106,21 @@ class ActivityList extends React.PureComponent<Props, State> {
                 { isFetching && !activitys.length &&
                     <ActivityIndicator color="#FFFFFF" size="large" />
                 }
-                <FlatList style={styles.activityList} contentContainerStyle={styles.activityListContent} data={activitys} renderItem={this.renderItem} keyExtractor={extractKeyFromActivity} keyboardShouldPersistTaps="handled" />
+                <FlatList
+                    style={styles.activityList}
+                    contentContainerStyle={styles.activityListContent}
+                    data={activitys}
+                    keyExtractor={extractKeyFromActivity}
+                    keyboardShouldPersistTaps="handled"
+                    onEndReached={this.fetchData}
+                    renderItem={this.renderItem}
+                    ListFooterComponent={isFetching && (
+                        <View style={styles.loadMore}>
+                            <ActivityIndicator size="small" color="#FFFFFF" />
+                            <Text style={styles.loadMoreLabel}>Loading more...</Text>
+                        </View>
+                    )}
+                />
             </View>
         )
     }

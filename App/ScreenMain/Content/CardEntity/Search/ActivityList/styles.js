@@ -15,7 +15,8 @@ const styles = StyleSheet.create({
     title: {
         color: '#FFFFFF',
         fontSize: 18,
-        fontWeight: '500'
+        fontWeight: '500',
+        marginVertical: 8
     },
     activityItem: {
         flexDirection: 'row'
@@ -39,6 +40,19 @@ const styles = StyleSheet.create({
         fontSize: 13,
         paddingLeft: 4,
         textAlign: 'right'
+    },
+
+    loadMore: {
+        height: 48,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    loadMoreLabel: {
+        marginLeft: 8,
+        color: '#FFFFFF',
+        fontWeight: 'bold',
+        fontSize: 15
     }
 })
 
