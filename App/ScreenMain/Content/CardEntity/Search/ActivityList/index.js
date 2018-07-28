@@ -80,7 +80,7 @@ export function formatAgoShort(iso: DateIso) {
             lastWeek: 'ddd',
             sameElse: function(now) {
                 if (this.isSameOrAfter(now.startOf('year'))) return 'MMM D'; // this year
-                else return 'll';
+                else return 'MMM YYYY';
             }
         });
     }
