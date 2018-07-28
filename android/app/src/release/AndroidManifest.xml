@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.myapp"
+    package="com.enter_the_gunbook"
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission tools:node="remove" android:name="android.permission.SYSTEM_ALERT_WINDOW" />
