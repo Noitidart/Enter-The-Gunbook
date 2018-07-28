@@ -1,6 +1,6 @@
 // @flow
 
-import { StyleSheet } from 'react-native'
+import { StyleSheet, Platform } from 'react-native'
 
 import colors from '../colors'
 
@@ -15,7 +15,8 @@ const styles = StyleSheet.create({
         backgroundColor: colors.darkGray,
         borderRadius: 5,
         fontSize: 14,
-        // height: 14 * 2 * 3, // android: line height is fontSize * 2 apparently, at least when fontSize is 14, * 3 for number of lines
+        height: Platform.OS === 'ios' ? 14 * 2 * 3 : undefined, // andorid has numberOfLines prop
+        paddingHorizontal: Platform.OS === 'ios' ? 4 : undefined,
         paddingVertical: 4,
         marginBottom: 7,
         textAlignVertical: 'top'
