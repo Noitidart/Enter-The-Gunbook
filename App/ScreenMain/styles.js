@@ -1,6 +1,6 @@
 // @flow
 
-import { StyleSheet, StatusBar } from 'react-native'
+import { StyleSheet, StatusBar, Platform } from 'react-native'
 
 const styles = StyleSheet.create({
     screen: {
@@ -16,7 +16,10 @@ const styles = StyleSheet.create({
         resizeMode: 'cover'
     },
     marginStatus: {
-        height: StatusBar.currentHeight + 10
+        height: (Platform.OS === 'ios' ? 20 : StatusBar.currentHeight),
+        marginBottom: 10,
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        alignSelf: 'stretch'
     },
     statusWrap: {
         marginTop: 20
