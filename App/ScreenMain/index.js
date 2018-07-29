@@ -1,6 +1,6 @@
 // @flow
 import React, { Component } from 'react'
-import { Image, View, Dimensions, Text } from 'react-native'
+import { Animated, Dimensions, Image, Keyboard, Platform, Text, View } from 'react-native'
 
 import Content from './Content'
 import Loading from './Loading'
@@ -33,12 +33,31 @@ class ScreenMain extends Component<Props, State> {
         loadingStatus: 'Initializing...'
     }
 
+    animKeyboard = new Animated.Value(0)
+    animKeyboardStyle = { transform: [{ translateY: this.animKeyboard }] }
+
+    constructor(props: Props) {
+        super(props);
+        keyboardManagement.enableKeyboardAvoiding = this.enableKeyboardAvoiding;
+    }
+    componentDidMount() {
+        if (Platform.OS === 'ios') {
+            Keyboard.addListener('keyboardWillShow', this.handleKeyboardWillShow);
+            Keyboard.addListener('keyboardWillHide', this.handleKeyboardWillHide);
+        }
+    }
+    componentWillUnmount() {
+        if (Platform.OS === 'ios') {
+            Keyboard.removeListener(this.handleKeyboardWillShow);
+            Keyboard.removeListener(this.handleKeyboardWillHide);        
+        }
+    }
 
     render() {
         const { screen, isPortrait, isLoaded, isPreLoaded, loadingStatus } = this.state;
 
         return (
-            <View style={styles.screen} onLayout={this.handleLayoutScreen}>
+            <Animated.View style={[styles.screen, this.animKeyboardStyle]} onLayout={this.handleLayoutScreen}>
                 <Image source={BACKGROUND} style={[styles.background, { opacity:(isPreLoaded ? 1 : 0) }]} onLoad={this.handleLoadBackground} />
                 <View style={styles.marginStatus} />
                 <ImageScaled style={{ opacity:(isPreLoaded ? 1 : 0) }} source={LOGO} screen={screen} sourceWidth={873} sourceHeight={281} width={isPortrait ? 0.8 : undefined} height={isPortrait ? undefined : 0.2} onLoad={this.handleLoadLogo} />
@@ -49,7 +68,7 @@ class ScreenMain extends Component<Props, State> {
                     </View>
                 }
                 { isLoaded && <Content screen={screen} /> }
-            </View>
+            </Animated.View>
         )
     }
 
@@ -68,6 +87,36 @@ class ScreenMain extends Component<Props, State> {
     setLoaded = () => this.setState(() => ({ isLoaded:true }))
     setPreLoaded = () => this.setState(() => ({ isPreLoaded:true }))
     setLoadingStatus = loadingStatus => this.setState(() => ({ loadingStatus }))
+
+    isKeyboardAvoidingEnabled = false
+    keyboardAvoidDp = 0
+
+    handleKeyboardWillShow = (e: KeyboardWillShowEvent) => {
+        // console.log('will show, e:', e);
+        this.keyboardAvoidDp = e.endCoordinates.screenY-e.startCoordinates.screenY;
+        this.avoidKeyboardIfEnabled();
+    }
+
+    handleKeyboardWillHide = (e: KeyboardWillHideEvent) => {
+        // console.log('will hide, e:', e);
+        this.isKeyboardAvoidingEnabled = false;
+        this.keyboardAvoidDp = 0;
+        Animated.timing(this.animKeyboard, { duration:250, toValue:0, useNativeDriver:true }).start();
+    }
+
+    avoidKeyboardIfEnabled = () => {
+        if (this.isKeyboardAvoidingEnabled) {
+            Animated.timing(this.animKeyboard, { duration:250, toValue:this.keyboardAvoidDp, useNativeDriver:true }).start();
+        }
+    }
+
+    enableKeyboardAvoiding = () => {
+        this.isKeyboardAvoidingEnabled = true;
+        this.avoidKeyboardIfEnabled();
+    }
 }
 
+const keyboardManagement = {}
+
+export { keyboardManagement }
 export default ScreenMain

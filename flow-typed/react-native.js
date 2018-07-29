@@ -40,4 +40,38 @@ type KeyboardDidShowEvent = { // tested on android 6.0/23
     }
 }
 
+type KeyboardWillShowEvent = {| // ios - rn 0.49.3
+    duration: number, // 250
+    easing: string, // "keyboard"
+    endCoodrinates: {
+        height: number,
+        screenX: number,
+        screenY: number,
+        width: number
+    },
+    startCoordinates: {
+        height: number,
+        screenX: number,
+        screenY: number,
+        width: number
+    }
+|}
+
+type KeyboardWillHideEvent = {| // ios - rn 0.49.3
+    duration: number, // 250
+    easing: string, // "keyboard"
+    endCoodrinates: {
+        height: number,
+        screenX: number,
+        screenY: number,
+        width: number
+    },
+    startCoordinates: {
+        height: number,
+        screenX: number,
+        screenY: number,
+        width: number
+    }
+|}
+
 type KeyboardDidHideEvent = null;  // tested on android 6.0/23
