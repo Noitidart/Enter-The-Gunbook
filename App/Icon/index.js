@@ -1,7 +1,7 @@
 // @flow
 
 import React from 'react'
-import { Text } from 'react-native'
+import { Text, Platform } from 'react-native'
 
 // import styleCacherHOC from '../style-cacher'
 
@@ -966,7 +966,7 @@ function Icon({ name, style, ...textProps }: Props) {
     delete textProps.children; // user cannot submit children as props
 
     return (
-        <Text style={[style, { fontFamily:'Material' }]} {...textProps}>
+        <Text style={[style, { fontFamily:Platform.OS === 'ios' ? 'Material Icons' : 'Material' }]} {...textProps}>
             {unicode}
         </Text>
     )

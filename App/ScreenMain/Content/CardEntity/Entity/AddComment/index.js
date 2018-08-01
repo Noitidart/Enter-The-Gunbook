@@ -1,7 +1,7 @@
 // @flow
 
 import React, { PureComponent } from 'react'
-import { Alert, Text, TextInput, View } from 'react-native'
+import { Alert, Text, TextInput, View, Platform } from 'react-native'
 import { connect } from 'react-redux'
 
 import ButtonFlat from '../ButtonFlat'
@@ -41,7 +41,7 @@ class AddCommentDumb extends PureComponent<Props, State> {
 
         return (
             <View style={styles.addComment}>
-                <TextInput style={styles.addCommentInput} keyboardAppearance="dark" numberOfLines={4} onChangeText={this.handleChangeText} placeholder="Leave a comment" placeholderTextColor="#858D90" returnKeyType="none" selectionColor="#5677FC" underlineColorAndroid="transparent" value={body} disableFullscreenUI multiline />
+                <TextInput style={styles.addCommentInput} keyboardAppearance="dark" numberOfLines={4} onChangeText={this.handleChangeText} placeholder="Leave a comment" placeholderTextColor="#858D90" returnKeyType={Platform.OS === 'android' ? 'none' : undefined} selectionColor="#5677FC" underlineColorAndroid="transparent" value={body} disableFullscreenUI multiline />
                 <ButtonFlat label="POST" onPress={this.addComment} />
             </View>
         )
