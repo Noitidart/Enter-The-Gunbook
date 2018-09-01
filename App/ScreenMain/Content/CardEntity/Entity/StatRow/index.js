@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react'
 import { View, Image, Text } from 'react-native'
 import { connect } from 'react-redux'
-import { average } from 'cmn/lib/all'
+import { mean } from 'lodash'
 
 import { getLabelForStat, getIconForStat, median, sortedWithoutOutliers } from './utils'
 
@@ -59,7 +59,7 @@ class StatRowDumb extends PureComponent<Props> {
                 // console.log('name:', name, 'numericValues:', numericValues);
                 const values = sortedWithoutOutliers(numericValues);
                 const valuesMax = Math.max(...values).toFixed(2);
-                const valuesAvg = average(values).toFixed(2);
+                const valuesAvg = mean(values).toFixed(2);
                 const valuesMedian = median(values).toFixed(2);
                 const valueForPercent = valuesMax;
                 const percentOfValues = Math.min(value / valueForPercent, 1).toFixed(2) * 100;

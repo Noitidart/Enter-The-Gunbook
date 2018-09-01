@@ -2,7 +2,7 @@
 
 import { call, put, race, select, take, takeEvery } from 'redux-saga/effects'
 import { delay } from 'redux-saga'
-import { isObject, omit } from 'cmn/lib/all'
+import { isPlainObject, omit } from 'lodash'
 
 import { deleteUndefined } from '../utils'
 
@@ -75,7 +75,7 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
 
             const entity = state[kind][id];
             const entityNew = { ...entity };
-            if (isObject(data)) Object.assign(entityNew, data);
+            if (isPlainObject(data)) Object.assign(entityNew, data);
             else Object.assign(entityNew, data(entity)); // assume its a function
             deleteUndefined(entityNew);
 
@@ -99,7 +99,7 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
             const { kind, id } = action;
 
             const entitys = state[kind];
-            const entitysNew = omit({ ...entitys }, id);
+            const entitysNew = omit(entitys, id);
 
             const stateNew = { ...state, [kind]:entitysNew };
             return stateNew;

@@ -1,6 +1,7 @@
 // @flow
 
-import { stripTags } from 'cmn/lib/all'
+import cheerio from 'cheerio-without-node-native'
+import { stripTags } from '../../utils/string'
 
 export const GUNGEON_PEDIA_PARSERS = {
     default: cell_html => getValueFromHtml(cell_html), // cell_html.includes('Infinity.png') ? 'Infinity' : stripTags(`${cell_html}`).trim(),
@@ -20,20 +21,15 @@ export const GUNGEON_PEDIA_PARSERS = {
     }
 }
 
-
-export function gamepediaExtractTable(html) {
-    // html is page html
-    // gets the main table of the page
-    // returns html text of the table, so <table.....</table>
-    // const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
-
-    // const table = doc.querySelect('.wikitable');
-    // console.l
-
-    const table_stix = html.lastIndexOf('<table', html.indexOf('wikitable'));
-    const table_enix = html.indexOf('</table', table_stix);
-    const table = html.substr(table_stix, table_enix - table_stix);
-    return table + '>';
+/**
+ * Gets the main table of the page on Gamepedia.
+ * Equivalent of doing `document.querySelector('table.wikitable').outerHTML`.
+ *
+ * @param {string} html - full page HTML
+ */
+export function gamepediaExtractTable(html: string): string {
+    const $ = cheerio.load(html);
+    return $('table.wikitable').html();
 }
 
 export function getValueFromHtml(cell_html, attr_name) {

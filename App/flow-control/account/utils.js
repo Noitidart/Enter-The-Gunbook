@@ -1,23 +1,6 @@
 // @flow
 
-import { stripTags } from 'cmn/lib/all'
-
-// https://stackoverflow.com/a/2970667/1828637
-export function toCamelCase(str) {
-    return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, function(match, index) {
-        if (+match === 0) return ''; // or if (/\s+/.test(match)) for white spaces
-        return index == 0 ? match.toLowerCase() : match.toUpperCase();
-    });
-}
-
-// https://stackoverflow.com/a/4149393/1828637
-export function unCamelCase(str) {
-    return str
-    // insert a space before all caps
-    .replace(/([A-Z])/g, ' $1')
-    // uppercase the first character
-    .replace(/^./, function(str){ return str.toUpperCase(); })
-}
+import { stripTags } from '../../utils/string'
 
 tableToJSON.defaultParser = cell_html => stripTags(`${cell_html}`).trim();
 export function tableToJSON(table, parsers={}) {
@@ -58,4 +41,47 @@ export function tableToJSON(table, parsers={}) {
 
 
     return rows;
+}
+
+function extractByTag(tagName, partialHtml, startPosition) {
+    const tagStartIndex = partialHtml.indexOf(`<${tagName}`, startPosition);
+    if (tagStartIndex === -1) throw new Error('Opening tag not found');
+    let tagEndIndex = tagStartIndex + 1; // as tableEndIndex needs index of "TAG_NAME" not "<TAG_NAME"
+    let openTagCnt = 1;
+    while(openTagCnt) {
+        tagEndIndex = partialHtml.indexOf(tagName, tagEndIndex + 1);
+        if (tagEndIndex === -1) throw new Error('Closing tag not found');
+        const prevChar = partialHtml[tagEndIndex-1];
+        if (prevChar === '<') openTagCnt++;
+        else if (prevChar === '/') openTagCnt--;
+    }
+
+    const tagContentStartIndex = partialHtml.indexOf('>', tagStartIndex) + 1;
+    const tagContentEndIndex = tagEndIndex - 2;
+    const content = partialHtml.substring(tagContentStartIndex, tagContentEndIndex);
+    return content;
+}
+
+function extractAllByTag(tagName, partialHtml) {
+    const contents = [];
+
+    while (true) {
+        let content, startPosition;
+
+        if (contents.length) {
+            const contentLast = contents[contents.length - 1];
+            startPosition = partialHtml.indexOf(contentLast) + contentLast.length;
+        }
+
+        try {
+            content = extractByTag(tagName, partialHtml, startPosition);
+        } catch(ex) {
+            if (ex.message.endsWith('tag not found')) break;
+            else throw ex;
+        }
+
+        contents.push(content);
+    }
+
+    return contents;
 }

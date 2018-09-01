@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react'
 import { Image, View } from 'react-native'
 import { connect } from 'react-redux'
-import { wait } from 'cmn/lib/all'
+import { delay } from 'redux-saga'
 
 import withMonitor from '../../withMonitor'
 
@@ -42,13 +42,13 @@ class LoadingDumb extends PureComponent<Props> {
     async orchestrate() {
         const { setPreLoaded, setLoadingStatus, setLoaded, dispatch } = this.props;
 
-        // await wait(5000); // DEBUG:
+        // await delay(5000); // DEBUG:
 
         await this.monitor(props => props.isBackgroundLoaded && props.isLogoLoaded);
 
         setPreLoaded();
         setLoadingStatus('Initializing...');
-        // await wait(1000); // DEBUG:
+        // await delay(1000); // DEBUG:
 
         await this.monitor(props => props.isRehydrated);
 

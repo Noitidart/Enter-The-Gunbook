@@ -4,6 +4,7 @@ import { delay } from 'redux-saga'
 import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
 import { normalize, schema } from 'normalizr'
 import { pickDotpath } from 'cmn/lib/all'
+import cheerio from 'cheerio-without-node-native'
 
 import { ENTITYS, overwriteEntitys, NUMERIC_THRESHOLD } from '../entitys'
 import { gamepediaExtractTable, GUNGEON_PEDIA_PARSERS } from './wiki'
@@ -222,6 +223,21 @@ const syncEntitysSaga = function* syncEntitysSaga() {
         }
         console.log('keyStats:', keyStats, 'numericKeys:', numericKeys);
         // end - update/calc numeric keys
+
+
+        // // synergys
+        // {
+        //     const res = yield call(fetch, 'https://enterthegungeon.gamepedia.com/Synergies');
+        //     const html = yield call([res, res.text]);
+        //     const $ = cheerio.load(html);
+        //     const rows = $('.tr').each((ix, row) => {
+        //         if (ix === 0) return;
+
+        //     });;
+        //     console.log('synergys rows:', rows);
+
+
+        // }
 
         yield put(overwriteEntitys(entitys));
 

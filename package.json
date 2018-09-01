@@ -8,8 +8,10 @@
 		"build:ios": "react-native bundle --entry-file='index.js' --bundle-output='./ios/enter_the_gunbook/main.jsbundle' --dev=false --platform='ios' --assets-dest='./ios'"
 	},
 	"dependencies": {
+		"cheerio-without-node-native": "^0.20.2",
 		"cmn": "^1.0.26",
 		"fuse.js": "^3.2.0",
+		"lodash": "^4.17.10",
 		"moment": "^2.19.2",
 		"normalizr": "^3.2.4",
 		"qs": "^6.5.1",

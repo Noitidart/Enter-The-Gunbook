@@ -4,7 +4,7 @@ import React, { PureComponent } from 'react'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { connect } from 'react-redux'
 import moment from 'moment'
-import { pick } from 'cmn/lib/all'
+import { pick } from 'lodash'
 
 import Icon from '../../../../../Icon'
 
@@ -101,7 +101,7 @@ const CommentSmart = connect(
         const displayname = !hasForename ? false : Object.values(social.displaynames).find(displayname => displayname.forename.toLowerCase() === forename.toLowerCase());
         const hasDisplayname = !!displayname;
 
-        const helpfuls = pick(social.helpfuls, ...helpfulIds);
+        const helpfuls = pick(social.helpfuls, helpfulIds);
         const helpful = !hasDisplayname ? null : Object.values(helpfuls).find(helpful => helpful.displaynameId === displayname.id);
         const isHelpful = !!helpful;
         const cntHelpful = helpfulIds.length;

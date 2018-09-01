@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react'
 import { ActivityIndicator, Image, Linking, ScrollView, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
 import { connect } from 'react-redux'
-import { toTitleCase, pick } from 'cmn/lib/all'
+import { startCase, pick } from 'lodash'
 
 import { sortDescHelpful } from './utils'
 
@@ -125,7 +125,7 @@ class EntityDumb extends PureComponent<Props, State> {
                     <View>
                         <Text style={styles.name}>{entityId}</Text>
                         <View style={styles.descRow}>
-                            <Text style={styles.kind}>{toTitleCase(kind)}</Text>
+                            <Text style={styles.kind}>{startCase(kind)}</Text>
                             <Text style={styles.kind}> &middot; </Text>
                             <Text style={styles.kind}>{entity.type}</Text>
                             { entity.quality && <Text style={styles.kind}> &middot; </Text> }
@@ -214,7 +214,7 @@ const EntitySmart = connect(
         const name = entityId;
         const socialEntity = Object.values(social.articles).find(entity => entity.name === name);
 
-        const thumbs = !socialEntity ? null : pick(social.thumbs, ...socialEntity.thumbIds);
+        const thumbs = !socialEntity ? null : pick(social.thumbs, socialEntity.thumbIds);
 
         const displayname = !forename ? false : Object.values(social.displaynames).find(displayname => displayname.forename.toLowerCase() === forename.toLowerCase());
         const thumb = !thumbs || !displayname ? null : Object.values(thumbs).find(thumb => thumb.displaynameId === displayname.id);
@@ -226,7 +226,7 @@ const EntitySmart = connect(
         let sortedCommentIds = null;
         if (socialEntity) {
             if (sortCommentsBy === 'helpful') {
-                const comments = !socialEntity ? null : pick(social.comments, ...socialEntity.commentIds);
+                const comments = !socialEntity ? null : pick(social.comments, socialEntity.commentIds);
                 sortedCommentIds = !comments ? null : Object.values(comments).sort(sortDescHelpful).map(({ id }) => id);
             } else {
                 sortedCommentIds = socialEntity.commentIds;

@@ -4,7 +4,7 @@
 
 import { delay } from 'redux-saga'
 import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
-import { pickDotpath, omit } from 'cmn/lib/all'
+import { omit } from 'lodash'
 
 import { normalizeUniversal } from './normalizers'
 import { K } from './types'
@@ -330,7 +330,7 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
             // if (!(id in entitys)) console.warn('no such entity so cannot delete, id:', id, 'kind:', kind); // DEBUG:
             // if (!(id in entitys)) return state;
 
-            return { ...entities, [kind]:omit({ ...entitys }, id) };
+            return { ...entities, [kind]:omit(entitys, id) };
         }
         case PUT_ENTITYS: {
             const { data } = action;

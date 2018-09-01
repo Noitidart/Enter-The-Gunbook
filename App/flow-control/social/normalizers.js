@@ -29,7 +29,13 @@ const SCHEMA_COMMENT = new schema.Entity(K.comments,
                                displaynameId: SCHEMA_DISPLAYNAME,
                                helpfulIds: [ SCHEMA_HELPFUL ]
                            },
-                           pickEntity(K.comments, 'body', 'created_at as createdAt', 'displayname as displaynameId', 'article_id as articleId', 'helpfuls as helpfulIds')
+                           pickEntity(K.comments,
+                               'body',
+                               'created_at as createdAt',
+                               'displayname as displaynameId',
+                               'article_id as articleId',
+                               'helpfuls as helpfulIds'
+                           )
                        );
 
 const SCHEMA_THUMB = new schema.Entity(K.thumbs, { displaynameId:SCHEMA_DISPLAYNAME }, pickEntity(K.thumbs, 'like', 'created_at as createdAt', 'displayname as displaynameId', 'article_id as articleId'));
@@ -39,7 +45,11 @@ const SCHEMA_ARTICLE = new schema.Entity(K.articles,
                                commentIds: [ SCHEMA_COMMENT ],
                                thumbIds: [ SCHEMA_THUMB ]
                            },
-                           pickEntity(K.articles, 'name', 'comments as commentIds', 'thumbs as thumbIds')
+                           pickEntity(K.articles,
+                               'name',
+                               'comments as commentIds',
+                               'thumbs as thumbIds'
+                           )
                        );
 
 export function normalizeUniversal(reply: {} | {}[]) {

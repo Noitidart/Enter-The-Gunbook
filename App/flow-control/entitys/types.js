@@ -24,6 +24,8 @@ export type EntityBase = {
     isFetchingMore?: boolean
 }
 
+type EntityId = $PropertyType<EntityBase, 'id'>
+
 export type Gun = {
     ...EntityBase,
     kind: typeof ENTITYS.GUN,
@@ -46,7 +48,8 @@ export type Gun = {
     reloadTime: null | number,
     shotSpeed: null | number,
     spread: null | number,
-    type: string // Semiautomatic, Charged, Burst
+    type: string, // Semiautomatic, Charged, Burst
+    synergys?: Synergy[]
 }
 
 export type Item = {
@@ -54,5 +57,12 @@ export type Item = {
     kind: typeof ENTITYS.ITEM,
     effect: string,
     quality: null | Quality,
-    type: string // Passive, Active
+    type: string, // Passive, Active
+    synergys?: Synergy[]
+}
+
+type Synergy = {
+    name: string,
+    desc: string,
+    entityCombos: Array<EntityId[]>
 }
