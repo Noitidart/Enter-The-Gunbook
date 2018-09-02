@@ -7,8 +7,9 @@ import { pickDotpath } from 'cmn/lib/all'
 import cheerio from 'cheerio-without-node-native'
 
 import { ENTITYS, overwriteEntitys, NUMERIC_THRESHOLD } from '../entitys'
+import { overwriteSynergyById } from '../synergyById'
 import { gamepediaExtractTable, GUNGEON_PEDIA_PARSERS } from './wiki'
-import { tableToJSON } from './utils'
+import { tableToJSON, isNumeric } from './utils'
 import { waitRehydrate } from '../utils'
 
 import type { EntityKey } from '../entitys/types'
@@ -201,9 +202,116 @@ const syncEntitysSaga = function* syncEntitysSaga() {
                 }
             }
         }
-        console.log('entitys:', entitys);
 
-        // update/calc numeric keys
+        // // create the fake items, because of naming issues
+        const itemIdByFakeId = {
+            // 'Alpha Bullets': 'Alpha Bullet',
+            'Master Round I': 'Master Round',
+            'Master Round II': 'Master Round',
+            'Master Round III': 'Master Round',
+            'Master Round IV': 'Master Round',
+            'Master Round V': 'Master Round'
+        };
+        for (const [fakeId, itemId] of Object.entries(itemIdByFakeId)) {
+            entitys[ENTITYS.ITEM][fakeId] = JSON.parse(JSON.stringify(entitys[ENTITYS.ITEM][itemId]));
+            entitys[ENTITYS.ITEM][fakeId].id = fakeId;
+        }
+
+        // synergys
+        const synergyById = {};
+        {
+            const res = yield call(fetch, 'https://enterthegungeon.gamepedia.com/Synergies');
+            const html = yield call([res, res.text]);
+            const $ = cheerio.load(html);
+            const rows = $('table.wikitable > tr');
+            let synergyIdLast = -1;
+            rows.each((ix, row) => {
+                if (ix === 0) return;
+
+                const tds = $(row).find('> td');
+                const synergyId = ++synergyIdLast;
+                let name, desc;
+                const combo = [];
+
+                tds.each((ix, td) => {
+                    $td = $(td);
+                    if (ix === 0) {
+                        name = $td.text().trim();
+                    } else if (ix === tds.length - 1) {
+                        desc = $td.text().trim();
+                    } else {
+                        // combo td
+                        const entityIds = $td.find('a ~ a').map((_, td) => $(td).text().trim()).toArray();
+
+                        // add synergyId to all entityIds
+                        for (let entityId of entityIds) {
+                            // HACK: coerce entityId
+                            if (entityId === 'Alpha Bullets') entityId = 'Alpha Bullet';
+
+                            const entityKind = entitys[ENTITYS.ITEM].hasOwnProperty(entityId) ? ENTITYS.ITEM
+                                                                                              : entitys[ENTITYS.GUN].hasOwnProperty(entityId) ? ENTITYS.GUN
+                                                                                                                                              : null;
+
+                            if (!entityKind) {
+                                console.error('entityId not found in entitys.ITEM or entitys.GUN, entityId:', entityId);
+                            } else {
+                                const entity = entitys[entityKind][entityId];
+                                const synergyIds = entity.synergyIds || [];
+                                if (!synergyIds.includes(synergyId)) {
+                                    synergyIds.push(synergyId);
+                                    entity.synergyIds = synergyIds;
+                                }
+                            }
+                        }
+
+                        // create combo
+                        if (entityIds.length === 1) {
+                            combo.push(entityIds[0]);
+                        } else {
+                            const tdText = $td.text();
+
+                            let hasOrTd = false;
+                            $td.find('td').each((_, td) => {
+                                if ($(td).text().trim() === 'or') {
+                                    hasOrTd = true;
+                                    return false;
+                                }
+                            });
+
+                            if (!hasOrTd && tdText.includes('Any two of the following:')) {
+                                combo.push({
+                                    requiredCount: 2,
+                                    entityIds
+                                })
+                            } else if (hasOrTd || tdText.includes('Any of the following:') || tdText.includes('Any one of the following:')) {
+                                combo.push({
+                                    requiredCount: 1,
+                                    entityIds
+                                })
+                            } else {
+                                combo.push(...entityIds);
+                                console.log('this synergy has a td with multipl a elements, and its not OR, synergy:', {
+                                    id: synergyId,
+                                    name,
+                                    desc,
+                                    combo
+                                });
+                            }
+                        }
+                    }
+                });
+
+                synergyById[synergyId] = {
+                    id: synergyId,
+                    name,
+                    desc,
+                    combo
+                };
+
+            });
+        }
+
+        // update/calc numeric keys - must be done after all adding of new keys is done
         const numericKeys = {};
         const keyStats: { [EntityKey: string]: { numeric:number, non:number }} = {};
         for (const aEntitys of Object.values(entitys)) {
@@ -211,33 +319,22 @@ const syncEntitysSaga = function* syncEntitysSaga() {
                 // check each key,
                 for (const [key, value] of Object.entries(entity)) {
                     if (!(key in keyStats)) keyStats[key] = { numeric:0, non:0 };
-                    if (value === null || isNaN(value)) keyStats[key].non++;
-                    else keyStats[key].numeric++;
+                    keyStats[key][isNumeric(value) ? 'numeric' : 'non']++;
                 }
             }
         }
         for (const [key, stats] of Object.entries(keyStats)) {
             const percentNumeric = stats.numeric / (stats.numeric + stats.non);
-            stats.percentNumeric = percentNumeric; // DEBUG:
+            // stats.percentNumeric = percentNumeric;
             if (percentNumeric > NUMERIC_THRESHOLD) numericKeys[key] = true;
         }
-        console.log('keyStats:', keyStats, 'numericKeys:', numericKeys);
+        // console.log('keyStats:', keyStats, 'numericKeys:', numericKeys);
         // end - update/calc numeric keys
 
+        // console.log('synergyById:', synergyById);
+        yield put(overwriteSynergyById(synergyById))
 
-        // // synergys
-        // {
-        //     const res = yield call(fetch, 'https://enterthegungeon.gamepedia.com/Synergies');
-        //     const html = yield call([res, res.text]);
-        //     const $ = cheerio.load(html);
-        //     const rows = $('.tr').each((ix, row) => {
-        //         if (ix === 0) return;
-
-        //     });;
-        //     console.log('synergys rows:', rows);
-
-
-        // }
+        // console.log('entitys:', entitys);
 
         yield put(overwriteEntitys(entitys));
 

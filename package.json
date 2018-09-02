@@ -11,6 +11,7 @@
 		"cheerio-without-node-native": "^0.20.2",
 		"cmn": "^1.0.26",
 		"fuse.js": "^3.2.0",
+		"immer": "^1.5.0",
 		"lodash": "^4.17.10",
 		"moment": "^2.19.2",
 		"normalizr": "^3.2.4",

@@ -1,6 +1,7 @@
 // @flow
 
 import { ENTITYS } from './'
+import type { SynergyId } from '../synergyById'
 
 export type Entity = Gun | Item;
 export type EntityKind = $Keys<typeof ENTITYS>;
@@ -24,7 +25,7 @@ export type EntityBase = {
     isFetchingMore?: boolean
 }
 
-type EntityId = $PropertyType<EntityBase, 'id'>
+export type EntityId = $PropertyType<EntityBase, 'id'>
 
 export type Gun = {
     ...EntityBase,
@@ -49,7 +50,7 @@ export type Gun = {
     shotSpeed: null | number,
     spread: null | number,
     type: string, // Semiautomatic, Charged, Burst
-    synergys?: Synergy[]
+    synergyIds?: SynergyId[]
 }
 
 export type Item = {
@@ -58,11 +59,5 @@ export type Item = {
     effect: string,
     quality: null | Quality,
     type: string, // Passive, Active
-    synergys?: Synergy[]
-}
-
-type Synergy = {
-    name: string,
-    desc: string,
-    entityCombos: Array<EntityId[]>
+    synergyIds?: SynergyId[]
 }

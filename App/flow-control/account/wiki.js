@@ -4,8 +4,8 @@ import cheerio from 'cheerio-without-node-native'
 import { stripTags } from '../../utils/string'
 
 export const GUNGEON_PEDIA_PARSERS = {
-    default: cell_html => getValueFromHtml(cell_html), // cell_html.includes('Infinity.png') ? 'Infinity' : stripTags(`${cell_html}`).trim(),
-    Icon: (cell_html, cells) => {
+    default: getValueFromHtml, // cell_html.includes('Infinity.png') ? 'Infinity' : stripTags(`${cell_html}`).trim(),
+    Icon: (cell_html, cell_text) => {
         const [, icon] = cell_html.match(/src="([^"]+)/) || [];
         // if (icon === undefined) console.log('ERRRRRROR: icon is undefined, cell_html:', cell_html, 'cells:', cells);
         return icon;
@@ -15,9 +15,9 @@ export const GUNGEON_PEDIA_PARSERS = {
     //     if (!match) return null;
     //     else return match[1];
     // },
-    Name: (cell_html, cells, defaultParser) => {
+    Name: (cell_html, cell_text, cells) => {
         cells.moreUrl = 'https://enterthegungeon.gamepedia.com' + cell_html.match(/href="([^"]+)/)[1];
-        return defaultParser(cell_html)
+        return cell_text;
     }
 }
 
@@ -32,7 +32,7 @@ export function gamepediaExtractTable(html: string): string {
     return $('table.wikitable').html();
 }
 
-export function getValueFromHtml(cell_html, attr_name) {
+export function getValueFromHtml(cell_html, cell_text, cells) {
     // gets quality and Infinity
 
 
@@ -44,7 +44,6 @@ export function getValueFromHtml(cell_html, attr_name) {
         const quality = cell_html.substr(quality_stix, 1);
         return ['A', 'B', 'C', 'D', 'S'].includes(quality) ? quality : null;
     } else {
-        const str = stripTags(cell_html).trim();
-        return str.length ? str : undefined;
+        return cell_text.length ? cell_text : undefined;
     }
 }

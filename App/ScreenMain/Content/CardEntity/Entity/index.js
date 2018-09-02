@@ -125,7 +125,7 @@ class EntityDumb extends PureComponent<Props, State> {
                     <View>
                         <Text style={styles.name}>{entityId}</Text>
                         <View style={styles.descRow}>
-                            <Text style={styles.kind}>{startCase(kind)}</Text>
+                            <Text style={styles.kind}>{startCase(kind.toLowerCase())}</Text>
                             <Text style={styles.kind}> &middot; </Text>
                             <Text style={styles.kind}>{entity.type}</Text>
                             { entity.quality && <Text style={styles.kind}> &middot; </Text> }

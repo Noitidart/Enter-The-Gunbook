@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import { Text, View, Alert, Platform, TouchableOpacity } from 'react-native'
 import DialogAndroid from 'react-native-dialogs'
 import { connect } from 'react-redux'
-import { words } from 'lodash'
+import { words, startCase } from 'lodash'
 
 import { sortCards } from '../../../../flow-control/cards'
 import { getCardEntitys, groupSortables } from '../../../../flow-control/cards/utils'
@@ -85,7 +85,7 @@ class SortFabDumb extends PureComponent<Props, State> {
         for (const key in numericKeys) {
             const { sortableCards } = groupSortables(cards, cardEntitys, key);
             if (sortableCards.length) {
-                options.push({ label:words(key), value:key });
+                options.push({ label:startCase(words(key)), value:key });
             }
         }
 
