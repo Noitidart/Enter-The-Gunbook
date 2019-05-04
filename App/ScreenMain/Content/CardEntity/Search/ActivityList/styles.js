@@ -12,6 +12,11 @@ const styles = StyleSheet.create({
     activityListContent: {
 
     },
+    activityListTitleRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
     title: {
         color: '#FFFFFF',
         fontSize: 18,
@@ -53,7 +58,12 @@ const styles = StyleSheet.create({
         color: '#FFFFFF',
         fontWeight: 'bold',
         fontSize: 15
-    }
+    },
+    titleRightIcon: {
+        color: '#FFFFFF',
+        fontSize: 19,
+        marginHorizontal: 7
+    },
 })
 
 export default styles
