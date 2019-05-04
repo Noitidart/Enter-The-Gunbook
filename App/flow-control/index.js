@@ -53,7 +53,7 @@ const sagas = [ ...accountSagas, ...cardsSagas, ...counterSagas, ...socialSagas,
 const store = createStore(reducers, enhancers);
 
 export const persistor = persistStore(store);
-persistor.purge();
+// persistor.purge();
 
 const rootSaga = function* rootSaga() {
     yield all(sagas.map(saga => fork(saga)));
