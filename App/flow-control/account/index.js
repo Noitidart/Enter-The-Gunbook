@@ -28,7 +28,7 @@ const INITIAL = {
     forename: '',
     numericKeys: {},
     sortCommentsBy: 'date',
-    supportMessageShownAt: 0
+    supportMessageShownAt: Date.now() - (29 * 24 * 60 * 60 * 1000)
 }
 export const sagas = [];
 

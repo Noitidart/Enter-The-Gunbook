@@ -47,7 +47,7 @@ class SupportMessageBase extends React.Component {
 }
 
 const SupportMessageConnect = connect(state => ({
-    supportMessageShownAt: state.account.supportMessageShownAt || 0
+    supportMessageShownAt: state.account.supportMessageShownAt || (Date.now() - (29 * 24 * 60 * 60 * 1000))
 }));
 
 const SupportMessage = SupportMessageConnect(SupportMessageBase);
