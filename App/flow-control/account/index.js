@@ -149,7 +149,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
                             'Icon as image',
                             'Notes as notes',
                             'Quality as quality',
-                            // 'Quote as quote',
+                            'Quote as quote',
                             'Type as type',
                             'moreUrl'
                         )
@@ -180,7 +180,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
                         'Effect as effect',
                         'Icon as image',
                         'Quality as quality',
-                        // 'Quote as quote',
+                        'Quote as quote',
                         'Type as type',
                         'moreUrl'
                     )
