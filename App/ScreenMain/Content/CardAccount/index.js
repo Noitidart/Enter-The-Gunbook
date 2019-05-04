@@ -26,7 +26,13 @@ class CardAccount extends PureComponent<Props> {
                         <Text style={styles.title}>Support</Text>
                     </View>
                     <View style={styles.para}>
-                        <Text style={styles.paraBody}>Please support the development and server costs. A server is used for the comment/vote feature, and IBM Watson is used for voice recognition service.</Text>
+                        <Text style={styles.paraBody}>
+                            Please support the development and server costs:
+                            {'\n'} - Montly server costs for the comment/vote feature.
+                            {'\n'} - Yearly Apple fee for listing in the store.
+                            {'\n'} - Google Play one-time registration cost.
+                            {'\n'} - IBM Watson for optional voice recognition feature.
+                        </Text>
                         <View style={styles.rowButton}>
                             <ButtonFlat label="CONTRIBUTE WITH PAYPAL" onPress={this.gotoPaypal} />
                         </View>
