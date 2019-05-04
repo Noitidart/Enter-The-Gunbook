@@ -5,6 +5,7 @@ import { Animated, Dimensions, Image, Keyboard, Platform, Text, View } from 'rea
 import Content from './Content'
 import Loading from './Loading'
 import ImageScaled from './ImageScaled'
+import SupportMessage from './Content/SupportMessage';
 
 import styles from './styles'
 import LOGO from './logo.png'
@@ -49,7 +50,7 @@ class ScreenMain extends Component<Props, State> {
     componentWillUnmount() {
         if (Platform.OS === 'ios') {
             Keyboard.removeListener(this.handleKeyboardWillShow);
-            Keyboard.removeListener(this.handleKeyboardWillHide);        
+            Keyboard.removeListener(this.handleKeyboardWillHide);
         }
     }
 
@@ -68,6 +69,7 @@ class ScreenMain extends Component<Props, State> {
                     </View>
                 }
                 { isLoaded && <Content screen={screen} /> }
+                { isLoaded && <SupportMessage /> }
             </Animated.View>
         )
     }

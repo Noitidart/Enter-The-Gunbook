@@ -27,7 +27,8 @@ const INITIAL = {
     syncedEntitysAt: 0,
     forename: '',
     numericKeys: {},
-    sortCommentsBy: 'date'
+    sortCommentsBy: 'date',
+    supportMessageShownAt: 0
 }
 export const sagas = [];
 
