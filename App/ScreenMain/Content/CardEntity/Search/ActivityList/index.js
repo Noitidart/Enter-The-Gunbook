@@ -42,6 +42,8 @@ type ActivityRaw = {|
     }
 |}
 
+const ITEMS_PER_PAGE = 100;
+
 function getIconsNameFromActivity(rawActivity: ActivityRaw) {
     switch (rawActivity.type) {
         case 'helpful': return [
@@ -146,7 +148,7 @@ class ActivityList extends React.PureComponent<Props, State> {
         const { activitys, isFetching } = this.state;
         if (isFetching) return;
 
-        const page = Math.floor(activitys.length / 10) + 1;
+        const page = Math.floor(activitys.length / ITEMS_PER_PAGE) + 1;
         if (page === this.lastFetchedPage) return;
 
         this.setState(() => ({ isFetching:true }));
