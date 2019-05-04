@@ -213,8 +213,10 @@ const syncEntitysSaga = function* syncEntitysSaga() {
             'Master Round V': 'Master Round'
         };
         for (const [fakeId, itemId] of Object.entries(itemIdByFakeId)) {
-            entitys[ENTITYS.ITEM][fakeId] = JSON.parse(JSON.stringify(entitys[ENTITYS.ITEM][itemId]));
-            entitys[ENTITYS.ITEM][fakeId].id = fakeId;
+            if (entitys[ENTITYS.ITEM]) {
+                entitys[ENTITYS.ITEM][fakeId] = JSON.parse(JSON.stringify(entitys[ENTITYS.ITEM][itemId]));
+                entitys[ENTITYS.ITEM][fakeId].id = fakeId;
+            }
         }
 
         // synergys
