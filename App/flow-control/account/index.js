@@ -1,9 +1,8 @@
 // @flow
 
-import { delay } from 'redux-saga'
-import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
+import { delay, takeEvery, take, call, put, race, select } from 'redux-saga/effects'
 import { normalize, schema } from 'normalizr'
-import { pickDotpath } from 'cmn/lib/all'
+import { pickDotpath } from '../../lib/pick'
 import cheerio from 'cheerio-without-node-native'
 
 import { ENTITYS, overwriteEntitys, NUMERIC_THRESHOLD } from '../entitys'
@@ -37,7 +36,7 @@ const A = ([actionType]: string[]) => 'ACCOUNT_' + actionType;
 //
 const UPDATE = A`UPDATE`;
 type UpdateAction = { type:typeof UPDATE, data:$Shape<Shape> };
-const update = updateAccount = (data): UpdateAction => ({ type:UPDATE, data });
+const update = (data): UpdateAction => ({ type:UPDATE, data });
 
 // sync entitys on action dispatch, on startup and not yet synced, or if last sync is stale
 const SYNC_ENTITYS = A`SYNC_ENTITYS`
@@ -82,7 +81,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
         // if (timeTillSync > 0) {
         //     const { manual, auto } = yield race({
         //         manual: take(SYNC_ENTITYS),
-        //         auto: call(delay, timeSinceSync)
+        //         auto: delay(timeSinceSync)
         //     });
         //     console.log('manual:', manual, 'auto:', auto);
         // }
@@ -96,7 +95,7 @@ const syncEntitysSaga = function* syncEntitysSaga() {
             } else {
                 const { manual, auto } = yield race({
                     manual: take(SYNC_ENTITYS),
-                    auto: call(delay, 1000)
+                    auto: delay(1000)
                 });
                 if (manual) break;
             }
@@ -369,4 +368,7 @@ export default function reducer(state: Shape = INITIAL, action:Action): Shape {
     }
 }
 
-export { updateAccount, syncEntitys }
+export {
+    update as updateAccount,
+    syncEntitys
+}

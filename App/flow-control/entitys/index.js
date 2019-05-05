@@ -1,7 +1,6 @@
 // @flow
 
 import { call, put, race, select, take, takeEvery } from 'redux-saga/effects'
-import { delay } from 'redux-saga'
 import { isPlainObject, omit } from 'lodash'
 
 import { deleteUndefined } from '../utils'

@@ -1,6 +1,5 @@
 // @flow
 
-import { delay } from 'redux-saga'
 import produce from 'immer'
 import { takeEvery, call, put } from 'redux-saga/effects'
 
