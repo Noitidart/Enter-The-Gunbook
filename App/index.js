@@ -5,6 +5,7 @@ import { Provider } from 'react-redux'
 import DialogAndroid from 'react-native-dialogs'
 
 import store from './flow-control'
+import { name as appName } from '../app.json';
 
 import ScreenMain from './ScreenMain'
 
@@ -47,4 +48,4 @@ export default class App extends Component<void, State> {
     setAppOpaque = () => this.setState( () => ({ isOpaque:true }) )
 }
 
-AppRegistry.registerComponent('enter_the_gunbook', () => App)
+AppRegistry.registerComponent(appName, () => App);

@@ -1,7 +1,6 @@
 // @flow
 
-import { delay } from 'redux-saga'
-import { takeEvery, call, put } from 'redux-saga/effects'
+import { delay, takeEvery, call, put } from 'redux-saga/effects'
 
 export type Shape = number;
 

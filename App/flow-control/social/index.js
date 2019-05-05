@@ -2,7 +2,6 @@
 
 // TODO: rename to entities maybe or entitas
 
-import { delay } from 'redux-saga'
 import { takeEvery, take, call, put, race, select } from 'redux-saga/effects'
 import { omit } from 'lodash'
 

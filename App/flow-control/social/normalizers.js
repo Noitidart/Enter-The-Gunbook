@@ -1,7 +1,7 @@
 // @flow
 
 import { normalize, schema } from 'normalizr'
-import { pickAsByString } from 'cmn/lib/all'
+import { pickAsByString } from '../../lib/pick'
 
 import { K } from './types'
 

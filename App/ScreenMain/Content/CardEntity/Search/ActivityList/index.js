@@ -1,7 +1,7 @@
 import React from 'react'
 import { ActivityIndicator, Alert, FlatList, Platform, Text, TouchableOpacity, View } from 'react-native'
 import moment from 'moment'
-import { delay } from 'redux-saga'
+import delay from '@redux-saga/delay-p'
 import DialogAndroid from 'react-native-dialogs'
 
 import { fetchApi } from '../../../../../flow-control/utils'
@@ -104,7 +104,7 @@ function isCountBased(activityOrRawActivity) {
 }
 
 function extractKeyFromActivity(activity: Activity) {
-    return activity.type + activity.id;
+    return String(activity.type + activity.id);
 }
 
 export function formatAgoShort(iso: DateIso) {
