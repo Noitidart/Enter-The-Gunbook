@@ -1,5 +1,5 @@
 import React from 'react'
-import { ScrollView } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 
 import { fetchApi } from '../../../../../flow-control/utils'
 
@@ -17,10 +17,10 @@ type Props = {|
 
 class MatchList extends React.PureComponent<Props> {
     render() {
-        const { matchs, cardId } = this.props;
+        const { matchs, cardId, matchListRef } = this.props;
 
         return (
-            <ScrollView style={styles.matchList} contentContainerStyle={styles.matchListContent} keyboardShouldPersistTaps="handled">
+            <ScrollView keyboardShouldPersistTaps="handled" ref={matchListRef}>
                 { matchs.map(match => <SearchLink key={match.entityId} entityId={match.entityId} cardId={cardId} />) }
             </ScrollView>
         )

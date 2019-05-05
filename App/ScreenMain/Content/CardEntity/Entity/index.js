@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react'
-import { ActivityIndicator, Image, Linking, ScrollView, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Image, Linking, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 import { connect } from 'react-redux'
 import { startCase, pick } from 'lodash'
 

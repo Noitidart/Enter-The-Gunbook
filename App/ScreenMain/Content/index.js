@@ -1,18 +1,16 @@
+// @flow
+
 import React, { PureComponent } from 'react'
 import { Image, ScrollView, Text, View } from 'react-native'
-import Interactable from 'react-native-interactable'
 import { connect } from 'react-redux'
 import shallowEqual from 'recompose/shallowEqual'
 
-
 import { CARDS, removeCard, updateCard } from '../../flow-control/cards'
 
-import CardAccount from './CardAccount'
-import CardCounter from './CardCounter'
-import CardEntity from './CardEntity'
 import Fabs from './Fabs'
+import CardWrap from './CardWrap'
 
-import styles, { CARD_MARGIN } from './styles'
+import styles from './styles'
 
 import type { Shape as AppShape } from '../../flow-control'
 import type { Shape as CardsShape } from '../../flow-control/cards'
@@ -78,12 +76,20 @@ class ContentDumb extends PureComponent<Props> {
         }
     }
     render() {
-        const { cards, dispatch } = this.props;
+        const { cards, screen, dispatch } = this.props;
 
         return (
             <View style={styles.content}>
                 <ScrollView style={styles.scroller} contentContainerStyle={styles.contentContainer} horizontal pagingEnabled ref={this.refScroller} onScroll={this.handleScroll} scrollEventThrottle={16} onLayout={this.handleLayout} onMomentumScrollEnd={this.handleScrollEnd} keyboardShouldPersistTaps="handled">
-                    { cards.map( card => this.renderCard(card) ) }
+                    { cards.map( card => (
+                        <CardWrap
+                            key={card.id}
+                            card={card}
+                            screen={screen}
+                            hasMultipleCards={cards.length > 1}
+                            removeCurrentCard={this.removeCurrentCard}
+                        />
+                    ) ) }
                 </ScrollView>
                 <Fabs dispatch={dispatch} findCardIndex={this.findCardIndex} scrollToCard={this.scrollToCard} getCurrentCardIndex={this.getCurrentCardIndex} removeCurrentCard={this.removeCurrentCard} />
             </View>
@@ -118,35 +124,6 @@ class ContentDumb extends PureComponent<Props> {
         } else {
             dispatch(removeCard(card.id));
         }
-    }
-
-    handleSnap: InteractableSnap = ({ nativeEvent:{ index } }) => {
-        console.log('index', index);
-        if (index !== 1) this.removeCurrentCard();
-    }
-    renderCard = card => {
-        const { screen, cards } = this.props;
-        const width = screen.width - CARD_MARGIN - CARD_MARGIN;
-
-        let CardContent;
-        switch (card.kind) {
-            case CARDS.ENTITY: CardContent = CardEntity; break;
-            case CARDS.COUNTER: CardContent = CardCounter; break;
-            case CARDS.ACCOUNT: CardContent = CardAccount; break;
-            // no default
-        }
-
-        const snapPoints = [
-            { y: -screen.height },
-            { y: 0 },
-            { y: screen.height }
-        ];
-
-        return (
-            <Interactable.View style={[styles.card, { width }]} key={card.id} onSnap={this.handleSnap} snapPoints={snapPoints} dragEnabled={cards.length > 1} animatedNativeDriver verticalOnly>
-                <CardContent {...card} />
-            </Interactable.View>
-        )
     }
 }
 

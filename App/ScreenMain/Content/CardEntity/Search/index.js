@@ -57,7 +57,7 @@ class SearchDumb extends PureComponent<Props, State> {
 
     render() {
         const { matchs, value } = this.state;
-        const { cardId } = this.props;
+        const { cardId, matchListRef } = this.props;
 
         const hasValue = !!value;
         const hasMatchs = !!matchs.length;
@@ -68,7 +68,7 @@ class SearchDumb extends PureComponent<Props, State> {
                 <View style={styles.subWrap}>
                     { !hasValue && <Text style={styles.sub}>(type a gun or item name)</Text> }
                     { hasValue && !hasMatchs && <Text style={styles.noMatches}>No matches found</Text> }
-                    { hasValue && hasMatchs && <MatchList matchs={matchs} cardId={cardId} /> }
+                    { hasValue && hasMatchs && <MatchList matchs={matchs} cardId={cardId} matchListRef={matchListRef} /> }
                     { !hasValue && <ActivityList cardId={cardId} /> }
                 </View>
             </View>

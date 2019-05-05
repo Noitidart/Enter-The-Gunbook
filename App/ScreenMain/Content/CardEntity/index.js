@@ -14,11 +14,11 @@ type Props = {
 
 class CardEntity extends PureComponent<Props> {
     render() {
-        const { entityId, id } = this.props;
+        const { entityId, id, matchListRef } = this.props;
 
         return (
             <View style={styles.container}>
-                { !entityId && <Search cardId={id} /> }
+                { !entityId && <Search cardId={id} matchListRef={matchListRef} /> }
                 { entityId && <Entity entityId={entityId} /> }
             </View>
         )

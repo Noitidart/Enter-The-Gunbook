@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react'
-import { Linking, ScrollView, Text, TouchableHighlight, View } from 'react-native'
+import { Linking, Text, TouchableHighlight, View } from 'react-native'
+import { ScrollView } from 'react-native-gesture-handler'
 
 import ButtonFlat from '../CardEntity/Entity/ButtonFlat'
 import SettingsForm from './SettingsForm'

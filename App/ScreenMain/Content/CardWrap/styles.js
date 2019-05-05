@@ -2,6 +2,8 @@
 
 import { StyleSheet } from 'react-native'
 
+const CARD_MARGIN = 20;
+
 const styles = StyleSheet.create({
     content: {
         flex: 1,
@@ -14,6 +16,13 @@ const styles = StyleSheet.create({
     },
     scroller: {
         // backgroundColor: 'skyblue'
+    },
+    card: {
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        borderRadius: 2,
+        // padding: 10,
+        margin: CARD_MARGIN,
+        flex: 1
     },
 
     welcome: {
@@ -32,4 +41,5 @@ const styles = StyleSheet.create({
     }
 })
 
+export { CARD_MARGIN }
 export default styles

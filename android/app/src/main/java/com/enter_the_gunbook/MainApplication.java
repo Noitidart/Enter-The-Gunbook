@@ -3,8 +3,8 @@ package com.enter_the_gunbook;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.swmansion.gesturehandler.react.RNGestureHandlerPackage;
 import com.aakashns.reactnativedialogs.ReactNativeDialogsPackage;
-import com.wix.interactable.Interactable;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.ReactPackage;
 import com.facebook.react.shell.MainReactPackage;
@@ -25,8 +25,8 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
-            new ReactNativeDialogsPackage(),
-            new Interactable()
+            new RNGestureHandlerPackage(),
+            new ReactNativeDialogsPackage()
       );
     }
 
