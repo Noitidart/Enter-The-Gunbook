@@ -10,7 +10,7 @@
     "cheerio-without-node-native": "^0.20.2",
     "fuse.js": "^3.4.4",
     "immer": "^3.1.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.21",
     "moment": "^2.24.0",
     "normalizr": "^3.3.0",
     "qs": "^6.7.0",
