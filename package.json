@@ -13,7 +13,7 @@
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "normalizr": "^3.3.0",
-    "qs": "^6.7.0",
+    "qs": "^6.7.3",
     "react": "16.8.3",
     "react-native": "0.59.5",
     "react-native-dialogs": "^1.0.5",
